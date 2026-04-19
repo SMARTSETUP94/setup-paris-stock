@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { StatutBadge } from "@/components/StatutBadge";
 import { AffaireFormDialog } from "@/components/AffaireFormDialog";
+import { BudgetProgressCard } from "@/components/BudgetProgressCard";
 import { InviteTiersDialog } from "@/components/InviteTiersDialog";
 import { MouvementDialog } from "@/components/MouvementDialog";
 import { TypeMouvementBadge } from "@/components/TypeMouvementBadge";
@@ -356,18 +357,19 @@ function AffaireDetail() {
         {/* Onglet Aperçu */}
         <TabsContent value="apercu" className="mt-8 space-y-8">
           <div className="grid gap-4 md:grid-cols-3">
-            <Card className="p-6">
-              <p className="eyebrow mb-2">Budget panneaux HT</p>
-              <p className="text-2xl font-semibold">{formatEuro(affaire.budget_panneaux_ht)}</p>
-            </Card>
-            <Card className="p-6">
-              <p className="eyebrow mb-2">Valeur consommée</p>
-              <p className="text-2xl font-semibold">{formatEuro(valeurConsommee)}</p>
-              <p className="text-xs text-muted-foreground mt-1">Sorties valorisées au CUMP</p>
-            </Card>
+            <div className="md:col-span-2">
+              <BudgetProgressCard
+                budget={affaire.budget_panneaux_ht ? Number(affaire.budget_panneaux_ht) : null}
+                consomme={valeurConsommee}
+                dateDebut={affaire.date_debut}
+                dateFin={affaire.date_fin_prevue}
+                onDefineBudget={() => setEditOpen(true)}
+              />
+            </div>
             <Card className="p-6">
               <p className="eyebrow mb-2">Reliquat budget</p>
               <p className="text-2xl font-semibold">{reliquat !== null ? formatEuro(reliquat) : "—"}</p>
+              <p className="text-xs text-muted-foreground mt-1">Sorties valorisées au CUMP</p>
             </Card>
           </div>
 

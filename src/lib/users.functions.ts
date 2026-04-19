@@ -1,9 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import {
-  requireSupabaseAuth,
-  type AuthedContext,
-} from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuth, type AuthedContext } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -83,15 +80,11 @@ export const inviteUser = createServerFn({ method: "POST" })
     const { supabase, userId } = context as AuthedContext;
     await assertAdmin(supabase, userId);
 
-    const redirectTo =
-      data.redirectTo ?? `${process.env.SITE_URL ?? ""}/reset-password`;
-    const { data: invited, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(
-      data.email,
-      {
-        data: { nom_complet: data.nom_complet ?? data.email },
-        redirectTo: redirectTo && redirectTo.startsWith("http") ? redirectTo : undefined,
-      },
-    );
+    const redirectTo = data.redirectTo ?? `${process.env.SITE_URL ?? ""}/reset-password`;
+    const { data: invited, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(data.email, {
+      data: { nom_complet: data.nom_complet ?? data.email },
+      redirectTo: redirectTo && redirectTo.startsWith("http") ? redirectTo : undefined,
+    });
     if (error) throw new Error(error.message);
     if (!invited?.user) throw new Error("Invitation échouée");
 
@@ -121,8 +114,7 @@ export const resendInvitation = createServerFn({ method: "POST" })
     const { supabase, userId } = context as AuthedContext;
     await assertAdmin(supabase, userId);
 
-    const redirectTo =
-      data.redirectTo ?? `${process.env.SITE_URL ?? ""}/reset-password`;
+    const redirectTo = data.redirectTo ?? `${process.env.SITE_URL ?? ""}/reset-password`;
     const { error } = await supabaseAdmin.auth.admin.generateLink({
       type: "recovery",
       email: data.email,

@@ -214,9 +214,7 @@ function UsersTab() {
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
           </div>
         ) : sorted.length === 0 ? (
-          <div className="p-12 text-center text-muted-foreground text-sm">
-            Aucun utilisateur.
-          </div>
+          <div className="p-12 text-center text-muted-foreground text-sm">Aucun utilisateur.</div>
         ) : (
           <ul className="divide-y divide-border">
             {sorted.map((u) => {
@@ -237,12 +235,18 @@ function UsersTab() {
                         </Badge>
                       )}
                       {!u.actif && (
-                        <Badge variant="outline" className="text-[10px] border-destructive/40 text-destructive">
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] border-destructive/40 text-destructive"
+                        >
                           Désactivé
                         </Badge>
                       )}
                       {!u.email_confirmed_at && (
-                        <Badge variant="outline" className="text-[10px] border-warning/40 text-warning">
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] border-warning/40 text-warning"
+                        >
                           En attente
                         </Badge>
                       )}
@@ -275,10 +279,7 @@ function UsersTab() {
                         <Mail className="h-4 w-4 mr-2" />
                         Renvoyer un lien
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => handleToggleActive(u)}
-                        disabled={isMe}
-                      >
+                      <DropdownMenuItem onClick={() => handleToggleActive(u)} disabled={isMe}>
                         {u.actif ? "Désactiver le compte" : "Réactiver le compte"}
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
@@ -307,18 +308,15 @@ function UsersTab() {
         }}
       />
 
-      <AlertDialog
-        open={!!confirmDelete}
-        onOpenChange={(o) => !o && setConfirmDelete(null)}
-      >
+      <AlertDialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Supprimer ce compte ?</AlertDialogTitle>
             <AlertDialogDescription>
               Cette action est <strong>définitive</strong>. L'utilisateur{" "}
-              <strong>{confirmDelete?.email}</strong> ne pourra plus se connecter et son profil
-              sera supprimé. L'historique des mouvements créés est conservé mais ne sera plus
-              attribué à un utilisateur. Préférez la désactivation si vous n'êtes pas sûr.
+              <strong>{confirmDelete?.email}</strong> ne pourra plus se connecter et son profil sera
+              supprimé. L'historique des mouvements créés est conservé mais ne sera plus attribué à
+              un utilisateur. Préférez la désactivation si vous n'êtes pas sûr.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

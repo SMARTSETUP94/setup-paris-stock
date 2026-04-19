@@ -9,8 +9,23 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Plus, Pencil, Trash2, Search, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -115,14 +130,18 @@ function FournisseursPage() {
             </thead>
             <tbody>
               {loading && (
-                <tr><td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin inline" />
-                </td></tr>
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin inline" />
+                  </td>
+                </tr>
               )}
               {!loading && filtered.length === 0 && (
-                <tr><td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
-                  Aucun fournisseur
-                </td></tr>
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground">
+                    Aucun fournisseur
+                  </td>
+                </tr>
               )}
               {filtered.map((f, idx) => (
                 <tr
@@ -132,8 +151,12 @@ function FournisseursPage() {
                   <td className="px-6 py-4 font-medium">{f.nom}</td>
                   <td className="px-6 py-4 text-muted-foreground">{f.email ?? "—"}</td>
                   <td className="px-6 py-4 text-muted-foreground">{f.telephone ?? "—"}</td>
-                  <td className="px-6 py-4 text-muted-foreground font-mono text-xs">{f.siret ?? "—"}</td>
-                  <td className="px-6 py-4 text-muted-foreground max-w-xs truncate">{f.notes ?? "—"}</td>
+                  <td className="px-6 py-4 text-muted-foreground font-mono text-xs">
+                    {f.siret ?? "—"}
+                  </td>
+                  <td className="px-6 py-4 text-muted-foreground max-w-xs truncate">
+                    {f.notes ?? "—"}
+                  </td>
                   <td className="px-6 py-4 text-right whitespace-nowrap">
                     <Button variant="ghost" size="sm" onClick={() => setEditing(f)}>
                       <Pencil className="h-3.5 w-3.5" />
@@ -152,8 +175,15 @@ function FournisseursPage() {
       {(creating || editing) && (
         <FournisseurDialog
           fournisseur={editing}
-          onClose={() => { setCreating(false); setEditing(null); }}
-          onSaved={() => { fetchData(); setCreating(false); setEditing(null); }}
+          onClose={() => {
+            setCreating(false);
+            setEditing(null);
+          }}
+          onSaved={() => {
+            fetchData();
+            setCreating(false);
+            setEditing(null);
+          }}
         />
       )}
 
@@ -228,33 +258,55 @@ function FournisseurDialog({
         <div className="space-y-4">
           <div className="space-y-2">
             <Label>Nom *</Label>
-            <Input value={form.nom ?? ""} onChange={(e) => setForm({ ...form, nom: e.target.value })} />
+            <Input
+              value={form.nom ?? ""}
+              onChange={(e) => setForm({ ...form, nom: e.target.value })}
+            />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label>Email</Label>
-              <Input type="email" value={form.email ?? ""} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+              <Input
+                type="email"
+                value={form.email ?? ""}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+              />
             </div>
             <div className="space-y-2">
               <Label>Téléphone</Label>
-              <Input value={form.telephone ?? ""} onChange={(e) => setForm({ ...form, telephone: e.target.value })} />
+              <Input
+                value={form.telephone ?? ""}
+                onChange={(e) => setForm({ ...form, telephone: e.target.value })}
+              />
             </div>
           </div>
           <div className="space-y-2">
             <Label>Adresse</Label>
-            <Input value={form.adresse ?? ""} onChange={(e) => setForm({ ...form, adresse: e.target.value })} />
+            <Input
+              value={form.adresse ?? ""}
+              onChange={(e) => setForm({ ...form, adresse: e.target.value })}
+            />
           </div>
           <div className="space-y-2">
             <Label>SIRET</Label>
-            <Input value={form.siret ?? ""} onChange={(e) => setForm({ ...form, siret: e.target.value })} />
+            <Input
+              value={form.siret ?? ""}
+              onChange={(e) => setForm({ ...form, siret: e.target.value })}
+            />
           </div>
           <div className="space-y-2">
             <Label>Notes</Label>
-            <Textarea rows={3} value={form.notes ?? ""} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
+            <Textarea
+              rows={3}
+              value={form.notes ?? ""}
+              onChange={(e) => setForm({ ...form, notes: e.target.value })}
+            />
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Annuler</Button>
+          <Button variant="outline" onClick={onClose}>
+            Annuler
+          </Button>
           <Button onClick={handleSave} disabled={saving}>
             {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />} Enregistrer
           </Button>

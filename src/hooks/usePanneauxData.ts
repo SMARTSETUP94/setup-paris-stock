@@ -89,7 +89,12 @@ export function usePanneauxData(ready: boolean, initialMatiere?: string) {
       items.filter((p) => {
         const ql = debQ.toLowerCase();
         if (ql) {
-          const haystack = [p.matiere_code, p.matiere_libelle, p.typo_nom ?? "", p.matiere_variante ?? ""]
+          const haystack = [
+            p.matiere_code,
+            p.matiere_libelle,
+            p.typo_nom ?? "",
+            p.matiere_variante ?? "",
+          ]
             .join(" ")
             .toLowerCase();
           if (!haystack.includes(ql)) return false;
@@ -126,7 +131,13 @@ export function usePanneauxData(ready: boolean, initialMatiere?: string) {
       const fmtKey = `${p.longueur_mm}x${p.largeur_mm}`;
       let fmt: TreeFormat | undefined = m.formats.find((f) => f.key === fmtKey);
       if (!fmt) {
-        fmt = { key: fmtKey, longueur: p.longueur_mm, largeur: p.largeur_mm, surface: p.surface_m2, panneaux: [] };
+        fmt = {
+          key: fmtKey,
+          longueur: p.longueur_mm,
+          largeur: p.largeur_mm,
+          surface: p.surface_m2,
+          panneaux: [],
+        };
         m.formats.push(fmt);
       }
       fmt.panneaux.push(p);
@@ -144,16 +155,27 @@ export function usePanneauxData(ready: boolean, initialMatiere?: string) {
   }, [filtered]);
 
   return {
-    items, setItems,
-    matieres, typologies, loading,
-    q, setQ,
-    familleFilter, setFamilleFilter,
-    typoFilter, setTypoFilter,
-    matiereFilter, setMatiereFilter,
-    hideInactive, setHideInactive,
-    hideStockZero, setHideStockZero,
-    typologiesFiltered, matieresFiltered,
-    filtered, tree,
+    items,
+    setItems,
+    matieres,
+    typologies,
+    loading,
+    q,
+    setQ,
+    familleFilter,
+    setFamilleFilter,
+    typoFilter,
+    setTypoFilter,
+    matiereFilter,
+    setMatiereFilter,
+    hideInactive,
+    setHideInactive,
+    hideStockZero,
+    setHideStockZero,
+    typologiesFiltered,
+    matieresFiltered,
+    filtered,
+    tree,
     fetchData,
   };
 }

@@ -21,9 +21,15 @@ export function statutBdcMeta(value: StatutBdc | string | null | undefined) {
 
 export function confidenceMeta(c: number | null | undefined) {
   const v = typeof c === "number" ? c : 0;
-  if (v >= 0.9) return { label: `${Math.round(v * 100)}%`, color: "#166534", bg: "rgba(22,101,52,0.10)" };
-  if (v >= 0.7) return { label: `${Math.round(v * 100)}%`, color: "#92400E", bg: "rgba(146,64,14,0.10)" };
-  return { label: c === null || c === undefined ? "—" : `${Math.round(v * 100)}%`, color: "#9F1239", bg: "rgba(159,18,57,0.08)" };
+  if (v >= 0.9)
+    return { label: `${Math.round(v * 100)}%`, color: "#166534", bg: "rgba(22,101,52,0.10)" };
+  if (v >= 0.7)
+    return { label: `${Math.round(v * 100)}%`, color: "#92400E", bg: "rgba(146,64,14,0.10)" };
+  return {
+    label: c === null || c === undefined ? "—" : `${Math.round(v * 100)}%`,
+    color: "#9F1239",
+    bg: "rgba(159,18,57,0.08)",
+  };
 }
 
 export function extractNumeroFromFilename(filename: string): string | null {

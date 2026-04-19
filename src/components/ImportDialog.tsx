@@ -1,5 +1,11 @@
 import { useState, useRef } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Loader2, Upload, FileSpreadsheet, X, AlertCircle, CheckCircle2 } from "lucide-react";
 import { parseFile } from "@/lib/import-parsers";
@@ -21,8 +27,13 @@ interface ImportDialogProps<T> {
   title: string;
   description: string;
   expectedColumns: string[];
-  validateRow: (raw: Record<string, string>, index: number) => Promise<{ data: T | null; errors: string[]; isDuplicate: boolean }>;
-  importRows: (rows: ImportRow<T>[]) => Promise<{ inserted: number; updated: number; skipped: number; errors: number }>;
+  validateRow: (
+    raw: Record<string, string>,
+    index: number,
+  ) => Promise<{ data: T | null; errors: string[]; isDuplicate: boolean }>;
+  importRows: (
+    rows: ImportRow<T>[],
+  ) => Promise<{ inserted: number; updated: number; skipped: number; errors: number }>;
   columnsPreview: { key: string; label: string; render?: (data: T) => React.ReactNode }[];
 }
 
@@ -118,7 +129,15 @@ export function ImportDialog<T>({
   };
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) { reset(); onClose(); } }}>
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        if (!o) {
+          reset();
+          onClose();
+        }
+      }}
+    >
       <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
@@ -127,7 +146,10 @@ export function ImportDialog<T>({
 
         {!file && (
           <div
-            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragOver(true);
+            }}
             onDragLeave={() => setDragOver(false)}
             onDrop={(e) => {
               e.preventDefault();
@@ -138,7 +160,7 @@ export function ImportDialog<T>({
             onClick={() => inputRef.current?.click()}
             className={cn(
               "border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-colors",
-              dragOver ? "border-primary bg-primary/5" : "border-border hover:bg-muted/50"
+              dragOver ? "border-primary bg-primary/5" : "border-border hover:bg-muted/50",
             )}
           >
             <Upload className="h-8 w-8 mx-auto mb-3 text-muted-foreground" />
@@ -195,7 +217,9 @@ export function ImportDialog<T>({
                   <tr>
                     <th className="text-left px-3 py-2 font-medium w-12">#</th>
                     {columnsPreview.map((c) => (
-                      <th key={c.key} className="text-left px-3 py-2 font-medium">{c.label}</th>
+                      <th key={c.key} className="text-left px-3 py-2 font-medium">
+                        {c.label}
+                      </th>
                     ))}
                     <th className="text-left px-3 py-2 font-medium">État</th>
                     <th className="text-left px-3 py-2 font-medium w-40">Action</th>
@@ -209,7 +233,7 @@ export function ImportDialog<T>({
                         "border-t border-border",
                         r.status === "error" && "bg-destructive/5",
                         r.status === "duplicate" && "bg-warning/5",
-                        r.status === "new" && "bg-success/5"
+                        r.status === "new" && "bg-success/5",
                       )}
                     >
                       <td className="px-3 py-2 text-muted-foreground">{r.index + 1}</td>
@@ -233,7 +257,9 @@ export function ImportDialog<T>({
                         <select
                           value={r.action}
                           disabled={r.status === "error"}
-                          onChange={(e) => setRowAction(r.index, e.target.value as ImportRow<T>["action"])}
+                          onChange={(e) =>
+                            setRowAction(r.index, e.target.value as ImportRow<T>["action"])
+                          }
                           className="text-xs border border-border rounded px-2 py-1 bg-card disabled:opacity-50"
                         >
                           {r.status === "new" && <option value="create">Créer</option>}
@@ -248,10 +274,20 @@ export function ImportDialog<T>({
             </div>
 
             <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
-              <Button variant="outline" onClick={() => { reset(); onClose(); }} disabled={importing}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  reset();
+                  onClose();
+                }}
+                disabled={importing}
+              >
                 Annuler
               </Button>
-              <Button onClick={handleImport} disabled={importing || rows.every((r) => r.action === "skip")}>
+              <Button
+                onClick={handleImport}
+                disabled={importing || rows.every((r) => r.action === "skip")}
+              >
                 {importing && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Valider l'import
               </Button>

@@ -15,9 +15,21 @@ export function statutMeta(value: StatutAffaire | string | null | undefined) {
 }
 
 export const PERMISSIONS: { value: PermissionAcces; label: string; description: string }[] = [
-  { value: "lecture", label: "Lecture seule", description: "Le tiers peut consulter le stock alloué à l'affaire." },
-  { value: "sortie", label: "Sortie uniquement", description: "Le tiers peut déclarer des sorties sur les panneaux alloués." },
-  { value: "entree_sortie", label: "Entrée + Sortie", description: "Le tiers peut déclarer entrées et sorties sur l'affaire." },
+  {
+    value: "lecture",
+    label: "Lecture seule",
+    description: "Le tiers peut consulter le stock alloué à l'affaire.",
+  },
+  {
+    value: "sortie",
+    label: "Sortie uniquement",
+    description: "Le tiers peut déclarer des sorties sur les panneaux alloués.",
+  },
+  {
+    value: "entree_sortie",
+    label: "Entrée + Sortie",
+    description: "Le tiers peut déclarer entrées et sorties sur l'affaire.",
+  },
 ];
 
 export function permissionLabel(value: PermissionAcces | string | null | undefined) {
@@ -60,7 +72,9 @@ export function formatDateFr(value: string | null | undefined) {
 export function formatDateTimeFr(value: string | null | undefined) {
   if (!value) return "—";
   try {
-    return new Intl.DateTimeFormat("fr-FR", { dateStyle: "short", timeStyle: "short" }).format(new Date(value));
+    return new Intl.DateTimeFormat("fr-FR", { dateStyle: "short", timeStyle: "short" }).format(
+      new Date(value),
+    );
   } catch {
     return "—";
   }

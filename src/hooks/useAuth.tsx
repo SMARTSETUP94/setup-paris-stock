@@ -55,11 +55,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   async function fetchProfile(userId: string) {
-    const { data } = await supabase
+    let { data } = await supabase
       .from("profiles")
       .select("id, email, nom_complet, role, actif")
       .eq("id", userId)
       .maybeSingle();
+    if (!data) {
+      const { data: ensured } = await supabase.rpc("ensure_current_profile");
+      if (ensured) {
+        data = {
+          id: ensured.id,
+          email: ensured.email,
+          nom_complet: ensured.nom_complet,
+          role: ensured.role,
+          actif: ensured.actif,
+        };
+      }
+    }
     if (data) setProfile(data as Profile);
   }
 

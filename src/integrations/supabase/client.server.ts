@@ -5,17 +5,23 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
 
-function createSupabaseAdminClient() {
-  const SUPABASE_URL = process.env.SUPABASE_URL;
-  const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+function getSupabaseServerEnv() {
+  return {
+    supabaseUrl: process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL,
+    serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  };
+}
 
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+function createSupabaseAdminClient() {
+  const { supabaseUrl, serviceRoleKey } = getSupabaseServerEnv();
+
+  if (!supabaseUrl || !serviceRoleKey) {
     throw new Error(
-      "Missing Supabase server environment variables. Ensure SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are set.",
+      "Les opérations d'administration ne sont pas disponibles dans cette preview. Testez-les sur l'URL publiée.",
     );
   }
 
-  return createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+  return createClient<Database>(supabaseUrl, serviceRoleKey, {
     auth: {
       storage: undefined,
       persistSession: false,
@@ -24,14 +30,35 @@ function createSupabaseAdminClient() {
   });
 }
 
-let _supabaseAdmin: ReturnType<typeof createSupabaseAdminClient> | undefined;
+type SupabaseAdminClient = ReturnType<typeof createSupabaseAdminClient>;
+
+let _supabaseAdmin: SupabaseAdminClient | undefined;
+
+export function getSupabaseAdminClient(): SupabaseAdminClient | null {
+  const { supabaseUrl, serviceRoleKey } = getSupabaseServerEnv();
+  if (!supabaseUrl || !serviceRoleKey) return null;
+
+  if (!_supabaseAdmin) {
+    _supabaseAdmin = createSupabaseAdminClient();
+  }
+
+  return _supabaseAdmin;
+}
+
+export function requireSupabaseAdminClient(feature = "Cette action"): SupabaseAdminClient {
+  const client = getSupabaseAdminClient();
+  if (!client) {
+    throw new Error(`${feature} n'est pas disponible dans cette preview. Testez sur l'URL publiée.`);
+  }
+  return client;
+}
 
 // Server-side Supabase client with service role - bypasses RLS
 // SECURITY: Only use this for trusted server-side operations, never expose to client code
 // Import like: import { supabaseAdmin } from "@/integrations/supabase/client.server";
-export const supabaseAdmin = new Proxy({} as ReturnType<typeof createSupabaseAdminClient>, {
+export const supabaseAdmin = new Proxy({} as SupabaseAdminClient, {
   get(_, prop, receiver) {
-    if (!_supabaseAdmin) _supabaseAdmin = createSupabaseAdminClient();
-    return Reflect.get(_supabaseAdmin, prop, receiver);
+    const client = requireSupabaseAdminClient();
+    return Reflect.get(client, prop, receiver);
   },
 });

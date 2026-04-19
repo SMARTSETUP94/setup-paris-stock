@@ -27,8 +27,7 @@ import { formatEuro, formatNumber } from "@/lib/familles";
 import type { Database } from "@/integrations/supabase/types";
 
 type Affaire = Database["public"]["Tables"]["affaires"]["Row"] & {
-  responsable?: { nom_complet: string | null; email: string } | null;
-  client?: { nom: string; actif: boolean } | null;
+  charge?: { nom_complet: string | null; email: string } | null;
 };
 type Acces = Database["public"]["Tables"]["affaire_acces"]["Row"];
 
@@ -58,13 +57,13 @@ type MvtRecent = {
   panneau?: { longueur_mm: number; largeur_mm: number; matiere?: { code: string; libelle: string } | null } | null;
 };
 
-export const Route = createFileRoute("/_app/affaires/$numero")({
+export const Route = createFileRoute("/_app/affaires/$code")({
   head: () => ({ meta: [{ title: "Affaire — Setup Stock" }] }),
   component: AffaireDetail,
 });
 
 function AffaireDetail() {
-  const { numero } = Route.useParams();
+  const { code } = Route.useParams();
   const navigate = useNavigate();
   const { ready } = useAdminGuard();
   const { user, profile } = useAuth();
@@ -83,16 +82,16 @@ function AffaireDetail() {
     setLoading(true);
     const { data } = await supabase
       .from("affaires")
-      .select("*, responsable:profiles!affaires_responsable_id_fkey(nom_complet, email), client:clients!affaires_client_id_fkey(nom, actif)")
-      .eq("numero", numero)
+      .select("*, charge:profiles!affaires_charge_affaires_id_fkey(nom_complet, email)")
+      .eq("code_chantier", code)
       .maybeSingle();
     if (!data) {
       setAffaire(null);
       setLoading(false);
       return;
     }
-    setAffaire(data as Affaire);
-    setNotes((data as Affaire).notes ?? "");
+    setAffaire(data as unknown as Affaire);
+    setNotes((data as { notes: string | null }).notes ?? "");
     setLoading(false);
   }
 
@@ -107,7 +106,7 @@ function AffaireDetail() {
 
   useEffect(() => {
     if (ready) void loadAffaire();
-  }, [ready, numero]);
+  }, [ready, code]);
 
   useEffect(() => {
     if (affaire?.id) void loadAcces(affaire.id);
@@ -210,26 +209,31 @@ function AffaireDetail() {
 
   async function dupliquerAffaire() {
     if (!affaire) return;
-    // Trouve le prochain numéro 4 chiffres disponible
+    // Suggère un nouveau code_chantier basé sur le max numéro + 1
     const { data: rows } = await supabase.from("affaires").select("numero");
-    const nums = ((rows ?? []) as { numero: string }[])
+    const nums = ((rows ?? []) as { numero: string | null }[])
       .map((r) => r.numero)
-      .filter((n) => /^\d{4}$/.test(n))
-      .map((n) => parseInt(n, 10));
-    const nextNum = String((nums.length ? Math.max(...nums) : 0) + 1).padStart(4, "0");
+      .filter((n): n is string => !!n)
+      .map((n) => parseInt(n, 10))
+      .filter((n) => Number.isFinite(n));
+    const nextNum = nums.length ? Math.max(...nums) + 1 : 1;
+    const newCode = `${nextNum}_${affaire.nom} (copie)`.slice(0, 100);
     const { data, error } = await supabase.from("affaires").insert({
-      numero: nextNum,
+      code_chantier: newCode,
       nom: `${affaire.nom} (copie)`,
-      client_id: affaire.client_id,
+      client: affaire.client,
+      adresse: affaire.adresse,
+      charge_affaires_id: affaire.charge_affaires_id,
+      charge_affaires_libre: affaire.charge_affaires_libre,
+      code_interne: affaire.code_interne,
       statut: "devis",
-      responsable_id: affaire.responsable_id,
       budget_panneaux_ht: affaire.budget_panneaux_ht,
       notes: affaire.notes,
     }).select().single();
     if (error) toast.error(error.message);
     else if (data) {
       toast.success("Affaire dupliquée");
-      navigate({ to: "/affaires/$numero", params: { numero: (data as Affaire).numero } });
+      navigate({ to: "/affaires/$code", params: { code: (data as { code_chantier: string }).code_chantier } });
     }
   }
 
@@ -275,15 +279,21 @@ function AffaireDetail() {
       {/* Entête figée */}
       <div className="mb-8 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
         <div className="min-w-0">
-          <p className="eyebrow mb-3">Affaire n° {affaire.numero}</p>
+          <p className="eyebrow mb-3 font-mono">{affaire.code_chantier}{affaire.code_interne ? ` · ${affaire.code_interne}` : ""}</p>
           <h1 className="text-3xl md:text-4xl truncate">{affaire.nom}</h1>
           <p className="mt-3 text-sm text-muted-foreground">
-            {affaire.client?.nom ?? "Client non renseigné"}
+            {affaire.client}
             {" • "}
-            {affaire.responsable?.nom_complet ?? affaire.responsable?.email ?? "Sans responsable"}
+            {affaire.charge?.nom_complet ?? affaire.charge?.email ?? affaire.charge_affaires_libre ?? "Sans chargé d'affaires"}
+            {affaire.charge_affaires_libre && !affaire.charge_affaires_id && (
+              <span className="ml-1 inline-flex items-center gap-0.5 text-xs text-amber-700">⚠ non matché</span>
+            )}
             {" • "}
             {formatDateFr(affaire.date_debut)} → {formatDateFr(affaire.date_fin_prevue)}
           </p>
+          {affaire.adresse && (
+            <p className="mt-1 text-xs text-muted-foreground">{affaire.adresse}</p>
+          )}
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <StatutBadge value={affaire.statut} />
@@ -550,8 +560,8 @@ function AffaireDetail() {
         onOpenChange={setEditOpen}
         initial={affaire}
         onSaved={(a) => {
-          if (a.numero !== affaire.numero) {
-            navigate({ to: "/affaires/$numero", params: { numero: a.numero } });
+          if (a.code_chantier !== affaire.code_chantier) {
+            navigate({ to: "/affaires/$code", params: { code: a.code_chantier } });
           } else {
             void loadAffaire();
           }

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Upload, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminGuard, AdminLoader, useDebounced } from "@/hooks/useAdminGuard";
 import { PageHeader } from "@/components/PageHeader";
@@ -11,13 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { StatutBadge } from "@/components/StatutBadge";
 import { AffaireFormDialog } from "@/components/AffaireFormDialog";
+import { AffairesImportDialog } from "@/components/AffairesImportDialog";
 import { STATUTS, formatDateFr } from "@/lib/affaires";
-import { formatEuro } from "@/lib/familles";
 import type { Database } from "@/integrations/supabase/types";
 
 type Affaire = Database["public"]["Tables"]["affaires"]["Row"] & {
-  responsable?: { nom_complet: string | null; email: string } | null;
-  client?: { nom: string; actif: boolean } | null;
+  charge?: { nom_complet: string | null; email: string } | null;
 };
 
 export const Route = createFileRoute("/_app/affaires/")({
@@ -32,14 +31,17 @@ function AffairesIndex() {
   const [search, setSearch] = useState("");
   const dq = useDebounced(search, 250);
   const [statut, setStatut] = useState<string>("all");
+  const [chargeFilter, setChargeFilter] = useState<string>("all");
   const [openCreate, setOpenCreate] = useState(false);
+  const [openImport, setOpenImport] = useState(false);
 
   async function load() {
     setLoading(true);
     const { data } = await supabase
       .from("affaires")
-      .select("*, responsable:profiles!affaires_responsable_id_fkey(nom_complet, email), client:clients!affaires_client_id_fkey(nom, actif)")
-      .order("date_debut", { ascending: false, nullsFirst: false });
+      .select("*, charge:profiles!affaires_charge_affaires_id_fkey(nom_complet, email)")
+      .order("numero", { ascending: false, nullsFirst: false })
+      .order("created_at", { ascending: false });
     setRows((data as Affaire[]) ?? []);
     setLoading(false);
   }
@@ -48,18 +50,38 @@ function AffairesIndex() {
     if (ready) void load();
   }, [ready]);
 
+  const chargesOptions = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const r of rows) {
+      if (r.charge_affaires_id && r.charge) {
+        map.set(r.charge_affaires_id, r.charge.nom_complet ?? r.charge.email);
+      }
+    }
+    return Array.from(map.entries()).map(([id, label]) => ({ id, label }));
+  }, [rows]);
+
   const filtered = useMemo(() => {
     const q = dq.trim().toLowerCase();
     return rows.filter((r) => {
       if (statut !== "all" && r.statut !== statut) return false;
+      if (chargeFilter !== "all") {
+        if (chargeFilter === "__libre__") {
+          if (!r.charge_affaires_libre) return false;
+        } else if (chargeFilter === "__none__") {
+          if (r.charge_affaires_id || r.charge_affaires_libre) return false;
+        } else if (r.charge_affaires_id !== chargeFilter) return false;
+      }
       if (!q) return true;
-      return (
-        r.numero.toLowerCase().includes(q) ||
-        r.nom.toLowerCase().includes(q) ||
-        (r.client?.nom ?? "").toLowerCase().includes(q)
-      );
+      const haystack = [
+        r.code_chantier,
+        r.nom,
+        r.client,
+        r.adresse ?? "",
+        r.numero ?? "",
+      ].join(" ").toLowerCase();
+      return haystack.includes(q);
     });
-  }, [rows, dq, statut]);
+  }, [rows, dq, statut, chargeFilter]);
 
   if (!ready) return <AdminLoader />;
 
@@ -70,93 +92,115 @@ function AffairesIndex() {
         title="Affaires"
         description="Pilotez chaque chantier : budget, statut, mouvements et accès tiers."
         actions={
-          <Button onClick={() => setOpenCreate(true)}>
-            <Plus className="h-4 w-4" /> Nouvelle affaire
-          </Button>
+          <>
+            <Button variant="outline" onClick={() => setOpenImport(true)}>
+              <Upload className="h-4 w-4" /> Importer un CSV
+            </Button>
+            <Button onClick={() => setOpenCreate(true)}>
+              <Plus className="h-4 w-4" /> Nouvelle affaire
+            </Button>
+          </>
         }
       />
 
       <Card className="p-4 mb-6">
-        <div className="flex flex-col md:flex-row gap-3">
-          <div className="relative flex-1">
+        <div className="grid gap-3 md:grid-cols-[1fr_180px_220px]">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               className="pl-9"
-              placeholder="Rechercher par numéro, nom ou client…"
+              placeholder="Rechercher code, nom, client, adresse…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
           <Select value={statut} onValueChange={setStatut}>
-            <SelectTrigger className="md:w-48"><SelectValue /></SelectTrigger>
+            <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tous statuts</SelectItem>
               {STATUTS.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
             </SelectContent>
           </Select>
+          <Select value={chargeFilter} onValueChange={setChargeFilter}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tous chargés d'affaires</SelectItem>
+              <SelectItem value="__none__">— Aucun</SelectItem>
+              <SelectItem value="__libre__">Texte libre uniquement</SelectItem>
+              {chargesOptions.map((c) => (
+                <SelectItem key={c.id} value={c.id}>{c.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </Card>
 
-      <Card className="overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Numéro</TableHead>
-              <TableHead>Nom</TableHead>
-              <TableHead>Client</TableHead>
-              <TableHead>Responsable</TableHead>
-              <TableHead>Statut</TableHead>
-              <TableHead>Début</TableHead>
-              <TableHead>Fin prévue</TableHead>
-              <TableHead className="text-right">Budget HT</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Chargement…</TableCell></TableRow>
-            ) : filtered.length === 0 ? (
-              <TableRow><TableCell colSpan={8} className="text-center py-8 text-muted-foreground">Aucune affaire</TableCell></TableRow>
-            ) : (
-              filtered.map((r, idx) => (
-                <TableRow
-                  key={r.id}
-                  className={idx % 2 === 1 ? "bg-[#FAFAFA]" : ""}
-                >
-                  <TableCell>
-                    <Link
-                      to="/affaires/$numero"
-                      params={{ numero: r.numero }}
-                      className="font-mono text-xs px-2 py-0.5 rounded bg-muted hover:bg-foreground/10"
-                    >
-                      {r.numero}
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    <Link to="/affaires/$numero" params={{ numero: r.numero }} className="font-medium hover:underline">
-                      {r.nom}
-                    </Link>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {r.client?.nom ?? "—"}
-                    {r.client && !r.client.actif && (
-                      <span className="ml-2 inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium" style={{ color: "#6B7280", backgroundColor: "rgba(107,114,128,0.10)" }}>Inactif</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {r.responsable?.nom_complet ?? r.responsable?.email ?? "—"}
-                  </TableCell>
-                  <TableCell><StatutBadge value={r.statut} /></TableCell>
-                  <TableCell className="text-muted-foreground">{formatDateFr(r.date_debut)}</TableCell>
-                  <TableCell className="text-muted-foreground">{formatDateFr(r.date_fin_prevue)}</TableCell>
-                  <TableCell className="text-right font-medium">{formatEuro(r.budget_panneaux_ht)}</TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+      <Card className="overflow-hidden p-0">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Code chantier</TableHead>
+                <TableHead>Nom</TableHead>
+                <TableHead>Client</TableHead>
+                <TableHead>Chargé d'affaires</TableHead>
+                <TableHead>Statut</TableHead>
+                <TableHead>Début</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Chargement…</TableCell></TableRow>
+              ) : filtered.length === 0 ? (
+                <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Aucune affaire</TableCell></TableRow>
+              ) : (
+                filtered.map((r, idx) => (
+                  <TableRow key={r.id} className={idx % 2 === 1 ? "bg-[#FAFAFA]" : ""}>
+                    <TableCell>
+                      <Link
+                        to="/affaires/$code"
+                        params={{ code: r.code_chantier }}
+                        className="font-mono text-xs px-2 py-0.5 rounded bg-muted hover:bg-foreground/10 inline-block max-w-[220px] truncate align-middle"
+                        title={r.code_chantier}
+                      >
+                        {r.code_chantier}
+                      </Link>
+                    </TableCell>
+                    <TableCell className="max-w-[260px]">
+                      <Link to="/affaires/$code" params={{ code: r.code_chantier }} className="font-medium hover:underline truncate block" title={r.nom}>
+                        {r.nom}
+                      </Link>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground max-w-[200px] truncate" title={r.client}>
+                      {r.client}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground max-w-[200px]">
+                      {r.charge ? (
+                        <span className="truncate block" title={r.charge.nom_complet ?? r.charge.email}>
+                          {r.charge.nom_complet ?? r.charge.email}
+                        </span>
+                      ) : r.charge_affaires_libre ? (
+                        <span className="inline-flex items-center gap-1 text-xs text-amber-700" title="Non matché à un profil">
+                          <AlertTriangle className="h-3 w-3" /> {r.charge_affaires_libre}
+                        </span>
+                      ) : (
+                        <span className="text-xs">—</span>
+                      )}
+                    </TableCell>
+                    <TableCell><StatutBadge value={r.statut} /></TableCell>
+                    <TableCell className="text-muted-foreground">{formatDateFr(r.date_debut)}</TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </Card>
 
+      <p className="text-xs text-muted-foreground mt-3">{filtered.length} affaire(s) affichée(s)</p>
+
       <AffaireFormDialog open={openCreate} onOpenChange={setOpenCreate} onSaved={() => void load()} />
+      <AffairesImportDialog open={openImport} onClose={() => setOpenImport(false)} onImported={() => void load()} />
     </div>
   );
 }

@@ -51,7 +51,12 @@ export const listUsers = createServerFn({ method: "POST" })
 
 export const inviteUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { email: string; nom_complet?: string; role: "admin" | "tiers" }) => {
+  .inputValidator((input: {
+    email: string;
+    nom_complet?: string;
+    role: "admin" | "tiers";
+    redirectTo?: string;
+  }) => {
     const email = input.email?.trim().toLowerCase();
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       throw new Error("Email invalide");
@@ -63,17 +68,19 @@ export const inviteUser = createServerFn({ method: "POST" })
       email,
       nom_complet: input.nom_complet?.trim() || null,
       role: input.role,
+      redirectTo: input.redirectTo?.trim() || null,
     };
   })
   .handler(async ({ data, context }) => {
     await assertAdmin((context as any).supabase, (context as any).userId);
 
-    const redirectTo = `${process.env.SITE_URL ?? ""}/reset-password`;
+    const redirectTo =
+      data.redirectTo ?? `${process.env.SITE_URL ?? ""}/reset-password`;
     const { data: invited, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(
       data.email,
       {
         data: { nom_complet: data.nom_complet ?? data.email },
-        redirectTo: redirectTo || undefined,
+        redirectTo: redirectTo && redirectTo.startsWith("http") ? redirectTo : undefined,
       },
     );
     if (error) throw new Error(error.message);
@@ -96,19 +103,22 @@ export const inviteUser = createServerFn({ method: "POST" })
 
 export const resendInvitation = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { email: string }) => {
+  .inputValidator((input: { email: string; redirectTo?: string }) => {
     const email = input.email?.trim().toLowerCase();
     if (!email) throw new Error("Email requis");
-    return { email };
+    return { email, redirectTo: input.redirectTo?.trim() || null };
   })
   .handler(async ({ data, context }) => {
     await assertAdmin((context as any).supabase, (context as any).userId);
 
-    const redirectTo = `${process.env.SITE_URL ?? ""}/reset-password`;
+    const redirectTo =
+      data.redirectTo ?? `${process.env.SITE_URL ?? ""}/reset-password`;
     const { error } = await supabaseAdmin.auth.admin.generateLink({
       type: "recovery",
       email: data.email,
-      options: { redirectTo: redirectTo || undefined },
+      options: {
+        redirectTo: redirectTo && redirectTo.startsWith("http") ? redirectTo : undefined,
+      },
     });
     if (error) throw new Error(error.message);
     return { success: true };

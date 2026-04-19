@@ -91,6 +91,7 @@ function MatieresPage() {
       <div className="mb-4 flex gap-2 text-xs">
         <Link to="/catalogue/matieres" className="px-3 py-1.5 rounded-md bg-foreground text-background font-medium">Matières</Link>
         <Link to="/catalogue/panneaux" className="px-3 py-1.5 rounded-md hover:bg-muted text-muted-foreground">Panneaux</Link>
+        <Link to="/catalogue/etiquettes" className="px-3 py-1.5 rounded-md hover:bg-muted text-muted-foreground">Étiquettes QR</Link>
       </div>
 
       <div className="mb-6 grid gap-3 md:grid-cols-[1fr_180px_140px]">

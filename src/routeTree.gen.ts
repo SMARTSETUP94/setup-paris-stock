@@ -12,6 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
+import { Route as AppFournisseursRouteImport } from './routes/_app.fournisseurs'
+import { Route as AppCataloguePanneauxRouteImport } from './routes/_app.catalogue.panneaux'
+import { Route as AppCatalogueMatieresRouteImport } from './routes/_app.catalogue.matieres'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -27,27 +30,68 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppFournisseursRoute = AppFournisseursRouteImport.update({
+  id: '/fournisseurs',
+  path: '/fournisseurs',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCataloguePanneauxRoute = AppCataloguePanneauxRouteImport.update({
+  id: '/catalogue/panneaux',
+  path: '/catalogue/panneaux',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppCatalogueMatieresRoute = AppCatalogueMatieresRouteImport.update({
+  id: '/catalogue/matieres',
+  path: '/catalogue/matieres',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/login': typeof LoginRoute
+  '/fournisseurs': typeof AppFournisseursRoute
+  '/catalogue/matieres': typeof AppCatalogueMatieresRoute
+  '/catalogue/panneaux': typeof AppCataloguePanneauxRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
+  '/fournisseurs': typeof AppFournisseursRoute
   '/': typeof AppIndexRoute
+  '/catalogue/matieres': typeof AppCatalogueMatieresRoute
+  '/catalogue/panneaux': typeof AppCataloguePanneauxRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
+  '/_app/fournisseurs': typeof AppFournisseursRoute
   '/_app/': typeof AppIndexRoute
+  '/_app/catalogue/matieres': typeof AppCatalogueMatieresRoute
+  '/_app/catalogue/panneaux': typeof AppCataloguePanneauxRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/fournisseurs'
+    | '/catalogue/matieres'
+    | '/catalogue/panneaux'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/'
-  id: '__root__' | '/_app' | '/login' | '/_app/'
+  to:
+    | '/login'
+    | '/fournisseurs'
+    | '/'
+    | '/catalogue/matieres'
+    | '/catalogue/panneaux'
+  id:
+    | '__root__'
+    | '/_app'
+    | '/login'
+    | '/_app/fournisseurs'
+    | '/_app/'
+    | '/_app/catalogue/matieres'
+    | '/_app/catalogue/panneaux'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -78,15 +122,42 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/fournisseurs': {
+      id: '/_app/fournisseurs'
+      path: '/fournisseurs'
+      fullPath: '/fournisseurs'
+      preLoaderRoute: typeof AppFournisseursRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/catalogue/panneaux': {
+      id: '/_app/catalogue/panneaux'
+      path: '/catalogue/panneaux'
+      fullPath: '/catalogue/panneaux'
+      preLoaderRoute: typeof AppCataloguePanneauxRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/catalogue/matieres': {
+      id: '/_app/catalogue/matieres'
+      path: '/catalogue/matieres'
+      fullPath: '/catalogue/matieres'
+      preLoaderRoute: typeof AppCatalogueMatieresRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
+  AppFournisseursRoute: typeof AppFournisseursRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppCatalogueMatieresRoute: typeof AppCatalogueMatieresRoute
+  AppCataloguePanneauxRoute: typeof AppCataloguePanneauxRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppFournisseursRoute: AppFournisseursRoute,
   AppIndexRoute: AppIndexRoute,
+  AppCatalogueMatieresRoute: AppCatalogueMatieresRoute,
+  AppCataloguePanneauxRoute: AppCataloguePanneauxRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

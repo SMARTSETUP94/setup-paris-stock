@@ -104,8 +104,6 @@ function PanneauxPage() {
 
   useEffect(() => { if (ready) fetchData(); }, [ready]);
 
-  if (!ready) return <AdminLoader />;
-
   const filtered = useMemo(() => items.filter((p) => {
     const ql = debQ.toLowerCase();
     if (ql && !p.matiere_code.toLowerCase().includes(ql) && !p.matiere_libelle.toLowerCase().includes(ql)) return false;
@@ -115,6 +113,9 @@ function PanneauxPage() {
     if (hideStockZero && p.auto_masque_si_zero && p.stock_actuel <= 0) return false;
     return true;
   }), [items, debQ, familleFilter, matiereFilter, hideInactive, hideStockZero]);
+
+  if (!ready) return <AdminLoader />;
+
 
   async function toggleActif(p: CatRow) {
     const newActif = !p.actif;

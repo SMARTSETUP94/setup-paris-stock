@@ -235,19 +235,19 @@ function DashboardPage() {
   return (
     <div className="max-w-6xl space-y-16 md:space-y-24">
       {/* Hero éditorial — style Setup Paris */}
-      <header className="relative pt-4 md:pt-8">
-        <p className="section-marker mb-6 flex items-center gap-3">
+      <header className="relative pt-2 md:pt-8">
+        <p className="section-marker mb-4 md:mb-6 flex items-center gap-2 md:gap-3 text-[10px] md:text-xs">
           <span>— 01</span>
-          <span className="h-px flex-1 max-w-[120px] bg-primary/40" />
-          <span className="text-muted-foreground">Setup Paris · Stock atelier</span>
+          <span className="h-px flex-1 max-w-[80px] md:max-w-[120px] bg-primary/40" />
+          <span className="text-muted-foreground truncate">Setup Paris · Stock atelier</span>
         </p>
-        <h1 className="text-5xl md:text-7xl lg:text-[88px] tracking-tight max-w-4xl">
+        <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-[88px] leading-[1.05] tracking-tight max-w-4xl">
           Pilotage du{" "}
           <span className="text-muted-foreground/60">stock panneaux</span>
           <br />
           en temps réel.
         </h1>
-        <p className="mt-6 max-w-xl text-base md:text-lg text-muted-foreground">
+        <p className="mt-4 md:mt-6 max-w-xl text-sm md:text-lg text-muted-foreground">
           Suivi continu des affaires, bons de commande et mouvements — toutes les données de
           l'atelier en un coup d'œil.
         </p>
@@ -381,6 +381,7 @@ function DashboardPage() {
 
       {/* Mouvements récents */}
       <section>
+        <p className="section-marker mb-6">— 06 · Mouvements récents</p>
         <RecentMouvementsCard
           mouvements={mouvements}
           loading={loadingData}

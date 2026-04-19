@@ -395,14 +395,14 @@ function InviteDialog({
 }) {
   const [email, setEmail] = useState("");
   const [nomComplet, setNomComplet] = useState("");
-  const [role, setRole] = useState<"admin" | "tiers">("tiers");
+  const [role, setRole] = useState<AppRole>("mobile");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (!open) {
       setEmail("");
       setNomComplet("");
-      setRole("tiers");
+      setRole("mobile");
     }
   }, [open]);
 

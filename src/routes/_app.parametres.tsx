@@ -156,14 +156,25 @@ function UsersTab() {
     }
   }
 
-  async function handleChangeRole(u: UserRow, role: "admin" | "tiers") {
+  function requestRoleChange(u: UserRow, role: AppRole) {
     if (u.role === role) return;
+    setConfirmRole({ user: u, newRole: role });
+  }
+
+  async function confirmRoleChange() {
+    if (!confirmRole) return;
+    setUpdatingRole(true);
     try {
-      await setUserRole({ data: { user_id: u.id, role } });
-      toast.success("Rôle mis à jour");
+      await setUserRole({ data: { user_id: confirmRole.user.id, role: confirmRole.newRole } });
+      toast.success("Rôle mis à jour", {
+        description: `${confirmRole.user.email} est désormais ${ROLE_LABELS[confirmRole.newRole]}.`,
+      });
+      setConfirmRole(null);
       void refresh();
     } catch (e) {
       toast.error("Action impossible", { description: e instanceof Error ? e.message : String(e) });
+    } finally {
+      setUpdatingRole(false);
     }
   }
 

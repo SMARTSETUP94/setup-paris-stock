@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { FAMILLES, UNITES, type Famille, type UniteStock } from "@/lib/familles";
+import { useFamilles } from "@/hooks/useFamilles";
 import { autoMatiereCode, autoMatiereLibelle, type Typologie } from "@/lib/typologies";
 import { CatalogueSubnav } from "./_app.catalogue.typologies";
 
@@ -50,6 +51,7 @@ type Matiere = Tables<"matieres">;
 function MatieresPage() {
   const { ready } = useAdminGuard();
   const navigate = useNavigate();
+  const { familles } = useFamilles();
   const [items, setItems] = useState<Matiere[]>([]);
   const [typologies, setTypologies] = useState<Typologie[]>([]);
   const [loading, setLoading] = useState(true);
@@ -185,7 +187,7 @@ function MatieresPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Toutes familles</SelectItem>
-            {FAMILLES.map((f) => (
+            {familles.map((f) => (
               <SelectItem key={f.value} value={f.value}>
                 {f.label}
               </SelectItem>
@@ -467,6 +469,7 @@ function MatiereDialog({
   onSaved: () => void;
   onTypologiesRefresh: () => Promise<void>;
 }) {
+  const { familles } = useFamilles();
   const initialTypo = matiere
     ? (typologies.find((t) => t.id === matiere.typologie_id) ?? null)
     : null;
@@ -595,7 +598,7 @@ function MatiereDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {FAMILLES.map((f) => (
+                {familles.map((f) => (
                   <SelectItem key={f.value} value={f.value}>
                     {f.label}
                   </SelectItem>
@@ -638,7 +641,7 @@ function MatiereDialog({
             {createTypo && (
               <Card className="p-3 space-y-2 bg-muted/30">
                 <p className="eyebrow text-xs">
-                  Nouvelle typologie · {FAMILLES.find((f) => f.value === famille)?.label}
+                  Nouvelle typologie · {familles.find((f) => f.value === famille)?.label}
                 </p>
                 <Input
                   placeholder="Nom (ex: Contreplaqué)"

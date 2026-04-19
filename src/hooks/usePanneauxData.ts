@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useDebounced } from "@/hooks/useAdminGuard";
+import { useStockRealtime } from "@/hooks/useStockRealtime";
 import type { Typologie } from "@/lib/typologies";
 import type { CatRow, Matiere, TreeMatiere, TreeFormat } from "@/components/panneaux/types";
 

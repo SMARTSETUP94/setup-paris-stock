@@ -79,17 +79,44 @@ export const inviteUser = createServerFn({ method: "POST" })
     await assertAdmin((context as AuthedContext).supabase, (context as AuthedContext).userId);
 
     const redirectTo = data.redirectTo ?? `${process.env.SITE_URL ?? ""}/reset-password`;
-    const { data: invited, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(data.email, {
-      data: { nom_complet: data.nom_complet ?? data.email },
-      redirectTo: redirectTo && redirectTo.startsWith("http") ? redirectTo : undefined,
-    });
-    if (error) throw new Error(error.message);
-    if (!invited?.user) throw new Error("Invitation échouée");
+    const finalRedirect = redirectTo && redirectTo.startsWith("http") ? redirectTo : undefined;
 
-    // Crée / met à jour le profil avec le bon rôle
-    await supabaseAdmin.from("profiles").upsert(
+    // 1. Crée le user avec un mot de passe aléatoire et email auto-confirmé.
+    //    On utilise createUser plutôt que inviteUserByEmail car les emails
+    //    d'invitation Supabase ne sont pas pris en charge par le hook email
+    //    Lovable Cloud (seuls signup/recovery/magic_link le sont).
+    const tempPassword = `Tmp_${crypto.randomUUID()}_${Date.now()}!`;
+    let userId: string | null = null;
+
+    const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
+      email: data.email,
+      password: tempPassword,
+      email_confirm: true,
+      user_metadata: { nom_complet: data.nom_complet ?? data.email },
+    });
+
+    if (createErr) {
+      // Si l'utilisateur existe déjà, on récupère son id pour quand même
+      // mettre à jour son profil et lui renvoyer un lien.
+      const msg = createErr.message?.toLowerCase() ?? "";
+      if (msg.includes("already") || msg.includes("registered") || msg.includes("exists")) {
+        const { data: list } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+        const existing = list?.users.find((u) => u.email?.toLowerCase() === data.email);
+        if (!existing) throw new Error(createErr.message);
+        userId = existing.id;
+      } else {
+        throw new Error(createErr.message);
+      }
+    } else {
+      userId = created?.user?.id ?? null;
+    }
+
+    if (!userId) throw new Error("Création du compte impossible");
+
+    // 2. Crée / met à jour le profil avec le bon rôle
+    const { error: profileErr } = await supabaseAdmin.from("profiles").upsert(
       {
-        id: invited.user.id,
+        id: userId,
         email: data.email,
         nom_complet: data.nom_complet ?? data.email,
         role: data.role,
@@ -97,6 +124,15 @@ export const inviteUser = createServerFn({ method: "POST" })
       },
       { onConflict: "id" },
     );
+    if (profileErr) throw new Error(profileErr.message);
+
+    // 3. Envoie un lien de récupération (passe par le hook email Lovable).
+    //    C'est ce flow qui sert d'invitation : l'utilisateur définit son
+    //    propre mot de passe via la page /reset-password.
+    const { error: recoverErr } = await supabaseAdmin.auth.resetPasswordForEmail(data.email, {
+      redirectTo: finalRedirect,
+    });
+    if (recoverErr) throw new Error(recoverErr.message);
 
     return { success: true };
   });
@@ -112,12 +148,11 @@ export const resendInvitation = createServerFn({ method: "POST" })
     await assertAdmin((context as AuthedContext).supabase, (context as AuthedContext).userId);
 
     const redirectTo = data.redirectTo ?? `${process.env.SITE_URL ?? ""}/reset-password`;
-    const { error } = await supabaseAdmin.auth.admin.generateLink({
-      type: "recovery",
-      email: data.email,
-      options: {
-        redirectTo: redirectTo && redirectTo.startsWith("http") ? redirectTo : undefined,
-      },
+    const finalRedirect = redirectTo && redirectTo.startsWith("http") ? redirectTo : undefined;
+    // resetPasswordForEmail déclenche l'envoi via le hook email Lovable,
+    // contrairement à generateLink qui se contente de créer un lien sans email.
+    const { error } = await supabaseAdmin.auth.resetPasswordForEmail(data.email, {
+      redirectTo: finalRedirect,
     });
     if (error) throw new Error(error.message);
     return { success: true };

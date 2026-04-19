@@ -230,9 +230,11 @@ function EtiquettesPage() {
                 <div className="text-xs">
                   {p.longueur_mm} × {p.largeur_mm} mm
                 </div>
-                <div className="text-[10px] text-gray-600 mt-1">{p.matiere_code}</div>
+                <div className="text-[10px] mt-1" style={{ color: "#555" }}>
+                  {p.matiere_code}
+                </div>
                 {p.reference_fournisseur && (
-                  <div className="text-[10px] text-gray-600">
+                  <div className="text-[10px]" style={{ color: "#555" }}>
                     Ref: {p.reference_fournisseur}
                   </div>
                 )}

@@ -47,10 +47,11 @@ function fileSuffix(d1?: string, d2?: string) {
 // ============================================================
 // XLSX (3 feuilles)
 // ============================================================
-export function exportMouvementsXLSX(
+export async function exportMouvementsXLSX(
   rows: MouvementExport[],
   opts: { dateDebut?: string; dateFin?: string },
 ) {
+  const XLSX = await import("xlsx");
   const wb = XLSX.utils.book_new();
 
   // Feuille 1 — Mouvements détaillés

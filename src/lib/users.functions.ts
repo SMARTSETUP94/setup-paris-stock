@@ -37,25 +37,37 @@ export const listUsers = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     await assertAdmin((context as AuthedContext).supabase, (context as AuthedContext).userId);
 
-    const { data: profiles, error } = await supabaseAdmin
+    // 1. Profils via le client utilisateur (RLS admin → SELECT all)
+    const { data: profiles, error } = await (context as AuthedContext).supabase
       .from("profiles")
       .select("id, email, nom_complet, role, actif, created_at")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
 
-    const { data: authUsers } = await supabaseAdmin.auth.admin.listUsers({
-      page: 1,
-      perPage: 1000,
-    });
-    const authMap = new Map(
-      (authUsers?.users ?? []).map((u) => [
-        u.id,
-        {
-          last_sign_in_at: u.last_sign_in_at ?? null,
-          email_confirmed_at: u.email_confirmed_at ?? null,
-        },
-      ]),
-    );
+    // 2. Métadonnées auth (last_sign_in_at) via service role — best effort.
+    // Si la clé service role n'est pas dispo (dev sandbox), on dégrade
+    // gracieusement plutôt que de tout faire planter.
+    let authMap = new Map<
+      string,
+      { last_sign_in_at: string | null; email_confirmed_at: string | null }
+    >();
+    try {
+      const { data: authUsers } = await supabaseAdmin.auth.admin.listUsers({
+        page: 1,
+        perPage: 1000,
+      });
+      authMap = new Map(
+        (authUsers?.users ?? []).map((u) => [
+          u.id,
+          {
+            last_sign_in_at: u.last_sign_in_at ?? null,
+            email_confirmed_at: u.email_confirmed_at ?? null,
+          },
+        ]),
+      );
+    } catch (e) {
+      console.warn("[listUsers] auth.admin.listUsers indisponible:", e);
+    }
 
     return {
       users: (profiles ?? []).map((p) => ({

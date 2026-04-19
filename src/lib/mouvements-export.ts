@@ -1,6 +1,5 @@
-import * as XLSX from "xlsx";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+// xlsx (~800 kB) et jspdf (~150 kB) chargés à la demande : ces fonctions
+// sont déclenchées par un clic utilisateur, le `await import` est invisible.
 import { typeMeta } from "@/lib/mouvements";
 
 export type MouvementExport = {
@@ -48,10 +47,11 @@ function fileSuffix(d1?: string, d2?: string) {
 // ============================================================
 // XLSX (3 feuilles)
 // ============================================================
-export function exportMouvementsXLSX(
+export async function exportMouvementsXLSX(
   rows: MouvementExport[],
   opts: { dateDebut?: string; dateFin?: string },
 ) {
+  const XLSX = await import("xlsx");
   const wb = XLSX.utils.book_new();
 
   // Feuille 1 — Mouvements détaillés
@@ -228,10 +228,14 @@ export function exportMouvementsCSV(
 // ============================================================
 // PDF (jsPDF + autoTable, paysage)
 // ============================================================
-export function exportMouvementsPDF(
+export async function exportMouvementsPDF(
   rows: MouvementExport[],
   opts: { dateDebut?: string; dateFin?: string; filtersSummary?: string },
 ) {
+  const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+    import("jspdf"),
+    import("jspdf-autotable"),
+  ]);
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
 
   // En-tête

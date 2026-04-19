@@ -17,6 +17,7 @@ import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as ScanPanneauIdRouteImport } from './routes/scan.$panneauId'
 import { Route as AppParametresRouteImport } from './routes/_app.parametres'
 import { Route as AppMouvementsRouteImport } from './routes/_app.mouvements'
+import { Route as AppMesAccesRouteImport } from './routes/_app.mes-acces'
 import { Route as AppInventaireRouteImport } from './routes/_app.inventaire'
 import { Route as AppFournisseursRouteImport } from './routes/_app.fournisseurs'
 import { Route as AppBdcRouteImport } from './routes/_app.bdc'
@@ -67,6 +68,11 @@ const AppParametresRoute = AppParametresRouteImport.update({
 const AppMouvementsRoute = AppMouvementsRouteImport.update({
   id: '/mouvements',
   path: '/mouvements',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMesAccesRoute = AppMesAccesRouteImport.update({
+  id: '/mes-acces',
+  path: '/mes-acces',
   getParentRoute: () => AppRoute,
 } as any)
 const AppInventaireRoute = AppInventaireRouteImport.update({
@@ -138,6 +144,7 @@ export interface FileRoutesByFullPath {
   '/bdc': typeof AppBdcRouteWithChildren
   '/fournisseurs': typeof AppFournisseursRoute
   '/inventaire': typeof AppInventaireRoute
+  '/mes-acces': typeof AppMesAccesRoute
   '/mouvements': typeof AppMouvementsRoute
   '/parametres': typeof AppParametresRoute
   '/scan/$panneauId': typeof ScanPanneauIdRoute
@@ -157,6 +164,7 @@ export interface FileRoutesByTo {
   '/bdc': typeof AppBdcRouteWithChildren
   '/fournisseurs': typeof AppFournisseursRoute
   '/inventaire': typeof AppInventaireRoute
+  '/mes-acces': typeof AppMesAccesRoute
   '/mouvements': typeof AppMouvementsRoute
   '/parametres': typeof AppParametresRoute
   '/scan/$panneauId': typeof ScanPanneauIdRoute
@@ -180,6 +188,7 @@ export interface FileRoutesById {
   '/_app/bdc': typeof AppBdcRouteWithChildren
   '/_app/fournisseurs': typeof AppFournisseursRoute
   '/_app/inventaire': typeof AppInventaireRoute
+  '/_app/mes-acces': typeof AppMesAccesRoute
   '/_app/mouvements': typeof AppMouvementsRoute
   '/_app/parametres': typeof AppParametresRoute
   '/scan/$panneauId': typeof ScanPanneauIdRoute
@@ -204,6 +213,7 @@ export interface FileRouteTypes {
     | '/bdc'
     | '/fournisseurs'
     | '/inventaire'
+    | '/mes-acces'
     | '/mouvements'
     | '/parametres'
     | '/scan/$panneauId'
@@ -223,6 +233,7 @@ export interface FileRouteTypes {
     | '/bdc'
     | '/fournisseurs'
     | '/inventaire'
+    | '/mes-acces'
     | '/mouvements'
     | '/parametres'
     | '/scan/$panneauId'
@@ -245,6 +256,7 @@ export interface FileRouteTypes {
     | '/_app/bdc'
     | '/_app/fournisseurs'
     | '/_app/inventaire'
+    | '/_app/mes-acces'
     | '/_app/mouvements'
     | '/_app/parametres'
     | '/scan/$panneauId'
@@ -324,6 +336,13 @@ declare module '@tanstack/react-router' {
       path: '/mouvements'
       fullPath: '/mouvements'
       preLoaderRoute: typeof AppMouvementsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/mes-acces': {
+      id: '/_app/mes-acces'
+      path: '/mes-acces'
+      fullPath: '/mes-acces'
+      preLoaderRoute: typeof AppMesAccesRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/inventaire': {
@@ -443,6 +462,7 @@ interface AppRouteChildren {
   AppBdcRoute: typeof AppBdcRouteWithChildren
   AppFournisseursRoute: typeof AppFournisseursRoute
   AppInventaireRoute: typeof AppInventaireRoute
+  AppMesAccesRoute: typeof AppMesAccesRoute
   AppMouvementsRoute: typeof AppMouvementsRoute
   AppParametresRoute: typeof AppParametresRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -458,6 +478,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppBdcRoute: AppBdcRouteWithChildren,
   AppFournisseursRoute: AppFournisseursRoute,
   AppInventaireRoute: AppInventaireRoute,
+  AppMesAccesRoute: AppMesAccesRoute,
   AppMouvementsRoute: AppMouvementsRoute,
   AppParametresRoute: AppParametresRoute,
   AppIndexRoute: AppIndexRoute,

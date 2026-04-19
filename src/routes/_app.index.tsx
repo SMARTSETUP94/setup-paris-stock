@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AlertTriangle, ArrowRight, Plus, SlidersHorizontal, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -74,6 +74,14 @@ type TopAffaire = {
 function DashboardPage() {
   const { profile, loading: authLoading } = useAuth();
   const isAdmin = profile?.role === "admin";
+  const navigate = useNavigate();
+
+  // Redirige les tiers vers /mes-acces : ils n'ont pas accès aux KPIs globaux
+  useEffect(() => {
+    if (!authLoading && profile && profile.role !== "admin") {
+      navigate({ to: "/mes-acces", replace: true });
+    }
+  }, [authLoading, profile, navigate]);
 
   const [kpis, setKpis] = useState<{
     affaires_en_cours: number | null;

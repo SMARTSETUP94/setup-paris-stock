@@ -57,14 +57,14 @@ export const inviteUser = createServerFn({ method: "POST" })
     (input: {
       email: string;
       nom_complet?: string;
-      role: "admin" | "tiers";
+      role: "admin" | "magasinier" | "mobile";
       redirectTo?: string;
     }) => {
       const email = input.email?.trim().toLowerCase();
       if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         throw new Error("Email invalide");
       }
-      if (input.role !== "admin" && input.role !== "tiers") {
+      if (input.role !== "admin" && input.role !== "magasinier" && input.role !== "mobile") {
         throw new Error("Rôle invalide");
       }
       return {

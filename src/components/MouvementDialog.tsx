@@ -51,12 +51,23 @@ type CatalogueRow = {
 
 type AffaireOption = { id: string; numero: string; nom: string };
 
+/** Pré-remplissage utilisé pour corriger un mouvement existant. */
+export type MouvementPrefill = {
+  panneauId: string;
+  affaireId?: string | null;
+  quantite: number; // valeur absolue
+  signe: "plus" | "moins";
+  commentaire?: string;
+};
+
 interface Props {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   mode: Mode;
   /** Pré-sélectionne une affaire (utilisé depuis la fiche affaire) */
   presetAffaireId?: string | null;
+  /** Pré-remplit le formulaire (utilisé pour corriger un mouvement existant) */
+  prefill?: MouvementPrefill | null;
   isAdmin: boolean;
   userId: string | null;
   onCreated?: () => void;
@@ -67,6 +78,7 @@ export function MouvementDialog({
   onOpenChange,
   mode,
   presetAffaireId,
+  prefill,
   isAdmin,
   userId,
   onCreated,

@@ -1,7 +1,14 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -61,9 +68,7 @@ export function InviteTiersDialog({ open, onOpenChange, affaireId, onCreated }: 
     }
 
     const link = buildInvitationLink(token);
-    const fullText = message
-      ? `${message}\n\n${link}`
-      : link;
+    const fullText = message ? `${message}\n\n${link}` : link;
     try {
       await navigator.clipboard.writeText(fullText);
       toast.success("Lien copié — collez-le dans WhatsApp/email pour l'envoyer au tiers.");
@@ -80,7 +85,8 @@ export function InviteTiersDialog({ open, onOpenChange, affaireId, onCreated }: 
         <DialogHeader>
           <DialogTitle>Inviter un tiers</DialogTitle>
           <DialogDescription>
-            Génère un lien magique. Aucune email automatique : copiez le lien et envoyez-le par WhatsApp ou email.
+            Génère un lien magique. Aucune email automatique : copiez le lien et envoyez-le par
+            WhatsApp ou email.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4">
@@ -95,7 +101,10 @@ export function InviteTiersDialog({ open, onOpenChange, affaireId, onCreated }: 
           </div>
           <div>
             <Label className="mb-2 block">Permissions</Label>
-            <RadioGroup value={permissions} onValueChange={(v) => setPermissions(v as PermissionAcces)}>
+            <RadioGroup
+              value={permissions}
+              onValueChange={(v) => setPermissions(v as PermissionAcces)}
+            >
               {PERMISSIONS.map((p) => (
                 <label
                   key={p.value}
@@ -131,7 +140,9 @@ export function InviteTiersDialog({ open, onOpenChange, affaireId, onCreated }: 
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Annuler</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Annuler
+          </Button>
           <Button onClick={handleSubmit} disabled={loading}>
             {loading ? "Création…" : "Générer et copier le lien"}
           </Button>

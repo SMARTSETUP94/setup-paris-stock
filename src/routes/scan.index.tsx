@@ -7,10 +7,7 @@ import { Loader2, Camera, AlertCircle } from "lucide-react";
 
 export const Route = createFileRoute("/scan/")({
   head: () => ({
-    meta: [
-      { title: "Scanner un panneau — Setup Stock" },
-      { name: "robots", content: "noindex" },
-    ],
+    meta: [{ title: "Scanner un panneau — Setup Stock" }, { name: "robots", content: "noindex" }],
   }),
   component: ScanPage,
 });

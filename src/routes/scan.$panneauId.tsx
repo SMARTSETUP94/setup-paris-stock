@@ -1,3 +1,22 @@
+/**
+ * ROUTE PUBLIQUE — accessible sans authentification.
+ *
+ * Usage prévu : un ouvrier d'atelier scanne un QR collé physiquement sur un
+ * panneau pour déclarer une sortie de stock.
+ *
+ * Sécurité :
+ * - L'URL contient un UUID v4 impossible à deviner (2^128 possibilités)
+ * - Les QR codes ne sont imprimés que depuis /catalogue/etiquettes (admin)
+ *   et collés dans l'atelier privé Setup Paris
+ * - Le nom de l'opérateur saisi est conservé dans le commentaire du mouvement
+ *   (traçabilité weak, fiable uniquement en bonne foi)
+ * - Pas de rate limiting — à ajouter via Cloudflare Worker rules si besoin
+ *   (ex: 10 sorties/min/IP)
+ *
+ * Ce flow est DIFFÉRENT du lien magique tiers (/tiers/acces?token=...) :
+ * le scan QR est pour usage interne atelier, le lien magique pour des
+ * sous-traitants externes.
+ */
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -23,10 +42,7 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/scan/$panneauId")({
   head: () => ({
-    meta: [
-      { title: "Sortie panneau — Setup Stock" },
-      { name: "robots", content: "noindex" },
-    ],
+    meta: [{ title: "Sortie panneau — Setup Stock" }, { name: "robots", content: "noindex" }],
   }),
   component: ScanSortiePage,
 });
@@ -57,10 +73,7 @@ function ScanSortiePage() {
     let mounted = true;
     void (async () => {
       try {
-        const [p, a] = await Promise.all([
-          getPanneauFn({ data: { panneauId } }),
-          listAffairesFn(),
-        ]);
+        const [p, a] = await Promise.all([getPanneauFn({ data: { panneauId } }), listAffairesFn()]);
         if (!mounted) return;
         setPanneau(p);
         setAffaires(a);
@@ -173,11 +186,7 @@ function ScanSortiePage() {
   return (
     <div className="min-h-screen bg-background">
       <header className="px-4 py-3 border-b border-border flex items-center gap-2">
-        <button
-          onClick={() => navigate({ to: "/scan" })}
-          className="p-1 -ml-1"
-          aria-label="Retour"
-        >
+        <button onClick={() => navigate({ to: "/scan" })} className="p-1 -ml-1" aria-label="Retour">
           <ArrowLeft className="h-5 w-5" />
         </button>
         <h1 className="text-base font-semibold">Déclarer une sortie</h1>
@@ -195,9 +204,7 @@ function ScanSortiePage() {
             <span className="text-muted-foreground">Stock actuel :</span>
             <span
               className={
-                stockBas
-                  ? "font-semibold text-destructive"
-                  : "font-semibold text-foreground"
+                stockBas ? "font-semibold text-destructive" : "font-semibold text-foreground"
               }
             >
               {panneau.stock_actuel ?? 0}
@@ -260,9 +267,7 @@ function ScanSortiePage() {
           </div>
 
           <Button type="submit" className="w-full h-12 text-base" disabled={submitting}>
-            {submitting ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : null}
+            {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
             Valider la sortie
           </Button>
         </form>

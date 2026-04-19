@@ -83,35 +83,6 @@ function LoginPage() {
     }
   }
 
-  async function handleSignup(e: React.FormEvent) {
-    e.preventDefault();
-    setSubmitting(true);
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: window.location.origin,
-        data: { nom_complet: nomComplet || email },
-      },
-    });
-    if (error) {
-      setSubmitting(false);
-      toast.error("Inscription impossible", { description: error.message });
-      return;
-    }
-    // Auto-confirm est activé : on tente une connexion immédiate
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-    setSubmitting(false);
-    if (signInError) {
-      toast.success("Compte créé", {
-        description: "Vérifiez votre email pour finaliser puis connectez-vous.",
-      });
-      return;
-    }
-    toast.success("Compte créé et connecté");
-    navigate({ to: "/" });
-  }
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4 py-12">
       <div className="w-full max-w-md">
@@ -178,51 +149,6 @@ function LoginPage() {
               >
                 Mot de passe oublié ?
               </button>
-            </form>
-          </TabsContent>
-
-          <TabsContent value="signup">
-            <form onSubmit={handleSignup} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="nom-complet">Nom complet</Label>
-                <Input
-                  id="nom-complet"
-                  type="text"
-                  value={nomComplet}
-                  onChange={(e) => setNomComplet(e.target.value)}
-                  placeholder="Prénom Nom"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email-signup">Email</Label>
-                <Input
-                  id="email-signup"
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="prenom@setupparis.fr"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password-signup">Mot de passe</Label>
-                <Input
-                  id="password-signup"
-                  type="password"
-                  required
-                  minLength={8}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Au moins 8 caractères"
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Le premier compte créé devient automatiquement administrateur. Les emails de la liste blanche Setup Paris reçoivent aussi le rôle admin.
-              </p>
-              <Button type="submit" size="lg" className="w-full" disabled={submitting}>
-                {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Créer mon compte
-              </Button>
             </form>
           </TabsContent>
 

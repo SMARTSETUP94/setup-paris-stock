@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { AlertTriangle, ArrowRight, TrendingUp } from "lucide-react";
+import { AlertTriangle, ArrowRight, Plus, SlidersHorizontal, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useStockRealtime } from "@/hooks/useStockRealtime";
 import { formatEuro, formatNumber } from "@/lib/familles";
 import { DashboardConsoChart } from "@/components/dashboard/DashboardConsoChart";
 import { RecentMouvementsCard, type MouvementRecent } from "@/components/dashboard/RecentMouvementsCard";
+import { AffaireFormDialog } from "@/components/AffaireFormDialog";
 
 export const Route = createFileRoute("/_app/")({
   head: () => ({
@@ -89,6 +91,7 @@ function DashboardPage() {
   const [mouvements, setMouvements] = useState<MouvementRecent[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [hasData, setHasData] = useState<boolean | null>(null);
+  const [openNewAffaire, setOpenNewAffaire] = useState(false);
 
   async function loadDashboard() {
     const [aff, bdc, cat, mvtData] = await Promise.all([
@@ -277,15 +280,25 @@ function DashboardPage() {
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Alertes seuil bas */}
         <Card className="p-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
             <div className="flex items-center gap-2">
               <span className="section-marker">— 04</span>
               <AlertTriangle className="h-4 w-4 text-warning" />
               <h2 className="font-display text-lg font-semibold tracking-tight">Alertes seuil bas</h2>
             </div>
-            <Link to="/inventaire" className="link-arrow text-xs">
-              Voir tout l'inventaire →
-            </Link>
+            <div className="flex items-center gap-3">
+              {isAdmin && (
+                <Button size="sm" variant="outline" asChild>
+                  <Link to="/catalogue/matieres">
+                    <SlidersHorizontal className="h-3.5 w-3.5 mr-1" />
+                    Ajuster seuil
+                  </Link>
+                </Button>
+              )}
+              <Link to="/inventaire" className="link-arrow text-xs">
+                Voir tout l'inventaire →
+              </Link>
+            </div>
           </div>
           {loadingData ? (
             <p className="text-sm text-muted-foreground">Chargement…</p>
@@ -321,15 +334,23 @@ function DashboardPage() {
 
         {/* Top 5 affaires par consommation */}
         <Card className="p-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
             <div className="flex items-center gap-2">
               <span className="section-marker">— 05</span>
               <TrendingUp className="h-4 w-4 text-primary" />
               <h2 className="font-display text-lg font-semibold tracking-tight">Top affaires</h2>
             </div>
-            <Link to="/affaires" className="link-arrow text-xs">
-              Voir toutes les affaires →
-            </Link>
+            <div className="flex items-center gap-3">
+              {isAdmin && (
+                <Button size="sm" variant="outline" onClick={() => setOpenNewAffaire(true)}>
+                  <Plus className="h-3.5 w-3.5 mr-1" />
+                  Nouvelle affaire
+                </Button>
+              )}
+              <Link to="/affaires" className="link-arrow text-xs">
+                Voir toutes les affaires →
+              </Link>
+            </div>
           </div>
           {loadingData ? (
             <p className="text-sm text-muted-foreground">Chargement…</p>
@@ -401,6 +422,15 @@ function DashboardPage() {
           </div>
         </section>
       )}
+
+      <AffaireFormDialog
+        open={openNewAffaire}
+        onOpenChange={setOpenNewAffaire}
+        onSaved={() => {
+          setOpenNewAffaire(false);
+          void loadDashboard();
+        }}
+      />
     </div>
   );
 }

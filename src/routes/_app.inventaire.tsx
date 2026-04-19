@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Html5Qrcode } from "html5-qrcode";
+// html5-qrcode (~250 kB) chargé à la demande quand l'utilisateur lance le scan.
+import type { Html5Qrcode } from "html5-qrcode";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminGuard, AdminLoader, useDebounced } from "@/hooks/useAdminGuard";
 import { useAuth } from "@/hooks/useAuth";
@@ -499,6 +500,7 @@ function ScanInventaire({
     if (!elRef.current) return;
     const id = "qr-inv-reader";
     elRef.current.id = id;
+    const { Html5Qrcode } = await import("html5-qrcode");
     const scanner = new Html5Qrcode(id);
     scannerRef.current = scanner;
     try {

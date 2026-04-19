@@ -23,6 +23,7 @@ import { Route as AppBdcRouteImport } from './routes/_app.bdc'
 import { Route as AppAffairesRouteImport } from './routes/_app.affaires'
 import { Route as AppCatalogueIndexRouteImport } from './routes/_app.catalogue.index'
 import { Route as AppAffairesIndexRouteImport } from './routes/_app.affaires.index'
+import { Route as AppCatalogueTypologiesRouteImport } from './routes/_app.catalogue.typologies'
 import { Route as AppCataloguePanneauxRouteImport } from './routes/_app.catalogue.panneaux'
 import { Route as AppCatalogueMatieresRouteImport } from './routes/_app.catalogue.matieres'
 import { Route as AppCatalogueEtiquettesRouteImport } from './routes/_app.catalogue.etiquettes'
@@ -98,6 +99,11 @@ const AppAffairesIndexRoute = AppAffairesIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppAffairesRoute,
 } as any)
+const AppCatalogueTypologiesRoute = AppCatalogueTypologiesRouteImport.update({
+  id: '/catalogue/typologies',
+  path: '/catalogue/typologies',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCataloguePanneauxRoute = AppCataloguePanneauxRouteImport.update({
   id: '/catalogue/panneaux',
   path: '/catalogue/panneaux',
@@ -141,6 +147,7 @@ export interface FileRoutesByFullPath {
   '/catalogue/etiquettes': typeof AppCatalogueEtiquettesRoute
   '/catalogue/matieres': typeof AppCatalogueMatieresRoute
   '/catalogue/panneaux': typeof AppCataloguePanneauxRoute
+  '/catalogue/typologies': typeof AppCatalogueTypologiesRoute
   '/affaires/': typeof AppAffairesIndexRoute
   '/catalogue/': typeof AppCatalogueIndexRoute
 }
@@ -160,6 +167,7 @@ export interface FileRoutesByTo {
   '/catalogue/etiquettes': typeof AppCatalogueEtiquettesRoute
   '/catalogue/matieres': typeof AppCatalogueMatieresRoute
   '/catalogue/panneaux': typeof AppCataloguePanneauxRoute
+  '/catalogue/typologies': typeof AppCatalogueTypologiesRoute
   '/affaires': typeof AppAffairesIndexRoute
   '/catalogue': typeof AppCatalogueIndexRoute
 }
@@ -182,6 +190,7 @@ export interface FileRoutesById {
   '/_app/catalogue/etiquettes': typeof AppCatalogueEtiquettesRoute
   '/_app/catalogue/matieres': typeof AppCatalogueMatieresRoute
   '/_app/catalogue/panneaux': typeof AppCataloguePanneauxRoute
+  '/_app/catalogue/typologies': typeof AppCatalogueTypologiesRoute
   '/_app/affaires/': typeof AppAffairesIndexRoute
   '/_app/catalogue/': typeof AppCatalogueIndexRoute
 }
@@ -204,6 +213,7 @@ export interface FileRouteTypes {
     | '/catalogue/etiquettes'
     | '/catalogue/matieres'
     | '/catalogue/panneaux'
+    | '/catalogue/typologies'
     | '/affaires/'
     | '/catalogue/'
   fileRoutesByTo: FileRoutesByTo
@@ -223,6 +233,7 @@ export interface FileRouteTypes {
     | '/catalogue/etiquettes'
     | '/catalogue/matieres'
     | '/catalogue/panneaux'
+    | '/catalogue/typologies'
     | '/affaires'
     | '/catalogue'
   id:
@@ -244,6 +255,7 @@ export interface FileRouteTypes {
     | '/_app/catalogue/etiquettes'
     | '/_app/catalogue/matieres'
     | '/_app/catalogue/panneaux'
+    | '/_app/catalogue/typologies'
     | '/_app/affaires/'
     | '/_app/catalogue/'
   fileRoutesById: FileRoutesById
@@ -356,6 +368,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAffairesIndexRouteImport
       parentRoute: typeof AppAffairesRoute
     }
+    '/_app/catalogue/typologies': {
+      id: '/_app/catalogue/typologies'
+      path: '/catalogue/typologies'
+      fullPath: '/catalogue/typologies'
+      preLoaderRoute: typeof AppCatalogueTypologiesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/catalogue/panneaux': {
       id: '/_app/catalogue/panneaux'
       path: '/catalogue/panneaux'
@@ -430,6 +449,7 @@ interface AppRouteChildren {
   AppCatalogueEtiquettesRoute: typeof AppCatalogueEtiquettesRoute
   AppCatalogueMatieresRoute: typeof AppCatalogueMatieresRoute
   AppCataloguePanneauxRoute: typeof AppCataloguePanneauxRoute
+  AppCatalogueTypologiesRoute: typeof AppCatalogueTypologiesRoute
   AppCatalogueIndexRoute: typeof AppCatalogueIndexRoute
 }
 
@@ -444,6 +464,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppCatalogueEtiquettesRoute: AppCatalogueEtiquettesRoute,
   AppCatalogueMatieresRoute: AppCatalogueMatieresRoute,
   AppCataloguePanneauxRoute: AppCataloguePanneauxRoute,
+  AppCatalogueTypologiesRoute: AppCatalogueTypologiesRoute,
   AppCatalogueIndexRoute: AppCatalogueIndexRoute,
 }
 

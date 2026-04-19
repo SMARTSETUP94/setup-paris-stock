@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,8 +17,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Plus, Pencil, Search, Loader2, Upload, Download } from "lucide-react";
 import { toast } from "sonner";
-import { FAMILLES, formatEuro, formatNumber, type Famille } from "@/lib/familles";
+import { FAMILLES, formatEuro, formatNumber } from "@/lib/familles";
+import type { Typologie } from "@/lib/typologies";
 import { exportXLSX } from "@/lib/import-parsers";
+import { CatalogueSubnav } from "./_app.catalogue.typologies";
 
 const searchSchema = z.object({ matiere: z.string().optional() });
 
@@ -27,6 +29,8 @@ export const Route = createFileRoute("/_app/catalogue/panneaux")({
   validateSearch: searchSchema,
   component: PanneauxPage,
 });
+
+type Matiere = Tables<"matieres">;
 
 type CatRow = {
   id: string;
@@ -40,22 +44,26 @@ type CatRow = {
   auto_masque_si_zero: boolean;
   matiere_code: string;
   matiere_libelle: string;
+  matiere_variante: string | null;
+  matiere_epaisseur: number;
+  typo_id: string | null;
+  typo_nom: string | null;
   famille: string;
   seuil_alerte: number;
   stock_actuel: number;
 };
-
-type Matiere = Tables<"matieres">;
 
 function PanneauxPage() {
   const { ready } = useAdminGuard();
   const search = Route.useSearch();
   const [items, setItems] = useState<CatRow[]>([]);
   const [matieres, setMatieres] = useState<Matiere[]>([]);
+  const [typologies, setTypologies] = useState<Typologie[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
   const debQ = useDebounced(q);
   const [familleFilter, setFamilleFilter] = useState("all");
+  const [typoFilter, setTypoFilter] = useState("all");
   const [matiereFilter, setMatiereFilter] = useState(search.matiere ?? "all");
   const [hideInactive, setHideInactive] = useState(true);
   const [hideStockZero, setHideStockZero] = useState(true);
@@ -66,9 +74,10 @@ function PanneauxPage() {
 
   async function fetchData() {
     setLoading(true);
-    const [pRes, mRes, sRes] = await Promise.all([
+    const [pRes, mRes, tRes, sRes] = await Promise.all([
       supabase.from("panneaux").select("*").order("created_at", { ascending: false }),
       supabase.from("matieres").select("*").order("code"),
+      supabase.from("typologies").select("*"),
       supabase.from("stock_actuel").select("*"),
     ]);
     if (pRes.error) toast.error(pRes.error.message);
@@ -77,9 +86,11 @@ function PanneauxPage() {
     const stockMap = new Map<string, number>();
     (sRes.data ?? []).forEach((s) => { if (s.panneau_id) stockMap.set(s.panneau_id, Number(s.quantite_actuelle ?? 0)); });
     const matMap = new Map((mRes.data ?? []).map((m) => [m.id, m]));
+    const typoMap = new Map((tRes.data ?? []).map((t) => [t.id, t]));
 
     const rows: CatRow[] = (pRes.data ?? []).map((p) => {
       const m = matMap.get(p.matiere_id);
+      const typo = m?.typologie_id ? typoMap.get(m.typologie_id) : null;
       return {
         id: p.id,
         matiere_id: p.matiere_id,
@@ -92,6 +103,10 @@ function PanneauxPage() {
         auto_masque_si_zero: p.auto_masque_si_zero,
         matiere_code: m?.code ?? "—",
         matiere_libelle: m?.libelle ?? "—",
+        matiere_variante: m?.variante ?? null,
+        matiere_epaisseur: m?.epaisseur_mm ?? 0,
+        typo_id: m?.typologie_id ?? null,
+        typo_nom: typo?.nom ?? null,
         famille: m?.famille ?? "autre",
         seuil_alerte: m?.seuil_alerte ?? 0,
         stock_actuel: stockMap.get(p.id) ?? 0,
@@ -99,23 +114,50 @@ function PanneauxPage() {
     });
     setItems(rows);
     setMatieres(mRes.data ?? []);
+    setTypologies(tRes.data ?? []);
     setLoading(false);
   }
 
-  useEffect(() => { if (ready) fetchData(); }, [ready]);
+  useEffect(() => { if (ready) void fetchData(); }, [ready]);
+
+  const typologiesFiltered = useMemo(() => {
+    if (familleFilter === "all") return typologies;
+    return typologies.filter((t) => t.famille === familleFilter);
+  }, [typologies, familleFilter]);
+
+  const matieresFiltered = useMemo(() => {
+    return matieres.filter((m) => {
+      if (familleFilter !== "all" && m.famille !== familleFilter) return false;
+      if (typoFilter !== "all" && m.typologie_id !== typoFilter) return false;
+      return true;
+    });
+  }, [matieres, familleFilter, typoFilter]);
 
   const filtered = useMemo(() => items.filter((p) => {
     const ql = debQ.toLowerCase();
-    if (ql && !p.matiere_code.toLowerCase().includes(ql) && !p.matiere_libelle.toLowerCase().includes(ql)) return false;
+    if (ql) {
+      const haystack = [p.matiere_code, p.matiere_libelle, p.typo_nom ?? "", p.matiere_variante ?? ""].join(" ").toLowerCase();
+      if (!haystack.includes(ql)) return false;
+    }
     if (familleFilter !== "all" && p.famille !== familleFilter) return false;
+    if (typoFilter !== "all" && p.typo_id !== typoFilter) return false;
     if (matiereFilter !== "all" && p.matiere_id !== matiereFilter) return false;
     if (hideInactive && !p.actif) return false;
     if (hideStockZero && p.auto_masque_si_zero && p.stock_actuel <= 0) return false;
     return true;
-  }), [items, debQ, familleFilter, matiereFilter, hideInactive, hideStockZero]);
+  }), [items, debQ, familleFilter, typoFilter, matiereFilter, hideInactive, hideStockZero]);
+
+  const breadcrumb = useMemo(() => {
+    if (typoFilter === "all") return null;
+    const t = typologies.find((x) => x.id === typoFilter);
+    if (!t) return null;
+    const familleLabel = FAMILLES.find((f) => f.value === t.famille)?.label ?? t.famille;
+    const matCount = matieres.filter((m) => m.typologie_id === t.id).length;
+    const panCount = items.filter((p) => p.typo_id === t.id).length;
+    return { familleLabel, typoNom: t.nom, matCount, panCount };
+  }, [typoFilter, typologies, matieres, items]);
 
   if (!ready) return <AdminLoader />;
-
 
   async function toggleActif(p: CatRow) {
     const newActif = !p.actif;
@@ -134,7 +176,7 @@ function PanneauxPage() {
     else {
       toast.success(`${selected.size} référence(s) ${actif ? "activée(s)" : "désactivée(s)"}`);
       setSelected(new Set());
-      fetchData();
+      void fetchData();
     }
   }
 
@@ -142,6 +184,9 @@ function PanneauxPage() {
     const rows = items.filter((p) => selected.has(p.id)).map((p) => ({
       matiere_code: p.matiere_code,
       matiere_libelle: p.matiere_libelle,
+      typologie: p.typo_nom,
+      variante: p.matiere_variante,
+      epaisseur_mm: p.matiere_epaisseur,
       famille: p.famille,
       longueur_mm: p.longueur_mm,
       largeur_mm: p.largeur_mm,
@@ -177,29 +222,39 @@ function PanneauxPage() {
         }
       />
 
-      <div className="mb-4 flex gap-2 text-xs">
-        <Link to="/catalogue/matieres" className="px-3 py-1.5 rounded-md hover:bg-muted text-muted-foreground">Matières</Link>
-        <Link to="/catalogue/panneaux" className="px-3 py-1.5 rounded-md bg-foreground text-background font-medium">Panneaux</Link>
-        <Link to="/catalogue/etiquettes" className="px-3 py-1.5 rounded-md hover:bg-muted text-muted-foreground">Étiquettes QR</Link>
-      </div>
+      <CatalogueSubnav active="panneaux" />
 
-      <div className="mb-4 grid gap-3 md:grid-cols-[1fr_180px_220px]">
+      {breadcrumb && (
+        <div className="mb-3 text-xs text-muted-foreground">
+          {breadcrumb.familleLabel} → <span className="font-medium text-foreground">{breadcrumb.typoNom}</span>{" "}
+          ({breadcrumb.matCount} matière{breadcrumb.matCount > 1 ? "s" : ""}, {breadcrumb.panCount} panneau{breadcrumb.panCount > 1 ? "x" : ""})
+        </div>
+      )}
+
+      <div className="mb-4 grid gap-3 md:grid-cols-[1fr_180px_200px_220px]">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Rechercher code ou matière…" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9" />
+          <Input placeholder="Rechercher matière, typologie, variante…" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9" />
         </div>
-        <Select value={familleFilter} onValueChange={setFamilleFilter}>
+        <Select value={familleFilter} onValueChange={(v) => { setFamilleFilter(v); setTypoFilter("all"); setMatiereFilter("all"); }}>
           <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Toutes familles</SelectItem>
             {FAMILLES.map((f) => <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>)}
           </SelectContent>
         </Select>
+        <Select value={typoFilter} onValueChange={(v) => { setTypoFilter(v); setMatiereFilter("all"); }}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Toutes typologies</SelectItem>
+            {typologiesFiltered.map((t) => <SelectItem key={t.id} value={t.id}>{t.nom}</SelectItem>)}
+          </SelectContent>
+        </Select>
         <Select value={matiereFilter} onValueChange={setMatiereFilter}>
           <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Toutes matières</SelectItem>
-            {matieres.map((m) => <SelectItem key={m.id} value={m.id}>{m.code} — {m.libelle}</SelectItem>)}
+            {matieresFiltered.map((m) => <SelectItem key={m.id} value={m.id}>{m.libelle}</SelectItem>)}
           </SelectContent>
         </Select>
       </div>
@@ -269,7 +324,7 @@ function PanneauxPage() {
               {loading && <tr><td colSpan={8} className="px-6 py-12 text-center"><Loader2 className="h-4 w-4 animate-spin inline text-muted-foreground" /></td></tr>}
               {!loading && filtered.length === 0 && <tr><td colSpan={8} className="px-6 py-12 text-center text-muted-foreground">Aucune référence</td></tr>}
               {filtered.map((p, idx) => (
-                <tr key={p.id} className={`border-b border-border last:border-0 hover:bg-muted/50 ${idx % 2 === 1 ? "bg-[#FAFAFA]" : ""} ${!p.actif ? "opacity-60" : ""}`}>
+                <tr key={p.id} className={`border-b border-border last:border-0 hover:bg-muted/50 ${idx % 2 === 1 ? "bg-muted/30" : ""} ${!p.actif ? "opacity-60" : ""}`}>
                   <td className="px-4 py-4">
                     <Checkbox
                       checked={selected.has(p.id)}
@@ -281,17 +336,21 @@ function PanneauxPage() {
                     />
                   </td>
                   <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <span className="px-2 py-0.5 rounded font-mono text-xs bg-muted">{p.matiere_code}</span>
-                      <span className="text-muted-foreground">{p.matiere_libelle}</span>
-                      <FamilleBadge famille={p.famille} />
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <FamilleBadge famille={p.famille} />
+                        {p.typo_nom && <span className="font-medium">{p.typo_nom}</span>}
+                        {p.matiere_variante && <span className="text-muted-foreground">{p.matiere_variante}</span>}
+                        {p.matiere_epaisseur > 0 && <span className="text-muted-foreground tabular-nums">{p.matiere_epaisseur}mm</span>}
+                      </div>
+                      <span className="text-xs text-muted-foreground font-mono">{p.matiere_code}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 font-mono text-xs">{p.longueur_mm} × {p.largeur_mm} mm</td>
-                  <td className="px-6 py-4 text-right">{formatNumber(p.surface_m2, 3)} m²</td>
-                  <td className="px-6 py-4 text-right">{formatEuro(p.prix_achat_ht)}</td>
+                  <td className="px-6 py-4 font-mono text-xs tabular-nums">{p.longueur_mm} × {p.largeur_mm} mm</td>
+                  <td className="px-6 py-4 text-right tabular-nums">{formatNumber(p.surface_m2, 3)} m²</td>
+                  <td className="px-6 py-4 text-right tabular-nums">{formatEuro(p.prix_achat_ht)}</td>
                   <td className="px-6 py-4 text-center">
-                    <span className={`inline-block px-2 py-0.5 rounded border text-xs font-medium ${stockBadge(p)}`}>
+                    <span className={`inline-block px-2 py-0.5 rounded border text-xs font-medium tabular-nums ${stockBadge(p)}`}>
                       {formatNumber(p.stock_actuel, 2)}
                     </span>
                   </td>
@@ -314,19 +373,19 @@ function PanneauxPage() {
         <PanneauDialog
           panneau={editing}
           matieres={matieres}
+          typologies={typologies}
           onClose={() => { setCreating(false); setEditing(null); }}
-          onSaved={() => { fetchData(); setCreating(false); setEditing(null); }}
-          onMatieresRefresh={fetchData}
+          onSaved={() => { void fetchData(); setCreating(false); setEditing(null); }}
         />
       )}
 
       {importing && (
         <ImportDialog<TablesInsert<"panneaux"> & { _matiere_code: string }>
           open
-          onClose={() => { setImporting(false); fetchData(); }}
+          onClose={() => { setImporting(false); void fetchData(); }}
           title="Importer des panneaux"
           description="CSV/XLSX. La matière doit déjà exister (par code)."
-          expectedColumns={["matiere_code", "longueur_mm", "largeur_mm", "prix_achat_ht", "reference_fournisseur"]}
+          expectedColumns={["matiere_code", "longueur_mm", "largeur_mm"]}
           validateRow={async (raw) => {
             const errors: string[] = [];
             const matCode = String(raw.matiere_code ?? "").trim();
@@ -365,7 +424,7 @@ function PanneauxPage() {
             let inserted = 0, updated = 0, skipped = 0, errors = 0;
             for (const r of rows) {
               if (!r.data) { skipped++; continue; }
-              const { _matiere_code, ...payload } = r.data;
+              const { _matiere_code: _ignored, ...payload } = r.data;
               if (r.action === "overwrite") {
                 const { error } = await supabase.from("panneaux").update(payload)
                   .eq("matiere_id", payload.matiere_id)
@@ -388,16 +447,19 @@ function PanneauxPage() {
 function PanneauDialog({
   panneau,
   matieres,
+  typologies,
   onClose,
   onSaved,
-  onMatieresRefresh,
 }: {
   panneau: CatRow | null;
   matieres: Matiere[];
+  typologies: Typologie[];
   onClose: () => void;
   onSaved: () => void;
-  onMatieresRefresh: () => void;
 }) {
+  const initialMat = panneau ? matieres.find((m) => m.id === panneau.matiere_id) ?? null : null;
+  const [familleFilter, setFamilleFilter] = useState<string>(initialMat?.famille ?? "all");
+  const [typoFilter, setTypoFilter] = useState<string>(initialMat?.typologie_id ?? "all");
   const [form, setForm] = useState<TablesInsert<"panneaux">>({
     matiere_id: panneau?.matiere_id ?? "",
     longueur_mm: panneau?.longueur_mm ?? 0,
@@ -408,8 +470,20 @@ function PanneauDialog({
     auto_masque_si_zero: panneau?.auto_masque_si_zero ?? true,
   });
   const [saving, setSaving] = useState(false);
-  const [createMatiere, setCreateMatiere] = useState(false);
-  const [newMatiere, setNewMatiere] = useState({ code: "", libelle: "", famille: "autre" as Famille, epaisseur_mm: 0 });
+
+  const typoOptions = useMemo(() => {
+    if (familleFilter === "all") return typologies.filter((t) => t.actif);
+    return typologies.filter((t) => t.actif && t.famille === familleFilter);
+  }, [typologies, familleFilter]);
+
+  const matiereOptions = useMemo(() => {
+    return matieres.filter((m) => {
+      if (!m.actif) return false;
+      if (familleFilter !== "all" && m.famille !== familleFilter) return false;
+      if (typoFilter !== "all" && m.typologie_id !== typoFilter) return false;
+      return true;
+    });
+  }, [matieres, familleFilter, typoFilter]);
 
   async function handleSave() {
     if (!form.matiere_id || !form.longueur_mm || !form.largeur_mm) {
@@ -417,10 +491,7 @@ function PanneauDialog({
       return;
     }
     setSaving(true);
-    const payload = {
-      ...form,
-      reference_fournisseur: form.reference_fournisseur || null,
-    };
+    const payload = { ...form, reference_fournisseur: form.reference_fournisseur || null };
     const res = panneau
       ? await supabase.from("panneaux").update(payload).eq("id", panneau.id)
       : await supabase.from("panneaux").insert(payload);
@@ -429,55 +500,47 @@ function PanneauDialog({
     else { toast.success(panneau ? "Panneau modifié" : "Panneau créé"); onSaved(); }
   }
 
-  async function handleCreateMatiere() {
-    if (!newMatiere.libelle || !newMatiere.epaisseur_mm) { toast.error("Libellé et épaisseur requis"); return; }
-    const code = newMatiere.code || newMatiere.libelle.toUpperCase().replace(/\s+/g, "-").slice(0, 12) + "-" + newMatiere.epaisseur_mm;
-    const { data, error } = await supabase.from("matieres").insert({
-      code, libelle: newMatiere.libelle, famille: newMatiere.famille, epaisseur_mm: newMatiere.epaisseur_mm,
-    }).select().single();
-    if (error) { toast.error(error.message); return; }
-    toast.success("Matière créée");
-    setForm({ ...form, matiere_id: data.id });
-    setCreateMatiere(false);
-    onMatieresRefresh();
-  }
-
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-xl">
+      <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader><DialogTitle>{panneau ? "Modifier" : "Nouveau"} panneau</DialogTitle></DialogHeader>
         <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>Famille</Label>
+              <Select value={familleFilter} onValueChange={(v) => { setFamilleFilter(v); setTypoFilter("all"); }}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Toutes</SelectItem>
+                  {FAMILLES.map((f) => <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Typologie</Label>
+              <Select value={typoFilter} onValueChange={setTypoFilter}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Toutes</SelectItem>
+                  {typoOptions.map((t) => <SelectItem key={t.id} value={t.id}>{t.nom}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           <div className="space-y-2">
             <Label>Matière *</Label>
-            <Select value={form.matiere_id} onValueChange={(v) => v === "__new" ? setCreateMatiere(true) : setForm({ ...form, matiere_id: v })}>
-              <SelectTrigger><SelectValue placeholder="Sélectionner…" /></SelectTrigger>
+            <Select value={form.matiere_id} onValueChange={(v) => setForm({ ...form, matiere_id: v })}>
+              <SelectTrigger>
+                <SelectValue placeholder={matiereOptions.length ? "Sélectionner…" : "Aucune matière disponible"} />
+              </SelectTrigger>
               <SelectContent>
-                {matieres.filter((m) => m.actif).map((m) => (
-                  <SelectItem key={m.id} value={m.id}>{m.code} — {m.libelle}</SelectItem>
+                {matiereOptions.map((m) => (
+                  <SelectItem key={m.id} value={m.id}>{m.libelle}</SelectItem>
                 ))}
-                <SelectItem value="__new">+ Créer une nouvelle matière</SelectItem>
               </SelectContent>
             </Select>
           </div>
-
-          {createMatiere && (
-            <Card className="p-4 space-y-3 bg-muted/30 rounded-2xl">
-              <p className="text-xs eyebrow">Nouvelle matière</p>
-              <Input placeholder="Libellé" value={newMatiere.libelle} onChange={(e) => setNewMatiere({ ...newMatiere, libelle: e.target.value })} />
-              <div className="grid grid-cols-2 gap-2">
-                <Input placeholder="Code (auto)" className="font-mono" value={newMatiere.code} onChange={(e) => setNewMatiere({ ...newMatiere, code: e.target.value.toUpperCase() })} />
-                <Input placeholder="Épaisseur mm" type="number" value={newMatiere.epaisseur_mm || ""} onChange={(e) => setNewMatiere({ ...newMatiere, epaisseur_mm: Number(e.target.value) })} />
-              </div>
-              <Select value={newMatiere.famille} onValueChange={(v) => setNewMatiere({ ...newMatiere, famille: v as Famille })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{FAMILLES.map((f) => <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>)}</SelectContent>
-              </Select>
-              <div className="flex gap-2 justify-end">
-                <Button variant="ghost" size="sm" onClick={() => setCreateMatiere(false)}>Annuler</Button>
-                <Button size="sm" onClick={handleCreateMatiere}>Créer</Button>
-              </div>
-            </Card>
-          )}
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">

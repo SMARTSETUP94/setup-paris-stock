@@ -180,8 +180,29 @@ export type Database = {
             foreignKeyName: "bdc_lignes_panneau_id_fkey"
             columns: ["panneau_id"]
             isOneToOne: false
+            referencedRelation: "consommation_par_affaire"
+            referencedColumns: ["panneau_id"]
+          },
+          {
+            foreignKeyName: "bdc_lignes_panneau_id_fkey"
+            columns: ["panneau_id"]
+            isOneToOne: false
+            referencedRelation: "cump_par_panneau"
+            referencedColumns: ["panneau_id"]
+          },
+          {
+            foreignKeyName: "bdc_lignes_panneau_id_fkey"
+            columns: ["panneau_id"]
+            isOneToOne: false
             referencedRelation: "panneaux"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bdc_lignes_panneau_id_fkey"
+            columns: ["panneau_id"]
+            isOneToOne: false
+            referencedRelation: "stock_actuel"
+            referencedColumns: ["panneau_id"]
           },
         ]
       }
@@ -333,36 +354,48 @@ export type Database = {
           bdc_id: string | null
           commentaire: string | null
           created_at: string
+          cump_apres: number | null
+          cump_avant: number | null
           effectue_par: string | null
           id: string
           panneau_id: string
           photo_url: string | null
+          prix_unitaire_ht: number | null
           quantite: number
           type: Database["public"]["Enums"]["type_mouvement"]
+          valeur_ligne_ht: number | null
         }
         Insert: {
           affaire_id?: string | null
           bdc_id?: string | null
           commentaire?: string | null
           created_at?: string
+          cump_apres?: number | null
+          cump_avant?: number | null
           effectue_par?: string | null
           id?: string
           panneau_id: string
           photo_url?: string | null
+          prix_unitaire_ht?: number | null
           quantite: number
           type: Database["public"]["Enums"]["type_mouvement"]
+          valeur_ligne_ht?: number | null
         }
         Update: {
           affaire_id?: string | null
           bdc_id?: string | null
           commentaire?: string | null
           created_at?: string
+          cump_apres?: number | null
+          cump_avant?: number | null
           effectue_par?: string | null
           id?: string
           panneau_id?: string
           photo_url?: string | null
+          prix_unitaire_ht?: number | null
           quantite?: number
           type?: Database["public"]["Enums"]["type_mouvement"]
+          valeur_ligne_ht?: number | null
         }
         Relationships: [
           {
@@ -397,8 +430,29 @@ export type Database = {
             foreignKeyName: "mouvements_stock_panneau_id_fkey"
             columns: ["panneau_id"]
             isOneToOne: false
+            referencedRelation: "consommation_par_affaire"
+            referencedColumns: ["panneau_id"]
+          },
+          {
+            foreignKeyName: "mouvements_stock_panneau_id_fkey"
+            columns: ["panneau_id"]
+            isOneToOne: false
+            referencedRelation: "cump_par_panneau"
+            referencedColumns: ["panneau_id"]
+          },
+          {
+            foreignKeyName: "mouvements_stock_panneau_id_fkey"
+            columns: ["panneau_id"]
+            isOneToOne: false
             referencedRelation: "panneaux"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mouvements_stock_panneau_id_fkey"
+            columns: ["panneau_id"]
+            isOneToOne: false
+            referencedRelation: "stock_actuel"
+            referencedColumns: ["panneau_id"]
           },
         ]
       }
@@ -407,6 +461,7 @@ export type Database = {
           actif: boolean
           auto_masque_si_zero: boolean
           created_at: string
+          cump_ht: number | null
           id: string
           largeur_mm: number
           longueur_mm: number
@@ -419,6 +474,7 @@ export type Database = {
           actif?: boolean
           auto_masque_si_zero?: boolean
           created_at?: string
+          cump_ht?: number | null
           id?: string
           largeur_mm: number
           longueur_mm: number
@@ -431,6 +487,7 @@ export type Database = {
           actif?: boolean
           auto_masque_si_zero?: boolean
           created_at?: string
+          cump_ht?: number | null
           id?: string
           largeur_mm?: number
           longueur_mm?: number
@@ -483,6 +540,7 @@ export type Database = {
           actif: boolean | null
           auto_masque_si_zero: boolean | null
           created_at: string | null
+          cump_ht: number | null
           famille: Database["public"]["Enums"]["famille_matiere"] | null
           id: string | null
           largeur_mm: number | null
@@ -496,6 +554,7 @@ export type Database = {
           stock_actuel: number | null
           surface_m2: number | null
           unite_stock: Database["public"]["Enums"]["unite_stock"] | null
+          valeur_stock_ht: number | null
         }
         Relationships: [
           {
@@ -511,9 +570,12 @@ export type Database = {
         Row: {
           affaire_id: string | null
           matiere_id: string | null
-          quantite_sortie: number | null
+          panneau_id: string | null
+          qte_entree: number | null
+          qte_sortie: number | null
+          reliquat: number | null
           surface_m2_totale: number | null
-          valeur_estimee_ht: number | null
+          valeur_consommee_ht: number | null
         }
         Relationships: [
           {
@@ -532,27 +594,21 @@ export type Database = {
           },
         ]
       }
+      cump_par_panneau: {
+        Row: {
+          cump_ht: number | null
+          dernieres_entrees: Json | null
+          panneau_id: string | null
+          stock_actuel: number | null
+        }
+        Relationships: []
+      }
       stock_actuel: {
         Row: {
           panneau_id: string | null
           quantite_actuelle: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "mouvements_stock_panneau_id_fkey"
-            columns: ["panneau_id"]
-            isOneToOne: false
-            referencedRelation: "catalogue_visible"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "mouvements_stock_panneau_id_fkey"
-            columns: ["panneau_id"]
-            isOneToOne: false
-            referencedRelation: "panneaux"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Functions: {

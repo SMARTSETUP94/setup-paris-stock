@@ -103,8 +103,6 @@ function AffaireDetail() {
   const [affaire, setAffaire] = useState<Affaire | null>(null);
   const [loading, setLoading] = useState(true);
   const [editOpen, setEditOpen] = useState(false);
-  const [accesList, setAccesList] = useState<Acces[]>([]);
-  const [inviteOpen, setInviteOpen] = useState(false);
   const [notes, setNotes] = useState("");
   const notesTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [stockLignes, setStockLignes] = useState<StockLigne[]>([]);
@@ -128,22 +126,9 @@ function AffaireDetail() {
     setLoading(false);
   }
 
-  async function loadAcces(id: string) {
-    const { data } = await supabase
-      .from("affaire_acces")
-      .select("*")
-      .eq("affaire_id", id)
-      .order("created_at", { ascending: false });
-    setAccesList((data as Acces[]) ?? []);
-  }
-
   useEffect(() => {
     if (ready) void loadAffaire();
   }, [ready, code]);
-
-  useEffect(() => {
-    if (affaire?.id) void loadAcces(affaire.id);
-  }, [affaire?.id]);
 
   async function loadStock(id: string) {
     const { data: cons } = await supabase
@@ -215,38 +200,6 @@ function AffaireDetail() {
       const { error } = await supabase.from("affaires").update({ notes: v }).eq("id", affaire.id);
       if (error) toast.error("Sauvegarde notes impossible");
     }, 1000);
-  }
-
-  async function copyLink(token: string) {
-    try {
-      await navigator.clipboard.writeText(buildInvitationLink(token));
-      toast.success("Lien copié");
-    } catch {
-      toast.error("Impossible de copier");
-    }
-  }
-
-  async function extendAcces(a: Acces) {
-    const newDate = new Date(a.expire_le);
-    newDate.setDate(newDate.getDate() + 30);
-    const { error } = await supabase
-      .from("affaire_acces")
-      .update({ expire_le: newDate.toISOString() })
-      .eq("id", a.id);
-    if (error) toast.error(error.message);
-    else {
-      toast.success("Expiration prolongée de 30 jours");
-      if (affaire) void loadAcces(affaire.id);
-    }
-  }
-
-  async function revokeAcces(a: Acces) {
-    const { error } = await supabase.from("affaire_acces").delete().eq("id", a.id);
-    if (error) toast.error(error.message);
-    else {
-      toast.success("Accès révoqué");
-      if (affaire) void loadAcces(affaire.id);
-    }
   }
 
   async function archiverAffaire() {

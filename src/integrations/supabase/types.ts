@@ -155,6 +155,13 @@ export type Database = {
             foreignKeyName: "bdc_lignes_panneau_id_fkey"
             columns: ["panneau_id"]
             isOneToOne: false
+            referencedRelation: "catalogue_visible"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bdc_lignes_panneau_id_fkey"
+            columns: ["panneau_id"]
+            isOneToOne: false
             referencedRelation: "panneaux"
             referencedColumns: ["id"]
           },
@@ -365,6 +372,13 @@ export type Database = {
             foreignKeyName: "mouvements_stock_panneau_id_fkey"
             columns: ["panneau_id"]
             isOneToOne: false
+            referencedRelation: "catalogue_visible"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mouvements_stock_panneau_id_fkey"
+            columns: ["panneau_id"]
+            isOneToOne: false
             referencedRelation: "panneaux"
             referencedColumns: ["id"]
           },
@@ -446,6 +460,35 @@ export type Database = {
       }
     }
     Views: {
+      catalogue_visible: {
+        Row: {
+          actif: boolean | null
+          auto_masque_si_zero: boolean | null
+          created_at: string | null
+          famille: Database["public"]["Enums"]["famille_matiere"] | null
+          id: string | null
+          largeur_mm: number | null
+          longueur_mm: number | null
+          matiere_code: string | null
+          matiere_id: string | null
+          matiere_libelle: string | null
+          prix_achat_ht: number | null
+          reference_fournisseur: string | null
+          seuil_alerte: number | null
+          stock_actuel: number | null
+          surface_m2: number | null
+          unite_stock: Database["public"]["Enums"]["unite_stock"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "panneaux_matiere_id_fkey"
+            columns: ["matiere_id"]
+            isOneToOne: false
+            referencedRelation: "matieres"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       consommation_par_affaire: {
         Row: {
           affaire_id: string | null
@@ -477,6 +520,13 @@ export type Database = {
           quantite_actuelle: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "mouvements_stock_panneau_id_fkey"
+            columns: ["panneau_id"]
+            isOneToOne: false
+            referencedRelation: "catalogue_visible"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "mouvements_stock_panneau_id_fkey"
             columns: ["panneau_id"]

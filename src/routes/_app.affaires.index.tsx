@@ -87,6 +87,14 @@ function AffairesIndex() {
     return Array.from(map.entries()).map(([id, label]) => ({ id, label }));
   }, [rows]);
 
+  const hasActiveFilters = dq.trim() !== "" || statut !== "all" || chargeFilter !== "all";
+
+  function resetFilters() {
+    setSearch("");
+    setStatut("all");
+    setChargeFilter("all");
+  }
+
   const filtered = useMemo(() => {
     const q = dq.trim().toLowerCase();
     return rows.filter((r) => {
@@ -170,7 +178,7 @@ function AffairesIndex() {
       )}
 
       <Card className="p-4 mb-6">
-        <div className="grid gap-3 md:grid-cols-[1fr_180px_220px]">
+        <div className="grid gap-3 md:grid-cols-[1fr_180px_220px_auto]">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -208,6 +216,15 @@ function AffairesIndex() {
               ))}
             </SelectContent>
           </Select>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={resetFilters}
+            disabled={!hasActiveFilters}
+            className="md:self-stretch"
+          >
+            Réinitialiser
+          </Button>
         </div>
       </Card>
 

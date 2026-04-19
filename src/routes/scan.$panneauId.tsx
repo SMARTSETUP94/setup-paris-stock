@@ -191,7 +191,7 @@ function ScanSortiePage() {
         <h1 className="text-base font-semibold">Déclarer une sortie</h1>
       </header>
 
-      <main className="p-4 max-w-md mx-auto space-y-4">
+      <main className="p-4 pb-32 max-w-md mx-auto space-y-4">
         <Card className="p-4">
           <p className="eyebrow mb-2">Panneau scanné</p>
           <h2 className="text-lg font-semibold leading-tight">{m?.libelle ?? "—"}</h2>
@@ -265,10 +265,19 @@ function ScanSortiePage() {
             />
           </div>
 
-          <Button type="submit" className="w-full h-12 text-base" disabled={submitting}>
-            {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-            Valider la sortie
-          </Button>
+          {/* Sticky footer mobile pour valider sans scroller */}
+          <div className="fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+            <div className="max-w-md mx-auto">
+              <Button
+                type="submit"
+                className="w-full h-12 text-base"
+                disabled={submitting}
+              >
+                {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+                Valider la sortie
+              </Button>
+            </div>
+          </div>
         </form>
       </main>
     </div>

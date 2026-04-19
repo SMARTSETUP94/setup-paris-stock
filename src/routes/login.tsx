@@ -140,14 +140,15 @@ function LoginPage() {
                 {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Se connecter
               </Button>
-              <button
+              <Button
                 type="button"
+                variant="link"
                 onClick={handleForgotPassword}
-                className="block w-full text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
+                className="block w-full text-center text-sm text-muted-foreground"
                 disabled={submitting}
               >
                 Mot de passe oublié ?
-              </button>
+              </Button>
             </form>
           </TabsContent>
 

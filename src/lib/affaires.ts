@@ -22,7 +22,8 @@ export const PERMISSIONS: { value: PermissionAcces; label: string; description: 
   {
     value: "lecture",
     label: "Lecture seule",
-    description: "Partage en consultation : le destinataire voit le stock alloué et la consommation.",
+    description:
+      "Partage en consultation : le destinataire voit le stock alloué et la consommation.",
   },
 ];
 
@@ -66,7 +67,9 @@ export function formatDateFr(value: string | null | undefined) {
 export function formatDateTimeFr(value: string | null | undefined) {
   if (!value) return "—";
   try {
-    return new Intl.DateTimeFormat("fr-FR", { dateStyle: "short", timeStyle: "short" }).format(new Date(value));
+    return new Intl.DateTimeFormat("fr-FR", { dateStyle: "short", timeStyle: "short" }).format(
+      new Date(value),
+    );
   } catch {
     return "—";
   }

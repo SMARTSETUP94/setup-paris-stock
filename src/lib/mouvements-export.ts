@@ -23,7 +23,9 @@ export type MouvementExport = {
 
 function fmtDate(iso: string) {
   try {
-    return new Intl.DateTimeFormat("fr-FR", { dateStyle: "short", timeStyle: "short" }).format(new Date(iso));
+    return new Intl.DateTimeFormat("fr-FR", { dateStyle: "short", timeStyle: "short" }).format(
+      new Date(iso),
+    );
   } catch {
     return iso;
   }
@@ -31,7 +33,10 @@ function fmtDate(iso: string) {
 
 function fmtNum(v: number | null | undefined, d = 2) {
   if (v === null || v === undefined) return "";
-  return new Intl.NumberFormat("fr-FR", { maximumFractionDigits: d, minimumFractionDigits: 0 }).format(v);
+  return new Intl.NumberFormat("fr-FR", {
+    maximumFractionDigits: d,
+    minimumFractionDigits: 0,
+  }).format(v);
 }
 
 function fileSuffix(d1?: string, d2?: string) {
@@ -43,7 +48,10 @@ function fileSuffix(d1?: string, d2?: string) {
 // ============================================================
 // XLSX (3 feuilles)
 // ============================================================
-export function exportMouvementsXLSX(rows: MouvementExport[], opts: { dateDebut?: string; dateFin?: string }) {
+export function exportMouvementsXLSX(
+  rows: MouvementExport[],
+  opts: { dateDebut?: string; dateFin?: string },
+) {
   const wb = XLSX.utils.book_new();
 
   // Feuille 1 — Mouvements détaillés
@@ -68,18 +76,29 @@ export function exportMouvementsXLSX(rows: MouvementExport[], opts: { dateDebut?
   XLSX.utils.book_append_sheet(wb, ws1, "Mouvements détaillés");
 
   // Feuille 2 — Synthèse par matière
-  const matMap = new Map<string, {
-    code: string;
-    libelle: string;
-    qteEntree: number;
-    valEntree: number;
-    qteSortie: number;
-    valSortie: number;
-    cumpFinal: number | null;
-  }>();
+  const matMap = new Map<
+    string,
+    {
+      code: string;
+      libelle: string;
+      qteEntree: number;
+      valEntree: number;
+      qteSortie: number;
+      valSortie: number;
+      cumpFinal: number | null;
+    }
+  >();
   for (const r of rows) {
     const key = r.matiere_code || r.matiere_libelle || "—";
-    const cur = matMap.get(key) ?? { code: r.matiere_code, libelle: r.matiere_libelle, qteEntree: 0, valEntree: 0, qteSortie: 0, valSortie: 0, cumpFinal: r.cump_apres };
+    const cur = matMap.get(key) ?? {
+      code: r.matiere_code,
+      libelle: r.matiere_libelle,
+      qteEntree: 0,
+      valEntree: 0,
+      qteSortie: 0,
+      valSortie: 0,
+      cumpFinal: r.cump_apres,
+    };
     if (r.type === "entree" || r.type === "chute_reintegration") {
       cur.qteEntree += Math.abs(r.quantite);
       cur.valEntree += r.valeur_ligne_ht ?? 0;
@@ -104,16 +123,25 @@ export function exportMouvementsXLSX(rows: MouvementExport[], opts: { dateDebut?
   XLSX.utils.book_append_sheet(wb, ws2, "Synthèse par matière");
 
   // Feuille 3 — Synthèse par affaire
-  const affMap = new Map<string, {
-    numero: string;
-    nom: string;
-    qteSortie: number;
-    valConsommee: number;
-    nbMouvements: number;
-  }>();
+  const affMap = new Map<
+    string,
+    {
+      numero: string;
+      nom: string;
+      qteSortie: number;
+      valConsommee: number;
+      nbMouvements: number;
+    }
+  >();
   for (const r of rows) {
     if (!r.affaire_numero) continue;
-    const cur = affMap.get(r.affaire_numero) ?? { numero: r.affaire_numero, nom: r.affaire_nom, qteSortie: 0, valConsommee: 0, nbMouvements: 0 };
+    const cur = affMap.get(r.affaire_numero) ?? {
+      numero: r.affaire_numero,
+      nom: r.affaire_nom,
+      qteSortie: 0,
+      valConsommee: 0,
+      nbMouvements: 0,
+    };
     cur.nbMouvements += 1;
     if (r.type === "sortie") {
       cur.qteSortie += Math.abs(r.quantite);
@@ -124,7 +152,7 @@ export function exportMouvementsXLSX(rows: MouvementExport[], opts: { dateDebut?
   const f3 = Array.from(affMap.values()).map((a) => ({
     "Affaire n°": a.numero,
     "Affaire nom": a.nom,
-    "Mouvements": a.nbMouvements,
+    Mouvements: a.nbMouvements,
     "Qté sortie totale": a.qteSortie,
     "Valeur consommée HT au CUMP (€)": Math.round(a.valConsommee * 100) / 100,
   }));
@@ -137,7 +165,10 @@ export function exportMouvementsXLSX(rows: MouvementExport[], opts: { dateDebut?
 // ============================================================
 // CSV (séparateur ; + UTF-8 BOM)
 // ============================================================
-export function exportMouvementsCSV(rows: MouvementExport[], opts: { dateDebut?: string; dateFin?: string }) {
+export function exportMouvementsCSV(
+  rows: MouvementExport[],
+  opts: { dateDebut?: string; dateFin?: string },
+) {
   const headers = [
     "Date",
     "Type",
@@ -162,23 +193,27 @@ export function exportMouvementsCSV(rows: MouvementExport[], opts: { dateDebut?:
   };
   const lines = [headers.join(";")];
   for (const r of rows) {
-    lines.push([
-      fmtDate(r.date),
-      typeMeta(r.type).label,
-      r.matiere_code,
-      r.matiere_libelle,
-      r.dimensions,
-      fmtNum(r.quantite, 2),
-      r.unite,
-      r.affaire_numero,
-      r.affaire_nom,
-      fmtNum(r.cump_avant, 4),
-      fmtNum(r.cump_apres, 4),
-      fmtNum(r.prix_unitaire_ht, 4),
-      fmtNum(r.valeur_ligne_ht, 2),
-      r.operateur,
-      r.commentaire,
-    ].map(escape).join(";"));
+    lines.push(
+      [
+        fmtDate(r.date),
+        typeMeta(r.type).label,
+        r.matiere_code,
+        r.matiere_libelle,
+        r.dimensions,
+        fmtNum(r.quantite, 2),
+        r.unite,
+        r.affaire_numero,
+        r.affaire_nom,
+        fmtNum(r.cump_avant, 4),
+        fmtNum(r.cump_apres, 4),
+        fmtNum(r.prix_unitaire_ht, 4),
+        fmtNum(r.valeur_ligne_ht, 2),
+        r.operateur,
+        r.commentaire,
+      ]
+        .map(escape)
+        .join(";"),
+    );
   }
   const csv = "\uFEFF" + lines.join("\r\n");
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
@@ -221,9 +256,20 @@ export function exportMouvementsPDF(
 
   autoTable(doc, {
     startY: 42,
-    head: [[
-      "Date", "Type", "Matière", "Dim.", "Qté", "Affaire", "CUMP av.", "CUMP ap.", "Val. HT", "Comm.",
-    ]],
+    head: [
+      [
+        "Date",
+        "Type",
+        "Matière",
+        "Dim.",
+        "Qté",
+        "Affaire",
+        "CUMP av.",
+        "CUMP ap.",
+        "Val. HT",
+        "Comm.",
+      ],
+    ],
     body: rows.map((r) => [
       fmtDate(r.date),
       typeMeta(r.type).label,
@@ -250,11 +296,7 @@ export function exportMouvementsPDF(
         14,
         pageHeight - 8,
       );
-      doc.text(
-        `Page ${doc.getNumberOfPages()}`,
-        pageWidth - 20,
-        pageHeight - 8,
-      );
+      doc.text(`Page ${doc.getNumberOfPages()}`, pageWidth - 20, pageHeight - 8);
     },
   });
 

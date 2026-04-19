@@ -24,10 +24,7 @@ import { listPanneauxPublic, type PanneauSearchResult } from "@/lib/scan.functio
 
 export const Route = createFileRoute("/scan/")({
   head: () => ({
-    meta: [
-      { title: "Scanner un panneau — Setup Stock" },
-      { name: "robots", content: "noindex" },
-    ],
+    meta: [{ title: "Scanner un panneau — Setup Stock" }, { name: "robots", content: "noindex" }],
   }),
   component: ScanPage,
 });
@@ -162,10 +159,20 @@ function ScanPage() {
       </header>
 
       <main className="flex-1 flex flex-col items-center p-4 gap-4">
-        <Tabs value={tab} onValueChange={(v) => setTab(v as "scan" | "search")} className="w-full max-w-md">
+        <Tabs
+          value={tab}
+          onValueChange={(v) => setTab(v as "scan" | "search")}
+          className="w-full max-w-md"
+        >
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="scan"><QrCode className="h-3.5 w-3.5 mr-1.5" />Scanner</TabsTrigger>
-            <TabsTrigger value="search"><Search className="h-3.5 w-3.5 mr-1.5" />Rechercher</TabsTrigger>
+            <TabsTrigger value="scan">
+              <QrCode className="h-3.5 w-3.5 mr-1.5" />
+              Scanner
+            </TabsTrigger>
+            <TabsTrigger value="search">
+              <Search className="h-3.5 w-3.5 mr-1.5" />
+              Rechercher
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="scan" className="mt-4 space-y-4">
@@ -252,7 +259,9 @@ function ScanPage() {
                 </div>
               )}
               {!searching && q.trim().length > 0 && results.length === 0 && (
-                <p className="text-xs text-muted-foreground px-1">Aucun panneau trouvé pour « {q} »</p>
+                <p className="text-xs text-muted-foreground px-1">
+                  Aucun panneau trouvé pour « {q} »
+                </p>
               )}
               {results.map((r) => (
                 <button
@@ -267,9 +276,7 @@ function ScanPage() {
                         <Package className="h-4 w-4 text-muted-foreground" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium truncate">
-                          {r.matiere_libelle ?? "—"}
-                        </p>
+                        <p className="text-sm font-medium truncate">{r.matiere_libelle ?? "—"}</p>
                         <p className="text-xs text-muted-foreground mt-0.5">
                           <span className="font-mono">{r.matiere_code ?? "?"}</span>
                           {" · "}

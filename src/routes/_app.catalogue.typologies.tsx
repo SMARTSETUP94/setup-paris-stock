@@ -12,7 +12,13 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -142,10 +148,16 @@ function TypologiesPage() {
           />
         </div>
         <Select value={familleFilter} onValueChange={setFamilleFilter}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Toutes familles</SelectItem>
-            {FAMILLES.map((f) => <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>)}
+            {FAMILLES.map((f) => (
+              <SelectItem key={f.value} value={f.value}>
+                {f.label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -166,20 +178,35 @@ function TypologiesPage() {
             </thead>
             <tbody>
               {loading && (
-                <tr><td colSpan={7} className="px-6 py-12 text-center"><Loader2 className="h-4 w-4 animate-spin inline text-muted-foreground" /></td></tr>
+                <tr>
+                  <td colSpan={7} className="px-6 py-12 text-center">
+                    <Loader2 className="h-4 w-4 animate-spin inline text-muted-foreground" />
+                  </td>
+                </tr>
               )}
               {!loading && filtered.length === 0 && (
-                <tr><td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">Aucune typologie</td></tr>
+                <tr>
+                  <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
+                    Aucune typologie
+                  </td>
+                </tr>
               )}
               {filtered.map((t, idx) => {
                 const c = counts.get(t.id) ?? { matieres: 0, panneaux: 0 };
                 return (
-                  <tr key={t.id} className={`border-b border-border last:border-0 hover:bg-muted/50 ${idx % 2 === 1 ? "bg-muted/30" : ""} ${!t.actif ? "opacity-60" : ""}`}>
+                  <tr
+                    key={t.id}
+                    className={`border-b border-border last:border-0 hover:bg-muted/50 ${idx % 2 === 1 ? "bg-muted/30" : ""} ${!t.actif ? "opacity-60" : ""}`}
+                  >
                     <td className="px-6 py-4">
-                      <span className="inline-block px-2 py-0.5 rounded font-mono text-xs bg-muted">{t.code}</span>
+                      <span className="inline-block px-2 py-0.5 rounded font-mono text-xs bg-muted">
+                        {t.code}
+                      </span>
                     </td>
                     <td className="px-6 py-4 font-medium">{t.nom}</td>
-                    <td className="px-6 py-4"><FamilleBadge famille={t.famille} /></td>
+                    <td className="px-6 py-4">
+                      <FamilleBadge famille={t.famille} />
+                    </td>
                     <td className="px-6 py-4 text-right tabular-nums">{c.matieres}</td>
                     <td className="px-6 py-4 text-right tabular-nums">{c.panneaux}</td>
                     <td className="px-6 py-4 text-center">
@@ -202,30 +229,46 @@ function TypologiesPage() {
         <TypologieDialog
           typologie={editing}
           existing={items}
-          onClose={() => { setCreating(false); setEditing(null); }}
-          onSaved={() => { void fetchData(); setCreating(false); setEditing(null); }}
+          onClose={() => {
+            setCreating(false);
+            setEditing(null);
+          }}
+          onSaved={() => {
+            void fetchData();
+            setCreating(false);
+            setEditing(null);
+          }}
         />
       )}
 
       {importing && (
         <ImportDialog<TablesInsert<"typologies">>
           open
-          onClose={() => { setImporting(false); void fetchData(); }}
+          onClose={() => {
+            setImporting(false);
+            void fetchData();
+          }}
           title="Importer des typologies"
           description="Format CSV ou XLSX. Colonnes attendues : code, nom, famille (et description optionnelle)."
           expectedColumns={["code", "nom", "famille"]}
           validateRow={async (raw) => {
             const errors: string[] = [];
-            const code = String(raw.code ?? "").trim().toUpperCase();
+            const code = String(raw.code ?? "")
+              .trim()
+              .toUpperCase();
             if (!code) errors.push("Code requis");
             const nom = String(raw.nom ?? "").trim();
             if (!nom) errors.push("Nom requis");
-            const famille = String(raw.famille ?? "").trim().toLowerCase() as Famille;
-            if (!FAMILLES.find((f) => f.value === famille)) errors.push(`Famille invalide : ${raw.famille}`);
+            const famille = String(raw.famille ?? "")
+              .trim()
+              .toLowerCase() as Famille;
+            if (!FAMILLES.find((f) => f.value === famille))
+              errors.push(`Famille invalide : ${raw.famille}`);
             const description = String(raw.description ?? "").trim() || null;
             const isDuplicate = items.some(
-              (t) => t.code.toLowerCase() === code.toLowerCase()
-                || (t.famille === famille && t.nom.toLowerCase() === nom.toLowerCase()),
+              (t) =>
+                t.code.toLowerCase() === code.toLowerCase() ||
+                (t.famille === famille && t.nom.toLowerCase() === nom.toLowerCase()),
             );
             return {
               data: errors.length ? null : { code, nom, famille, description, actif: true },
@@ -236,18 +279,33 @@ function TypologiesPage() {
           columnsPreview={[
             { key: "code", label: "Code" },
             { key: "nom", label: "Nom" },
-            { key: "famille", label: "Famille", render: (d) => <FamilleBadge famille={d.famille} /> },
+            {
+              key: "famille",
+              label: "Famille",
+              render: (d) => <FamilleBadge famille={d.famille} />,
+            },
           ]}
           importRows={async (rows: ImportRow<TablesInsert<"typologies">>[]) => {
-            let inserted = 0, updated = 0, skipped = 0, errors = 0;
+            let inserted = 0,
+              updated = 0,
+              skipped = 0,
+              errors = 0;
             for (const r of rows) {
-              if (!r.data) { skipped++; continue; }
+              if (!r.data) {
+                skipped++;
+                continue;
+              }
               if (r.action === "overwrite") {
-                const { error } = await supabase.from("typologies").update(r.data).eq("code", r.data.code);
-                if (error) errors++; else updated++;
+                const { error } = await supabase
+                  .from("typologies")
+                  .update(r.data)
+                  .eq("code", r.data.code);
+                if (error) errors++;
+                else updated++;
               } else if (r.action === "create") {
                 const { error } = await supabase.from("typologies").insert(r.data);
-                if (error) errors++; else inserted++;
+                if (error) errors++;
+                else inserted++;
               } else skipped++;
             }
             return { inserted, updated, skipped, errors };
@@ -297,12 +355,23 @@ function TypologieDialog({
       toast.error("Code et nom requis");
       return;
     }
-    const dupCode = existing.some((t) => t.id !== typologie?.id && t.code.toLowerCase() === form.code.toLowerCase());
-    if (dupCode) { toast.error(`Code "${form.code}" déjà utilisé`); return; }
-    const dupNom = existing.some(
-      (t) => t.id !== typologie?.id && t.famille === form.famille && t.nom.toLowerCase() === form.nom.toLowerCase(),
+    const dupCode = existing.some(
+      (t) => t.id !== typologie?.id && t.code.toLowerCase() === form.code.toLowerCase(),
     );
-    if (dupNom) { toast.error(`Nom déjà utilisé dans cette famille`); return; }
+    if (dupCode) {
+      toast.error(`Code "${form.code}" déjà utilisé`);
+      return;
+    }
+    const dupNom = existing.some(
+      (t) =>
+        t.id !== typologie?.id &&
+        t.famille === form.famille &&
+        t.nom.toLowerCase() === form.nom.toLowerCase(),
+    );
+    if (dupNom) {
+      toast.error(`Nom déjà utilisé dans cette famille`);
+      return;
+    }
 
     setSaving(true);
     const payload = { ...form, description: form.description || null };
@@ -311,7 +380,10 @@ function TypologieDialog({
       : await supabase.from("typologies").insert(payload);
     setSaving(false);
     if (res.error) toast.error(res.error.message);
-    else { toast.success(typologie ? "Typologie modifiée" : "Typologie créée"); onSaved(); }
+    else {
+      toast.success(typologie ? "Typologie modifiée" : "Typologie créée");
+      onSaved();
+    }
   }
 
   return (
@@ -323,24 +395,40 @@ function TypologieDialog({
         <div className="space-y-4">
           <div className="space-y-2">
             <Label>Nom *</Label>
-            <Input value={form.nom} onChange={(e) => handleNomChange(e.target.value)} placeholder="ex. Contreplaqué" />
+            <Input
+              value={form.nom}
+              onChange={(e) => handleNomChange(e.target.value)}
+              placeholder="ex. Contreplaqué"
+            />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label>Code *</Label>
               <Input
                 value={form.code}
-                onChange={(e) => { setCodeTouched(true); setForm({ ...form, code: e.target.value.toUpperCase() }); }}
+                onChange={(e) => {
+                  setCodeTouched(true);
+                  setForm({ ...form, code: e.target.value.toUpperCase() });
+                }}
                 className="font-mono"
                 placeholder="CP"
               />
             </div>
             <div className="space-y-2">
               <Label>Famille *</Label>
-              <Select value={form.famille} onValueChange={(v) => setForm({ ...form, famille: v as Famille })}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select
+                value={form.famille}
+                onValueChange={(v) => setForm({ ...form, famille: v as Famille })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
-                  {FAMILLES.map((f) => <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>)}
+                  {FAMILLES.map((f) => (
+                    <SelectItem key={f.value} value={f.value}>
+                      {f.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -355,7 +443,9 @@ function TypologieDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Annuler</Button>
+          <Button variant="outline" onClick={onClose}>
+            Annuler
+          </Button>
           <Button onClick={handleSave} disabled={saving}>
             {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />} Enregistrer
           </Button>
@@ -365,7 +455,11 @@ function TypologieDialog({
   );
 }
 
-export function CatalogueSubnav({ active }: { active: "matieres" | "panneaux" | "typologies" | "etiquettes" }) {
+export function CatalogueSubnav({
+  active,
+}: {
+  active: "matieres" | "panneaux" | "typologies" | "etiquettes";
+}) {
   const tabs = [
     { key: "typologies", to: "/catalogue/typologies", label: "Typologies" },
     { key: "matieres", to: "/catalogue/matieres", label: "Matières" },

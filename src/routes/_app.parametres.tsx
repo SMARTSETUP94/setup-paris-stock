@@ -110,7 +110,9 @@ function UsersTab() {
       const res = await listUsers();
       setUsers(res.users as UserRow[]);
     } catch (e) {
-      toast.error("Chargement impossible", { description: (e instanceof Error ? e.message : String(e)) });
+      toast.error("Chargement impossible", {
+        description: e instanceof Error ? e.message : String(e),
+      });
     } finally {
       setLoading(false);
     }
@@ -135,7 +137,7 @@ function UsersTab() {
       toast.success(u.actif ? "Compte désactivé" : "Compte réactivé");
       void refresh();
     } catch (e) {
-      toast.error("Action impossible", { description: (e instanceof Error ? e.message : String(e)) });
+      toast.error("Action impossible", { description: e instanceof Error ? e.message : String(e) });
     }
   }
 
@@ -146,7 +148,7 @@ function UsersTab() {
       toast.success("Rôle mis à jour");
       void refresh();
     } catch (e) {
-      toast.error("Action impossible", { description: (e instanceof Error ? e.message : String(e)) });
+      toast.error("Action impossible", { description: e instanceof Error ? e.message : String(e) });
     }
   }
 
@@ -159,7 +161,7 @@ function UsersTab() {
         description: "Un lien de réinitialisation a été envoyé.",
       });
     } catch (e) {
-      toast.error("Envoi impossible", { description: (e instanceof Error ? e.message : String(e)) });
+      toast.error("Envoi impossible", { description: e instanceof Error ? e.message : String(e) });
     }
   }
 
@@ -171,7 +173,9 @@ function UsersTab() {
       setConfirmDelete(null);
       void refresh();
     } catch (e) {
-      toast.error("Suppression impossible", { description: (e instanceof Error ? e.message : String(e)) });
+      toast.error("Suppression impossible", {
+        description: e instanceof Error ? e.message : String(e),
+      });
     }
   }
 
@@ -204,9 +208,7 @@ function UsersTab() {
             <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
           </div>
         ) : sorted.length === 0 ? (
-          <div className="p-12 text-center text-muted-foreground text-sm">
-            Aucun utilisateur.
-          </div>
+          <div className="p-12 text-center text-muted-foreground text-sm">Aucun utilisateur.</div>
         ) : (
           <ul className="divide-y divide-border">
             {sorted.map((u) => {
@@ -227,12 +229,18 @@ function UsersTab() {
                         </Badge>
                       )}
                       {!u.actif && (
-                        <Badge variant="outline" className="text-[10px] border-destructive/40 text-destructive">
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] border-destructive/40 text-destructive"
+                        >
                           Désactivé
                         </Badge>
                       )}
                       {!u.email_confirmed_at && (
-                        <Badge variant="outline" className="text-[10px] border-warning/40 text-warning">
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] border-warning/40 text-warning"
+                        >
                           En attente
                         </Badge>
                       )}
@@ -265,10 +273,7 @@ function UsersTab() {
                         <Mail className="h-4 w-4 mr-2" />
                         Renvoyer un lien
                       </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => handleToggleActive(u)}
-                        disabled={isMe}
-                      >
+                      <DropdownMenuItem onClick={() => handleToggleActive(u)} disabled={isMe}>
                         {u.actif ? "Désactiver le compte" : "Réactiver le compte"}
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
@@ -297,18 +302,15 @@ function UsersTab() {
         }}
       />
 
-      <AlertDialog
-        open={!!confirmDelete}
-        onOpenChange={(o) => !o && setConfirmDelete(null)}
-      >
+      <AlertDialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Supprimer ce compte ?</AlertDialogTitle>
             <AlertDialogDescription>
               Cette action est <strong>définitive</strong>. L'utilisateur{" "}
-              <strong>{confirmDelete?.email}</strong> ne pourra plus se connecter et son profil
-              sera supprimé. L'historique des mouvements créés est conservé mais ne sera plus
-              attribué à un utilisateur. Préférez la désactivation si vous n'êtes pas sûr.
+              <strong>{confirmDelete?.email}</strong> ne pourra plus se connecter et son profil sera
+              supprimé. L'historique des mouvements créés est conservé mais ne sera plus attribué à
+              un utilisateur. Préférez la désactivation si vous n'êtes pas sûr.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -360,7 +362,9 @@ function InviteDialog({
       });
       onInvited();
     } catch (err) {
-      toast.error("Invitation impossible", { description: (err instanceof Error ? err.message : String(err)) });
+      toast.error("Invitation impossible", {
+        description: err instanceof Error ? err.message : String(err),
+      });
     } finally {
       setSubmitting(false);
     }

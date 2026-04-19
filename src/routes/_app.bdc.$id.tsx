@@ -116,16 +116,24 @@ function BdcDetailPage() {
             <div className="flex-1 space-y-3">
               <div>
                 <p className="font-medium text-foreground">L'extraction OCR a échoué</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {ocrError}
-                </p>
+                <p className="text-sm text-muted-foreground mt-1">{ocrError}</p>
                 <p className="text-sm text-muted-foreground mt-2">
-                  Vous pouvez relancer l'OCR ou passer en saisie manuelle pour ajouter les lignes vous-même.
+                  Vous pouvez relancer l'OCR ou passer en saisie manuelle pour ajouter les lignes
+                  vous-même.
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-2">
-                <Button size="sm" variant="outline" onClick={handleRelaunchOcr} disabled={reocrLoading}>
-                  {reocrLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleRelaunchOcr}
+                  disabled={reocrLoading}
+                >
+                  {reocrLoading ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                  )}
                   Relancer l'OCR
                 </Button>
                 <Button size="sm" onClick={switchToManual}>
@@ -210,7 +218,9 @@ function BdcDetailPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Conserver</AlertDialogCancel>
-            <AlertDialogAction onClick={() => handleAnnuler(goBack)}>Annuler le BDC</AlertDialogAction>
+            <AlertDialogAction onClick={() => handleAnnuler(goBack)}>
+              Annuler le BDC
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

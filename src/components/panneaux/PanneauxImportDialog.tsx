@@ -68,7 +68,9 @@ export function PanneauxImportDialog({
         { key: "prix_achat_ht", label: "Prix HT" },
         { key: "reference_fournisseur", label: "Réf. fournisseur" },
       ]}
-      importRows={async (rows: ImportRow<TablesInsert<"panneaux"> & { _matiere_code: string }>[]) => {
+      importRows={async (
+        rows: ImportRow<TablesInsert<"panneaux"> & { _matiere_code: string }>[],
+      ) => {
         let inserted = 0,
           updated = 0,
           skipped = 0,

@@ -74,17 +74,15 @@ export const getPanneauPublic = createServerFn({ method: "POST" })
 /**
  * Liste des affaires actives (devis + en_cours) pour le selecteur public.
  */
-export const listAffairesActivesPublic = createServerFn({ method: "POST" }).handler(
-  async () => {
-    const { data, error } = await supabaseAdmin
-      .from("affaires")
-      .select("id, code_chantier, nom, client, statut")
-      .in("statut", ["devis", "en_cours"])
-      .order("code_chantier", { ascending: true });
-    if (error) throw new Error(error.message);
-    return data ?? [];
-  },
-);
+export const listAffairesActivesPublic = createServerFn({ method: "POST" }).handler(async () => {
+  const { data, error } = await supabaseAdmin
+    .from("affaires")
+    .select("id, code_chantier, nom, client, statut")
+    .in("statut", ["devis", "en_cours"])
+    .order("code_chantier", { ascending: true });
+  if (error) throw new Error(error.message);
+  return data ?? [];
+});
 
 /**
  * Recherche textuelle de panneaux pour le fallback caméra HS.

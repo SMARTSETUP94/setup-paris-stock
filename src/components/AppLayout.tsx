@@ -88,9 +88,7 @@ function SidebarLink({ item, active }: { item: NavItem; active: boolean }) {
       to={item.to}
       className={cn(
         "group relative flex items-center gap-3 rounded-md px-3 py-2.5 text-sm transition-colors",
-        active
-          ? "font-semibold text-foreground"
-          : "font-medium text-foreground/80 hover:bg-muted",
+        active ? "font-semibold text-foreground" : "font-medium text-foreground/80 hover:bg-muted",
       )}
     >
       {active && (
@@ -111,9 +109,7 @@ function SidebarSubLink({ item, active }: { item: NavItem; active: boolean }) {
       to={item.to}
       className={cn(
         "relative flex items-center gap-2 rounded-md pl-9 pr-3 py-2 text-sm transition-colors",
-        active
-          ? "font-semibold text-foreground"
-          : "font-medium text-foreground/70 hover:bg-muted",
+        active ? "font-semibold text-foreground" : "font-medium text-foreground/70 hover:bg-muted",
       )}
     >
       {active && (
@@ -179,7 +175,11 @@ export function AppLayout() {
           {mainItems
             .filter((i) => !i.adminOnly || profile?.role === "admin")
             .map((item) => (
-              <SidebarLink key={item.to} item={item} active={isPathActive(location.pathname, item.to)} />
+              <SidebarLink
+                key={item.to}
+                item={item}
+                active={isPathActive(location.pathname, item.to)}
+              />
             ))}
 
           {/* Catalogue accordion */}
@@ -216,7 +216,9 @@ export function AppLayout() {
                   <SidebarSubLink
                     key={child.to}
                     item={child}
-                    active={location.pathname === child.to || location.pathname.startsWith(child.to + "/")}
+                    active={
+                      location.pathname === child.to || location.pathname.startsWith(child.to + "/")
+                    }
                   />
                 ))}
               </div>
@@ -226,7 +228,11 @@ export function AppLayout() {
           {afterCatalogueItems
             .filter((i) => !i.adminOnly || profile?.role === "admin")
             .map((item) => (
-              <SidebarLink key={item.to} item={item} active={isPathActive(location.pathname, item.to)} />
+              <SidebarLink
+                key={item.to}
+                item={item}
+                active={isPathActive(location.pathname, item.to)}
+              />
             ))}
 
           {/* Atelier section */}
@@ -235,7 +241,11 @@ export function AppLayout() {
             {atelierItems
               .filter((i) => !i.adminOnly || profile?.role === "admin")
               .map((item) => (
-                <SidebarLink key={item.to} item={item} active={isPathActive(location.pathname, item.to)} />
+                <SidebarLink
+                  key={item.to}
+                  item={item}
+                  active={isPathActive(location.pathname, item.to)}
+                />
               ))}
           </div>
         </nav>
@@ -276,9 +286,7 @@ export function AppLayout() {
         <nav className="md:hidden fixed bottom-0 inset-x-0 bg-card border-t border-border flex">
           {mobileItems.map((item) => {
             const active =
-              item.to === "/"
-                ? location.pathname === "/"
-                : location.pathname.startsWith(item.to);
+              item.to === "/" ? location.pathname === "/" : location.pathname.startsWith(item.to);
             const Icon = item.icon;
             return (
               <Link

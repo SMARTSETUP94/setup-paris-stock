@@ -25,7 +25,13 @@ function diffJours(debut?: string | null, fin?: string | null): number | null {
   return Math.max(0, Math.round((d2 - d1) / (1000 * 60 * 60 * 24)));
 }
 
-export function BudgetProgressCard({ budget, consomme, dateDebut, dateFin, onDefineBudget }: Props) {
+export function BudgetProgressCard({
+  budget,
+  consomme,
+  dateDebut,
+  dateFin,
+  onDefineBudget,
+}: Props) {
   const duree = diffJours(dateDebut, dateFin);
 
   if (!budget || budget <= 0) {
@@ -40,7 +46,9 @@ export function BudgetProgressCard({ budget, consomme, dateDebut, dateFin, onDef
           </Button>
         )}
         {duree !== null && (
-          <p className="text-xs text-muted-foreground mt-3">Durée {duree} jour{duree > 1 ? "s" : ""}</p>
+          <p className="text-xs text-muted-foreground mt-3">
+            Durée {duree} jour{duree > 1 ? "s" : ""}
+          </p>
         )}
       </Card>
     );
@@ -55,7 +63,10 @@ export function BudgetProgressCard({ budget, consomme, dateDebut, dateFin, onDef
     <Card className="p-6">
       <p className="eyebrow mb-2">Consommation panneaux</p>
       <p className="text-2xl font-semibold">
-        {formatEuro(consomme)} <span className="text-base font-normal text-muted-foreground">sur {formatEuro(budget)}</span>
+        {formatEuro(consomme)}{" "}
+        <span className="text-base font-normal text-muted-foreground">
+          sur {formatEuro(budget)}
+        </span>
       </p>
       <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-muted">
         <div
@@ -66,7 +77,9 @@ export function BudgetProgressCard({ budget, consomme, dateDebut, dateFin, onDef
       </div>
       <p className="text-xs text-muted-foreground mt-2">
         <span className={`font-medium ${text}`}>{pct.toFixed(0)}% du budget</span>
-        {pct <= 100 ? ` · ${restantPct.toFixed(0)}% restant` : ` · dépassement ${(pct - 100).toFixed(0)}%`}
+        {pct <= 100
+          ? ` · ${restantPct.toFixed(0)}% restant`
+          : ` · dépassement ${(pct - 100).toFixed(0)}%`}
         {duree !== null && ` · durée ${duree} jour${duree > 1 ? "s" : ""}`}
       </p>
     </Card>

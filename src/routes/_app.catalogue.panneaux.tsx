@@ -9,7 +9,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Plus, Search, Upload, Download, List, FolderTree } from "lucide-react";
 import { toast } from "sonner";
 import { FAMILLES } from "@/lib/familles";
@@ -34,16 +40,27 @@ function PanneauxPage() {
   const search = Route.useSearch();
   const data = usePanneauxData(ready, search.matiere);
   const {
-    items, setItems,
-    matieres, typologies, loading,
-    q, setQ,
-    familleFilter, setFamilleFilter,
-    typoFilter, setTypoFilter,
-    matiereFilter, setMatiereFilter,
-    hideInactive, setHideInactive,
-    hideStockZero, setHideStockZero,
-    typologiesFiltered, matieresFiltered,
-    filtered, tree,
+    items,
+    setItems,
+    matieres,
+    typologies,
+    loading,
+    q,
+    setQ,
+    familleFilter,
+    setFamilleFilter,
+    typoFilter,
+    setTypoFilter,
+    matiereFilter,
+    setMatiereFilter,
+    hideInactive,
+    setHideInactive,
+    hideStockZero,
+    setHideStockZero,
+    typologiesFiltered,
+    matieresFiltered,
+    filtered,
+    tree,
     fetchData,
   } = data;
 
@@ -58,14 +75,16 @@ function PanneauxPage() {
   function toggleMat(key: string) {
     setExpandedMat((prev) => {
       const next = new Set(prev);
-      if (next.has(key)) next.delete(key); else next.add(key);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
       return next;
     });
   }
   function toggleFmt(key: string) {
     setExpandedFmt((prev) => {
       const next = new Set(prev);
-      if (next.has(key)) next.delete(key); else next.add(key);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
       return next;
     });
   }
@@ -81,7 +100,10 @@ function PanneauxPage() {
   async function toggleActif(p: CatRow) {
     const newActif = !p.actif;
     const { error } = await supabase.from("panneaux").update({ actif: newActif }).eq("id", p.id);
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     setItems((prev) => prev.map((x) => (x.id === p.id ? { ...x, actif: newActif } : x)));
     toast.success(newActif ? "Référence activée" : "Référence désactivée", {
       action: { label: "Annuler", onClick: () => toggleActif({ ...p, actif: newActif }) },
@@ -90,7 +112,10 @@ function PanneauxPage() {
 
   async function bulkSetActif(actif: boolean) {
     if (selected.size === 0) return;
-    const { error } = await supabase.from("panneaux").update({ actif }).in("id", Array.from(selected));
+    const { error } = await supabase
+      .from("panneaux")
+      .update({ actif })
+      .in("id", Array.from(selected));
     if (error) toast.error(error.message);
     else {
       toast.success(`${selected.size} référence(s) ${actif ? "activée(s)" : "désactivée(s)"}`);
@@ -100,20 +125,22 @@ function PanneauxPage() {
   }
 
   function exportSelection() {
-    const rows = items.filter((p) => selected.has(p.id)).map((p) => ({
-      matiere_code: p.matiere_code,
-      matiere_libelle: p.matiere_libelle,
-      typologie: p.typo_nom,
-      variante: p.matiere_variante,
-      epaisseur_mm: p.epaisseur_mm,
-      famille: p.famille,
-      longueur_mm: p.longueur_mm,
-      largeur_mm: p.largeur_mm,
-      surface_m2: p.surface_m2,
-      prix_achat_ht: p.prix_achat_ht,
-      stock_actuel: p.stock_actuel,
-      actif: p.actif,
-    }));
+    const rows = items
+      .filter((p) => selected.has(p.id))
+      .map((p) => ({
+        matiere_code: p.matiere_code,
+        matiere_libelle: p.matiere_libelle,
+        typologie: p.typo_nom,
+        variante: p.matiere_variante,
+        epaisseur_mm: p.epaisseur_mm,
+        famille: p.famille,
+        longueur_mm: p.longueur_mm,
+        largeur_mm: p.largeur_mm,
+        surface_m2: p.surface_m2,
+        prix_achat_ht: p.prix_achat_ht,
+        stock_actuel: p.stock_actuel,
+        actif: p.actif,
+      }));
     exportXLSX(rows, `panneaux-${new Date().toISOString().slice(0, 10)}.xlsx`);
   }
 
@@ -151,35 +178,73 @@ function PanneauxPage() {
 
       {breadcrumb && (
         <div className="mb-3 text-xs text-muted-foreground">
-          {breadcrumb.familleLabel} → <span className="font-medium text-foreground">{breadcrumb.typoNom}</span>{" "}
-          ({breadcrumb.matCount} matière{breadcrumb.matCount > 1 ? "s" : ""}, {breadcrumb.panCount} panneau{breadcrumb.panCount > 1 ? "x" : ""})
+          {breadcrumb.familleLabel} →{" "}
+          <span className="font-medium text-foreground">{breadcrumb.typoNom}</span> (
+          {breadcrumb.matCount} matière{breadcrumb.matCount > 1 ? "s" : ""}, {breadcrumb.panCount}{" "}
+          panneau{breadcrumb.panCount > 1 ? "x" : ""})
         </div>
       )}
 
       <div className="mb-4 grid gap-3 md:grid-cols-[1fr_180px_200px_220px]">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Rechercher matière, typologie, variante…" value={q} onChange={(e) => setQ(e.target.value)} className="pl-9" />
+          <Input
+            placeholder="Rechercher matière, typologie, variante…"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            className="pl-9"
+          />
         </div>
-        <Select value={familleFilter} onValueChange={(v) => { setFamilleFilter(v); setTypoFilter("all"); setMatiereFilter("all"); }}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
+        <Select
+          value={familleFilter}
+          onValueChange={(v) => {
+            setFamilleFilter(v);
+            setTypoFilter("all");
+            setMatiereFilter("all");
+          }}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Toutes familles</SelectItem>
-            {FAMILLES.map((f) => <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>)}
+            {FAMILLES.map((f) => (
+              <SelectItem key={f.value} value={f.value}>
+                {f.label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
-        <Select value={typoFilter} onValueChange={(v) => { setTypoFilter(v); setMatiereFilter("all"); }}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
+        <Select
+          value={typoFilter}
+          onValueChange={(v) => {
+            setTypoFilter(v);
+            setMatiereFilter("all");
+          }}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Toutes typologies</SelectItem>
-            {typologiesFiltered.map((t) => <SelectItem key={t.id} value={t.id}>{t.nom}</SelectItem>)}
+            {typologiesFiltered.map((t) => (
+              <SelectItem key={t.id} value={t.id}>
+                {t.nom}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <Select value={matiereFilter} onValueChange={setMatiereFilter}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Toutes matières</SelectItem>
-            {matieresFiltered.map((m) => <SelectItem key={m.id} value={m.id}>{m.libelle}</SelectItem>)}
+            {matieresFiltered.map((m) => (
+              <SelectItem key={m.id} value={m.id}>
+                {m.libelle}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -205,8 +270,12 @@ function PanneauxPage() {
         </div>
         {viewMode === "tree" && (
           <div className="flex gap-2">
-            <Button variant="ghost" size="sm" onClick={expandAllTree} className="h-7 text-xs">Tout déplier</Button>
-            <Button variant="ghost" size="sm" onClick={collapseAllTree} className="h-7 text-xs">Tout replier</Button>
+            <Button variant="ghost" size="sm" onClick={expandAllTree} className="h-7 text-xs">
+              Tout déplier
+            </Button>
+            <Button variant="ghost" size="sm" onClick={collapseAllTree} className="h-7 text-xs">
+              Tout replier
+            </Button>
           </div>
         )}
         <label className="flex items-center gap-2 cursor-pointer">
@@ -218,10 +287,14 @@ function PanneauxPage() {
           Masquer stock 0 (auto-masque)
         </label>
         <span className="text-muted-foreground ml-auto">
-          Affichées : <strong className="text-foreground">{filtered.length}</strong> / {items.length}
+          Affichées : <strong className="text-foreground">{filtered.length}</strong> /{" "}
+          {items.length}
           {(hideInactive || hideStockZero) && (
             <button
-              onClick={() => { setHideInactive(false); setHideStockZero(false); }}
+              onClick={() => {
+                setHideInactive(false);
+                setHideStockZero(false);
+              }}
               className="ml-3 link-arrow"
             >
               Tout afficher →
@@ -234,12 +307,18 @@ function PanneauxPage() {
         <Card className="mb-4 px-4 py-3 flex items-center gap-3 text-sm rounded-2xl">
           <span className="font-medium">{selected.size} sélectionnée(s)</span>
           <div className="flex gap-2 ml-auto">
-            <Button variant="outline" size="sm" onClick={() => bulkSetActif(false)}>Désactiver</Button>
-            <Button variant="outline" size="sm" onClick={() => bulkSetActif(true)}>Réactiver</Button>
+            <Button variant="outline" size="sm" onClick={() => bulkSetActif(false)}>
+              Désactiver
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => bulkSetActif(true)}>
+              Réactiver
+            </Button>
             <Button variant="outline" size="sm" onClick={exportSelection}>
               <Download className="h-3.5 w-3.5 mr-1" /> Exporter
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => setSelected(new Set())}>Désélectionner</Button>
+            <Button variant="ghost" size="sm" onClick={() => setSelected(new Set())}>
+              Désélectionner
+            </Button>
           </div>
         </Card>
       )}
@@ -273,8 +352,15 @@ function PanneauxPage() {
           panneau={editing}
           matieres={matieres}
           typologies={typologies}
-          onClose={() => { setCreating(false); setEditing(null); }}
-          onSaved={() => { void fetchData(); setCreating(false); setEditing(null); }}
+          onClose={() => {
+            setCreating(false);
+            setEditing(null);
+          }}
+          onSaved={() => {
+            void fetchData();
+            setCreating(false);
+            setEditing(null);
+          }}
         />
       )}
 
@@ -282,7 +368,10 @@ function PanneauxPage() {
         <PanneauxImportDialog
           matieres={matieres}
           items={items}
-          onClose={() => { setImporting(false); void fetchData(); }}
+          onClose={() => {
+            setImporting(false);
+            void fetchData();
+          }}
         />
       )}
     </div>

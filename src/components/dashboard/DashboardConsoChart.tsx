@@ -45,9 +45,7 @@ export function DashboardConsoChart() {
       // (surface_m2 est calculée par l'app pour tous les panneaux ; si null on ignore la ligne)
       const { data: rows, error } = await supabase
         .from("mouvements_stock")
-        .select(
-          "created_at, quantite, panneau:panneaux(surface_m2, matiere:matieres(famille))",
-        )
+        .select("created_at, quantite, panneau:panneaux(surface_m2, matiere:matieres(famille))")
         .eq("type", "sortie")
         .gte("created_at", sinceIso)
         .order("created_at", { ascending: true });
@@ -188,9 +186,7 @@ export function DashboardConsoChart() {
               />
               <Legend
                 wrapperStyle={{ fontSize: 11 }}
-                formatter={(value) =>
-                  FAMILLES.find((f) => f.value === value)?.label ?? value
-                }
+                formatter={(value) => FAMILLES.find((f) => f.value === value)?.label ?? value}
               />
               {famillesAffichees.map((f) => (
                 <Bar key={f.value} dataKey={f.value} stackId="a" fill={f.color} />

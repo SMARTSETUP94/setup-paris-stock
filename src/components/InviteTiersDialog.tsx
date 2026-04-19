@@ -83,8 +83,8 @@ export function InviteTiersDialog({ open, onOpenChange, affaireId, onCreated }: 
           <DialogTitle>Nouveau lien externe</DialogTitle>
           <DialogDescription>
             Génère un lien de consultation en lecture seule à partager avec un client, un
-            fournisseur ou un sous-traitant. Aucune action possible — uniquement la visualisation
-            du stock alloué et de la consommation.
+            fournisseur ou un sous-traitant. Aucune action possible — uniquement la visualisation du
+            stock alloué et de la consommation.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4">

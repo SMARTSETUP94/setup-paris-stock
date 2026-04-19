@@ -25,25 +25,27 @@ export function permissionLabel(value: PermissionAcces | string | null | undefin
 }
 
 /**
- * Suggère le prochain numéro disponible au format strict 4 chiffres (ex. 0001, 0042, 0150).
- * S'il existe 0001, 0002, 0042, propose 0043.
+ * Extrait le préfixe numérique (3 à 5 chiffres) en tête d'un code_chantier.
+ * Ex : "9145_Prototype" → "9145" ; "Stockage chalet" → null.
  */
-export function suggestNumero(existingNumeros: string[]): string {
+export function extractNumeroFromCode(code: string | null | undefined): string | null {
+  if (!code) return null;
+  const m = code.match(/^(\d{3,5})/);
+  return m ? m[1] : null;
+}
+
+/**
+ * Suggère le prochain code_chantier en se basant sur le plus grand numéro existant + 1.
+ * Ex : si max=9197, propose "9198_". Si aucun numéro, propose "" (libre).
+ */
+export function suggestCodeChantier(existingNumeros: (string | null)[]): string {
   const seq = existingNumeros
-    .filter((n) => /^\d{4}$/.test(n))
+    .filter((n): n is string => !!n)
     .map((n) => parseInt(n, 10))
     .filter((n) => Number.isFinite(n));
-  const next = (seq.length ? Math.max(...seq) : 0) + 1;
-  return String(next).padStart(4, "0");
-}
-
-/** Force la saisie à exactement 4 chiffres (rejette tout caractère non numérique, tronque à 4). */
-export function sanitizeNumeroInput(raw: string): string {
-  return raw.replace(/\D/g, "").slice(0, 4);
-}
-
-export function isValidNumero(value: string): boolean {
-  return /^\d{4}$/.test(value);
+  if (seq.length === 0) return "";
+  const next = Math.max(...seq) + 1;
+  return `${next}_`;
 }
 
 export function formatDateFr(value: string | null | undefined) {
@@ -67,4 +69,18 @@ export function formatDateTimeFr(value: string | null | undefined) {
 export function buildInvitationLink(token: string) {
   if (typeof window === "undefined") return `/tiers/acces?token=${token}`;
   return `${window.location.origin}/tiers/acces?token=${token}`;
+}
+
+/**
+ * Normalise une chaîne pour matching fuzzy : minuscule, sans accents, sans ponctuation.
+ */
+export function normalizeForMatch(s: string | null | undefined): string {
+  if (!s) return "";
+  return s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }

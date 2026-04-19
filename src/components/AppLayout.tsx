@@ -15,6 +15,7 @@ import {
   Layers,
   Tags,
   Component,
+  KeyRound,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -28,8 +29,13 @@ type NavItem = {
   adminOnly: boolean;
 };
 
-const mainItems: NavItem[] = [
+// Items affichés en haut de sidebar selon le rôle
+const adminMainItems: NavItem[] = [
   { to: "/", label: "Tableau de bord", icon: LayoutDashboard, adminOnly: false },
+];
+
+const tiersMainItems: NavItem[] = [
+  { to: "/mes-acces", label: "Mes accès", icon: KeyRound, adminOnly: false },
 ];
 
 const catalogueChildren: NavItem[] = [
@@ -52,10 +58,15 @@ const atelierItems: NavItem[] = [
   { to: "/inventaire", label: "Inventaire", icon: ClipboardCheck, adminOnly: true },
 ];
 
-const mobileItems = [
+const adminMobileItems = [
   { to: "/", label: "Tableau de bord", icon: LayoutDashboard },
   { to: "/catalogue/matieres", label: "Catalogue", icon: Package },
   { to: "/affaires", label: "Affaires", icon: Briefcase },
+  { to: "/scan", label: "Scan", icon: QrCode },
+] as const;
+
+const tiersMobileItems = [
+  { to: "/mes-acces", label: "Mes accès", icon: KeyRound },
   { to: "/scan", label: "Scan", icon: QrCode },
 ] as const;
 

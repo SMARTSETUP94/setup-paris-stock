@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useState } from "react";
 import { PageHeader } from "@/components/PageHeader";
 import { Card } from "@/components/ui/card";
@@ -112,6 +113,11 @@ function ParametresPage() {
 
 function UsersTab() {
   const { profile } = useAuth();
+  const listUsersFn = useServerFn(listUsers);
+  const setUserActiveFn = useServerFn(setUserActive);
+  const setUserRoleFn = useServerFn(setUserRole);
+  const resendInvitationFn = useServerFn(resendInvitation);
+  const deleteUserFn = useServerFn(deleteUser);
   const [users, setUsers] = useState<UserRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -122,8 +128,8 @@ function UsersTab() {
   async function refresh() {
     setLoading(true);
     try {
-      const res = await listUsers();
-      setUsers(res.users as UserRow[]);
+      const res = await listUsersFn();
+      setUsers((res?.users ?? []) as UserRow[]);
     } catch (e) {
       toast.error("Chargement impossible", {
         description: e instanceof Error ? e.message : String(e),
@@ -148,7 +154,7 @@ function UsersTab() {
 
   async function handleToggleActive(u: UserRow) {
     try {
-      await setUserActive({ data: { user_id: u.id, actif: !u.actif } });
+      await setUserActiveFn({ data: { user_id: u.id, actif: !u.actif } });
       toast.success(u.actif ? "Compte désactivé" : "Compte réactivé");
       void refresh();
     } catch (e) {
@@ -165,7 +171,7 @@ function UsersTab() {
     if (!confirmRole) return;
     setUpdatingRole(true);
     try {
-      await setUserRole({ data: { user_id: confirmRole.user.id, role: confirmRole.newRole } });
+      await setUserRoleFn({ data: { user_id: confirmRole.user.id, role: confirmRole.newRole } });
       toast.success("Rôle mis à jour", {
         description: `${confirmRole.user.email} est désormais ${ROLE_LABELS[confirmRole.newRole]}.`,
       });
@@ -182,7 +188,7 @@ function UsersTab() {
     try {
       const redirectTo =
         typeof window !== "undefined" ? `${window.location.origin}/reset-password` : undefined;
-      await resendInvitation({ data: { email: u.email, redirectTo } });
+      await resendInvitationFn({ data: { email: u.email, redirectTo } });
       toast.success("Email envoyé", {
         description: "Un lien de réinitialisation a été envoyé.",
       });
@@ -194,7 +200,7 @@ function UsersTab() {
   async function handleDelete() {
     if (!confirmDelete) return;
     try {
-      await deleteUser({ data: { user_id: confirmDelete.id } });
+      await deleteUserFn({ data: { user_id: confirmDelete.id } });
       toast.success("Compte supprimé");
       setConfirmDelete(null);
       void refresh();
@@ -393,6 +399,7 @@ function InviteDialog({
   onOpenChange: (v: boolean) => void;
   onInvited: () => void;
 }) {
+  const inviteUserFn = useServerFn(inviteUser);
   const [email, setEmail] = useState("");
   const [nomComplet, setNomComplet] = useState("");
   const [role, setRole] = useState<AppRole>("mobile");
@@ -412,7 +419,7 @@ function InviteDialog({
     try {
       const redirectTo =
         typeof window !== "undefined" ? `${window.location.origin}/reset-password` : undefined;
-      await inviteUser({ data: { email, nom_complet: nomComplet, role, redirectTo } });
+      await inviteUserFn({ data: { email, nom_complet: nomComplet, role, redirectTo } });
       toast.success("Invitation envoyée", {
         description: `${email} va recevoir un email pour créer son mot de passe.`,
       });

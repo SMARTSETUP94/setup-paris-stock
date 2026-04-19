@@ -158,18 +158,17 @@ function AffairesIndex() {
                 <TableHead>Nom</TableHead>
                 <TableHead>Client</TableHead>
                 <TableHead>Chargé d'affaires</TableHead>
-                <TableHead>Statut</TableHead>
-                <TableHead>Début</TableHead>
+                <TableHead className="w-[180px]">Statut</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Chargement…</TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Chargement…</TableCell></TableRow>
               ) : filtered.length === 0 ? (
-                <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Aucune affaire</TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Aucune affaire</TableCell></TableRow>
               ) : (
                 filtered.map((r, idx) => (
-                  <TableRow key={r.id} className={idx % 2 === 1 ? "bg-[#FAFAFA]" : ""}>
+                  <TableRow key={r.id} className={idx % 2 === 1 ? "bg-muted/30" : ""}>
                     <TableCell>
                       <Link
                         to="/affaires/$code"
@@ -201,8 +200,21 @@ function AffairesIndex() {
                         <span className="text-xs">—</span>
                       )}
                     </TableCell>
-                    <TableCell><StatutBadge value={r.statut} /></TableCell>
-                    <TableCell className="text-muted-foreground">{formatDateFr(r.date_debut)}</TableCell>
+                    <TableCell>
+                      <Select
+                        value={r.statut}
+                        onValueChange={(v) => void changeStatut(r.id, v as StatutAffaire)}
+                      >
+                        <SelectTrigger className="h-8 w-[160px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {STATUTS.map((s) => (
+                            <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
                   </TableRow>
                 ))
               )}

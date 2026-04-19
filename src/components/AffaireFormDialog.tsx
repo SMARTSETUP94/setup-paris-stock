@@ -35,8 +35,6 @@ export function AffaireFormDialog({ open, onOpenChange, initial, onSaved }: Prop
     charge_affaires_id: "",
     charge_affaires_libre: "",
     code_interne: "",
-    date_debut: "",
-    date_fin_prevue: "",
     statut: "en_cours" as StatutAffaire,
     budget_panneaux_ht: "",
     notes: "",
@@ -67,8 +65,6 @@ export function AffaireFormDialog({ open, onOpenChange, initial, onSaved }: Prop
           charge_affaires_id: initial.charge_affaires_id ?? "",
           charge_affaires_libre: initial.charge_affaires_libre ?? "",
           code_interne: initial.code_interne ?? "",
-          date_debut: initial.date_debut ?? "",
-          date_fin_prevue: initial.date_fin_prevue ?? "",
           statut: initial.statut,
           budget_panneaux_ht: initial.budget_panneaux_ht?.toString() ?? "",
           notes: initial.notes ?? "",
@@ -116,8 +112,6 @@ export function AffaireFormDialog({ open, onOpenChange, initial, onSaved }: Prop
       charge_affaires_id: chargeMode === "profile" && form.charge_affaires_id ? form.charge_affaires_id : null,
       charge_affaires_libre: chargeMode === "libre" && form.charge_affaires_libre.trim() ? form.charge_affaires_libre.trim() : null,
       code_interne: form.code_interne.trim() || null,
-      date_debut: form.date_debut || null,
-      date_fin_prevue: form.date_fin_prevue || null,
       statut: form.statut,
       budget_panneaux_ht: form.budget_panneaux_ht ? Number(form.budget_panneaux_ht) : null,
       notes: form.notes.trim() || null,
@@ -262,14 +256,6 @@ export function AffaireFormDialog({ open, onOpenChange, initial, onSaved }: Prop
               value={form.budget_panneaux_ht}
               onChange={(e) => setForm({ ...form, budget_panneaux_ht: e.target.value })}
             />
-          </div>
-          <div>
-            <Label>Date de début</Label>
-            <Input type="date" value={form.date_debut} onChange={(e) => setForm({ ...form, date_debut: e.target.value })} />
-          </div>
-          <div>
-            <Label>Date de fin prévue</Label>
-            <Input type="date" value={form.date_fin_prevue} onChange={(e) => setForm({ ...form, date_fin_prevue: e.target.value })} />
           </div>
           <div className="sm:col-span-2">
             <Label>Notes</Label>

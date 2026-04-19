@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { AlertTriangle, ArrowRight, TrendingUp } from "lucide-react";
+import { AlertTriangle, ArrowRight, Plus, SlidersHorizontal, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useStockRealtime } from "@/hooks/useStockRealtime";
 import { formatEuro, formatNumber } from "@/lib/familles";
 import { DashboardConsoChart } from "@/components/dashboard/DashboardConsoChart";
 import { RecentMouvementsCard, type MouvementRecent } from "@/components/dashboard/RecentMouvementsCard";
+import { AffaireFormDialog } from "@/components/AffaireFormDialog";
 
 export const Route = createFileRoute("/_app/")({
   head: () => ({

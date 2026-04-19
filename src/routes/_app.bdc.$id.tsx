@@ -472,13 +472,18 @@ function BdcDetailPage() {
                       <td className="px-3 py-3 text-right font-semibold">{formatEuro(totalCalcule)}</td>
                       <td colSpan={3} className="px-3 py-3">
                         {bdc.montant_ht_total !== null && totalCalcule > 0 && (
-                          ecartTotal > 0.01 ? (
-                            <span className="inline-flex items-center gap-1 text-xs text-amber-700">
+                          ecartTotal > 0.05 ? (
+                            <span className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium bg-destructive/10 text-destructive">
+                              <AlertTriangle className="h-3 w-3" />
+                              Écart {(ecartTotal * 100).toFixed(1)}%
+                            </span>
+                          ) : ecartTotal > 0.01 ? (
+                            <span className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium bg-warning/15 text-warning">
                               <AlertTriangle className="h-3 w-3" />
                               Écart {(ecartTotal * 100).toFixed(1)}%
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-xs text-green-700">
+                            <span className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium bg-success/10 text-success">
                               <CheckIcon className="h-3 w-3" /> OK
                             </span>
                           )

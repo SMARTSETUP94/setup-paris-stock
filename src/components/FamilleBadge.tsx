@@ -1,7 +1,7 @@
-import { familleMeta } from "@/lib/familles";
+import { useFamilleMeta } from "@/hooks/useFamilles";
 
 export function FamilleBadge({ famille }: { famille: string | null | undefined }) {
-  const meta = familleMeta(famille);
+  const meta = useFamilleMeta(famille);
   return (
     <span
       className="inline-flex items-center rounded-[4px] px-2 py-0.5 text-xs font-medium"

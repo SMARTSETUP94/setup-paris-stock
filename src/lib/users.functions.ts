@@ -1,8 +1,16 @@
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import {
+  requireSupabaseAuth,
+  type AuthedContext,
+} from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
 
-async function assertAdmin(supabase: any, userId: string) {
+async function assertAdmin(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+) {
   const { data, error } = await supabase
     .from("profiles")
     .select("role, actif")

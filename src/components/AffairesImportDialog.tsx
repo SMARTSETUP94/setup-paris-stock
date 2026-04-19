@@ -104,8 +104,12 @@ export function AffairesImportDialog({ open, onClose, onImported }: Props) {
         setParsing(false);
         return;
       }
-      const headers = Object.keys(parsed[0]).map((h) => h.trim().toLowerCase());
-      const missing = EXPECTED.filter((c) => !headers.includes(c));
+      const headers = Object.keys(parsed[0]).map(canonicalKey);
+      const missing = EXPECTED.filter((c) => {
+        // EXPECTED contient les libellés "humains" : on cherche la version canonique correspondante
+        const canonical = canonicalKey(c);
+        return !headers.includes(canonical);
+      });
       if (missing.length) {
         toast.error("Colonnes manquantes", { description: missing.join(", ") });
         setParsing(false);

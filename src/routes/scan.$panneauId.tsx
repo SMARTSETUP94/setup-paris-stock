@@ -229,7 +229,23 @@ function ScanSortiePage() {
           </div>
 
           <div>
-            <Label htmlFor="qte">Quantité à sortir *</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="qte">Quantité à sortir *</Label>
+              {panneau.matiere?.unite_stock === "m2" && panneau.longueur_mm && panneau.largeur_mm ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={() => {
+                    const surface = (panneau.longueur_mm * panneau.largeur_mm) / 1_000_000;
+                    setQuantite(surface.toFixed(2).replace(/\.?0+$/, ""));
+                  }}
+                >
+                  Panneau entier
+                </Button>
+              ) : null}
+            </div>
             <Input
               id="qte"
               type="number"
@@ -240,6 +256,12 @@ function ScanSortiePage() {
               onChange={(e) => setQuantite(e.target.value)}
               className="mt-1.5 text-lg"
             />
+            {panneau.matiere?.unite_stock === "m2" && panneau.longueur_mm && panneau.largeur_mm ? (
+              <p className="text-[11px] text-muted-foreground mt-1">
+                1 panneau ={" "}
+                {((panneau.longueur_mm * panneau.largeur_mm) / 1_000_000).toFixed(2)} m²
+              </p>
+            ) : null}
           </div>
 
           <div>

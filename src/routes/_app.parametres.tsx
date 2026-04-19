@@ -53,15 +53,29 @@ import {
 } from "@/lib/users.functions";
 import { BrandingTab } from "@/components/parametres/BrandingTab";
 
+type AppRole = "admin" | "magasinier" | "mobile";
+
 type UserRow = {
   id: string;
   email: string;
   nom_complet: string | null;
-  role: "admin" | "tiers";
+  role: AppRole;
   actif: boolean;
   created_at: string;
   last_sign_in_at: string | null;
   email_confirmed_at: string | null;
+};
+
+const ROLE_LABELS: Record<AppRole, string> = {
+  admin: "Admin",
+  magasinier: "Magasinier",
+  mobile: "Mobile",
+};
+
+const ROLE_DESCRIPTIONS: Record<AppRole, string> = {
+  admin: "Accès complet, y compris paramètres et gestion des utilisateurs.",
+  magasinier: "Gère catalogue, BDC, affaires, mouvements et inventaire. Pas d'accès aux paramètres.",
+  mobile: "Sortie de stock uniquement via scan. Aucun autre accès.",
 };
 
 export const Route = createFileRoute("/_app/parametres")({
@@ -102,6 +116,8 @@ function UsersTab() {
   const [loading, setLoading] = useState(true);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<UserRow | null>(null);
+  const [confirmRole, setConfirmRole] = useState<{ user: UserRow; newRole: AppRole } | null>(null);
+  const [updatingRole, setUpdatingRole] = useState(false);
 
   async function refresh() {
     setLoading(true);
@@ -140,14 +156,25 @@ function UsersTab() {
     }
   }
 
-  async function handleChangeRole(u: UserRow, role: "admin" | "tiers") {
+  function requestRoleChange(u: UserRow, role: AppRole) {
     if (u.role === role) return;
+    setConfirmRole({ user: u, newRole: role });
+  }
+
+  async function confirmRoleChange() {
+    if (!confirmRole) return;
+    setUpdatingRole(true);
     try {
-      await setUserRole({ data: { user_id: u.id, role } });
-      toast.success("Rôle mis à jour");
+      await setUserRole({ data: { user_id: confirmRole.user.id, role: confirmRole.newRole } });
+      toast.success("Rôle mis à jour", {
+        description: `${confirmRole.user.email} est désormais ${ROLE_LABELS[confirmRole.newRole]}.`,
+      });
+      setConfirmRole(null);
       void refresh();
     } catch (e) {
       toast.error("Action impossible", { description: e instanceof Error ? e.message : String(e) });
+    } finally {
+      setUpdatingRole(false);
     }
   }
 
@@ -249,15 +276,16 @@ function UsersTab() {
 
                   <Select
                     value={u.role}
-                    onValueChange={(v) => handleChangeRole(u, v as "admin" | "tiers")}
+                    onValueChange={(v) => requestRoleChange(u, v as AppRole)}
                     disabled={isMe}
                   >
-                    <SelectTrigger className="w-28 h-8 text-xs">
+                    <SelectTrigger className="w-32 h-8 text-xs">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="admin">Admin</SelectItem>
-                      <SelectItem value="tiers">Tiers</SelectItem>
+                      <SelectItem value="magasinier">Magasinier</SelectItem>
+                      <SelectItem value="mobile">Mobile</SelectItem>
                     </SelectContent>
                   </Select>
 
@@ -323,6 +351,35 @@ function UsersTab() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AlertDialog open={!!confirmRole} onOpenChange={(o) => !o && setConfirmRole(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Changer le rôle en « {confirmRole ? ROLE_LABELS[confirmRole.newRole] : ""} » ?
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2">
+                <p>
+                  <strong>{confirmRole?.user.email}</strong> passera de{" "}
+                  <strong>{confirmRole ? ROLE_LABELS[confirmRole.user.role] : ""}</strong> à{" "}
+                  <strong>{confirmRole ? ROLE_LABELS[confirmRole.newRole] : ""}</strong>.
+                </p>
+                <p className="text-foreground">
+                  {confirmRole ? ROLE_DESCRIPTIONS[confirmRole.newRole] : ""}
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={updatingRole}>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmRoleChange} disabled={updatingRole}>
+              {updatingRole && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Confirmer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
@@ -338,14 +395,14 @@ function InviteDialog({
 }) {
   const [email, setEmail] = useState("");
   const [nomComplet, setNomComplet] = useState("");
-  const [role, setRole] = useState<"admin" | "tiers">("tiers");
+  const [role, setRole] = useState<AppRole>("mobile");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (!open) {
       setEmail("");
       setNomComplet("");
-      setRole("tiers");
+      setRole("mobile");
     }
   }, [open]);
 
@@ -402,12 +459,13 @@ function InviteDialog({
             </div>
             <div className="space-y-2">
               <Label htmlFor="invite-role">Rôle</Label>
-              <Select value={role} onValueChange={(v) => setRole(v as "admin" | "tiers")}>
+              <Select value={role} onValueChange={(v) => setRole(v as AppRole)}>
                 <SelectTrigger id="invite-role">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="tiers">Tiers — accès limité aux affaires invitées</SelectItem>
+                  <SelectItem value="mobile">Mobile — sortie de stock uniquement</SelectItem>
+                  <SelectItem value="magasinier">Magasinier — gestion stock & BDC</SelectItem>
                   <SelectItem value="admin">Admin — accès complet</SelectItem>
                 </SelectContent>
               </Select>

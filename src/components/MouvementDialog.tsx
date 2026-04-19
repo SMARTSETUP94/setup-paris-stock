@@ -449,17 +449,17 @@ export function MouvementDialog({ open, onOpenChange, mode, presetAffaireId, isA
             )}
 
             {mode === "sortie" && overstock && (
-              <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm">
-                <p className="font-medium text-amber-900">
+              <div className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm">
+                <p className="font-medium text-warning">
                   Quantité supérieure au stock disponible ({formatNumber(stockActuel, 2)}).
                 </p>
                 {isAdmin ? (
-                  <label className="mt-2 flex items-center gap-2 cursor-pointer text-amber-900">
+                  <label className="mt-2 flex items-center gap-2 cursor-pointer text-warning">
                     <input type="checkbox" checked={forceOverstock} onChange={(e) => setForceOverstock(e.target.checked)} />
                     <span>Forcer (admin)</span>
                   </label>
                 ) : (
-                  <p className="mt-1 text-amber-900">Action interdite. Contactez un administrateur.</p>
+                  <p className="mt-1 text-warning">Action interdite. Contactez un administrateur.</p>
                 )}
               </div>
             )}

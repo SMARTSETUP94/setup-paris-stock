@@ -99,6 +99,7 @@ function DashboardPage() {
   const [topAffaires, setTopAffaires] = useState<TopAffaire[]>([]);
   const [mouvements, setMouvements] = useState<MouvementRecent[]>([]);
   const [loadingData, setLoadingData] = useState(true);
+  const [hasData, setHasData] = useState<boolean | null>(null);
 
   async function loadDashboard() {
     const [aff, bdc, cat, mvtData] = await Promise.all([
@@ -186,6 +187,11 @@ function DashboardPage() {
     setAlertes(alertesList.slice(0, 5));
     setTopAffaires(topList);
     setMouvements((mvtData.data ?? []) as unknown as MouvementRecent[]);
+    // Onboarding masqué dès qu'il y a au moins une matière OU un mouvement
+    const { count: nbMatieres } = await supabase
+      .from("matieres")
+      .select("id", { count: "exact", head: true });
+    setHasData((nbMatieres ?? 0) > 0 || (mvtData.data?.length ?? 0) > 0);
     setLoadingData(false);
   }
 
@@ -258,6 +264,10 @@ function DashboardPage() {
             </CardContent>
           </Card>
         ))}
+      </section>
+
+      <section>
+        <DashboardConsoChart />
       </section>
 
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -402,33 +412,41 @@ function DashboardPage() {
         </Card>
       </section>
 
-      <section className="space-y-8">
-        <div className="flex items-end justify-between gap-4">
-          <div className="space-y-2">
-            <p className="eyebrow">Modules</p>
-            <h2 className="text-2xl md:text-3xl">Ce que vous allez gérer</h2>
+      {hasData === false && (
+        <section className="space-y-8">
+          <div className="flex items-end justify-between gap-4">
+            <div className="space-y-2">
+              <p className="eyebrow">Modules</p>
+              <h2 className="text-2xl md:text-3xl">Pour démarrer</h2>
+              <p className="text-sm text-muted-foreground max-w-2xl">
+                Ces 4 modules constituent le cœur de l'application. Commence par le
+                catalogue pour référencer tes matières et tes panneaux.
+              </p>
+            </div>
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {sections.map((s) => (
-            <Link key={s.num} to={s.to}>
-              <Card className="p-6 hover:bg-muted/40 transition-colors cursor-pointer h-full">
-                <div className="flex items-start gap-6">
-                  <span className="font-display text-3xl text-muted-foreground/70">{s.num}</span>
-                  <div className="space-y-1">
-                    <h3 className="text-lg flex items-center gap-2">
-                      {s.title}
-                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                    </h3>
-                    <p className="text-sm text-muted-foreground">{s.desc}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {sections.map((s) => (
+              <Link key={s.num} to={s.to}>
+                <Card className="p-6 hover:bg-muted/40 transition-colors cursor-pointer h-full">
+                  <div className="flex items-start gap-6">
+                    <span className="font-display text-3xl text-muted-foreground/70">
+                      {s.num}
+                    </span>
+                    <div className="space-y-1">
+                      <h3 className="text-lg flex items-center gap-2">
+                        {s.title}
+                        <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                      </h3>
+                      <p className="text-sm text-muted-foreground">{s.desc}</p>
+                    </div>
                   </div>
-                </div>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      </section>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

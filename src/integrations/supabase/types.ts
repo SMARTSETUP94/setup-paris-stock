@@ -372,6 +372,8 @@ export type Database = {
       }
       panneaux: {
         Row: {
+          actif: boolean
+          auto_masque_si_zero: boolean
           created_at: string
           id: string
           largeur_mm: number
@@ -382,6 +384,8 @@ export type Database = {
           surface_m2: number | null
         }
         Insert: {
+          actif?: boolean
+          auto_masque_si_zero?: boolean
           created_at?: string
           id?: string
           largeur_mm: number
@@ -392,6 +396,8 @@ export type Database = {
           surface_m2?: number | null
         }
         Update: {
+          actif?: boolean
+          auto_masque_si_zero?: boolean
           created_at?: string
           id?: string
           largeur_mm?: number
@@ -507,13 +513,11 @@ export type Database = {
       app_role: "admin" | "tiers"
       famille_matiere:
         | "bois"
-        | "metal"
-        | "mousse"
-        | "carton"
-        | "dibond"
         | "pvc"
-        | "forex"
-        | "plexi"
+        | "carton"
+        | "dibond_tole"
+        | "pmma"
+        | "mousse"
         | "autre"
       permission_acces: "lecture" | "sortie" | "entree_sortie"
       statut_affaire: "devis" | "en_cours" | "termine" | "archive"
@@ -524,7 +528,16 @@ export type Database = {
         | "recu"
         | "annule"
       type_mouvement: "entree" | "sortie" | "correction" | "chute_reintegration"
-      unite_stock: "panneau" | "m2" | "ml" | "piece"
+      unite_stock:
+        | "panneau"
+        | "m2"
+        | "ml"
+        | "piece"
+        | "kg"
+        | "m3"
+        | "boite"
+        | "cartouche"
+        | "autre"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -655,20 +668,28 @@ export const Constants = {
       app_role: ["admin", "tiers"],
       famille_matiere: [
         "bois",
-        "metal",
-        "mousse",
-        "carton",
-        "dibond",
         "pvc",
-        "forex",
-        "plexi",
+        "carton",
+        "dibond_tole",
+        "pmma",
+        "mousse",
         "autre",
       ],
       permission_acces: ["lecture", "sortie", "entree_sortie"],
       statut_affaire: ["devis", "en_cours", "termine", "archive"],
       statut_bdc: ["en_attente_ocr", "ocr_termine", "valide", "recu", "annule"],
       type_mouvement: ["entree", "sortie", "correction", "chute_reintegration"],
-      unite_stock: ["panneau", "m2", "ml", "piece"],
+      unite_stock: [
+        "panneau",
+        "m2",
+        "ml",
+        "piece",
+        "kg",
+        "m3",
+        "boite",
+        "cartouche",
+        "autre",
+      ],
     },
   },
 } as const

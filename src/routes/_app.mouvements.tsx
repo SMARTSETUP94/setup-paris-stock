@@ -47,7 +47,7 @@ type Row = {
     largeur_mm: number;
     matiere?: { code: string; libelle: string; unite_stock: string } | null;
   } | null;
-  affaire?: { numero: string; nom: string } | null;
+  affaire?: { numero: string | null; nom: string; code_chantier: string } | null;
   operateur?: { nom_complet: string | null; email: string } | null;
 };
 
@@ -63,7 +63,7 @@ function MouvementsPage() {
   const [dateDebut, setDateDebut] = useState<string>("");
   const [dateFin, setDateFin] = useState<string>("");
   const [openMode, setOpenMode] = useState<"entree" | "sortie" | "correction" | null>(null);
-  const [affairesOpts, setAffairesOpts] = useState<{ id: string; numero: string; nom: string }[]>([]);
+  const [affairesOpts, setAffairesOpts] = useState<{ id: string; numero: string | null; nom: string; code_chantier: string }[]>([]);
 
   async function load() {
     setLoading(true);
@@ -76,7 +76,7 @@ function MouvementsPage() {
           longueur_mm, largeur_mm,
           matiere:matieres!panneaux_matiere_id_fkey(code, libelle, unite_stock)
         ),
-        affaire:affaires!mouvements_stock_affaire_id_fkey(numero, nom),
+        affaire:affaires!mouvements_stock_affaire_id_fkey(numero, nom, code_chantier),
         operateur:profiles!mouvements_stock_effectue_par_fkey(nom_complet, email)
       `)
       .order("created_at", { ascending: false })
@@ -282,7 +282,7 @@ function MouvementsPage() {
                       {Number(r.quantite) > 0 ? "+" : ""}{formatNumber(Number(r.quantite), 2)}
                     </TableCell>
                     <TableCell>
-                      {r.affaire ? <NumeroAffairePill numero={r.affaire.numero} /> : <span className="text-muted-foreground text-xs">—</span>}
+                      {r.affaire ? <NumeroAffairePill numero={r.affaire.numero} codeChantier={r.affaire.code_chantier} /> : <span className="text-muted-foreground text-xs">—</span>}
                     </TableCell>
                     <TableCell className="text-right text-muted-foreground">{r.cump_avant !== null ? formatEuro(Number(r.cump_avant)) : "—"}</TableCell>
                     <TableCell className="text-right">{r.cump_apres !== null ? formatEuro(Number(r.cump_apres)) : "—"}</TableCell>

@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
+import { useEffectiveRole, isAtelierRole } from "@/hooks/useEffectiveRole";
 import { Loader2 } from "lucide-react";
 
 type GuardOptions = {
@@ -13,13 +14,20 @@ type GuardOptions = {
 
 /**
  * Garde de routes back-office.
- * - Par défaut : admin OU magasinier ont accès.
- * - Avec `{ adminOnly: true }` : uniquement admin (utilisé pour Paramètres).
- * Les utilisateurs `mobile` sont redirigés vers /scan, les autres vers /.
+ *
+ * Utilise le **rôle effectif** (vrai rôle ou "Preview as" admin) pour décider
+ * de l'accès. La vraie sécurité reste côté RLS — ici on ne fait que de la
+ * cohérence visuelle.
+ *
+ * - Par défaut : admin OU magasinier (effectifs) ont accès.
+ * - Avec `{ adminOnly: true }` : uniquement admin effectif (Paramètres).
+ * - Vue "atelier" (mobile DB ou preview mobile_atelier) → redirige vers /scan.
+ * - Magasinier qui tape une URL admin-only → redirige vers /.
  */
 export function useAdminGuard(options: GuardOptions = {}) {
   const { adminOnly = false } = options;
   const { profile, loading } = useAuth();
+  const { effectiveRole } = useEffectiveRole();
   const navigate = useNavigate();
   const [checked, setChecked] = useState(false);
 
@@ -29,15 +37,18 @@ export function useAdminGuard(options: GuardOptions = {}) {
       navigate({ to: "/login" });
       return;
     }
-    const role = profile.role;
+    const role = effectiveRole;
+    if (isAtelierRole(role)) {
+      navigate({ to: "/scan" });
+      return;
+    }
     const allowed = adminOnly ? role === "admin" : role === "admin" || role === "magasinier";
     if (!allowed) {
-      // Mobile -> scan ; tout autre cas (magasinier sur page admin) -> dashboard
-      navigate({ to: role === "mobile" ? "/scan" : "/" });
+      navigate({ to: "/" });
       return;
     }
     setChecked(true);
-  }, [profile, loading, navigate, adminOnly]);
+  }, [profile, loading, navigate, adminOnly, effectiveRole]);
 
   return { ready: checked, profile };
 }

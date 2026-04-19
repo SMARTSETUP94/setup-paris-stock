@@ -53,15 +53,29 @@ import {
 } from "@/lib/users.functions";
 import { BrandingTab } from "@/components/parametres/BrandingTab";
 
+type AppRole = "admin" | "magasinier" | "mobile";
+
 type UserRow = {
   id: string;
   email: string;
   nom_complet: string | null;
-  role: "admin" | "tiers";
+  role: AppRole;
   actif: boolean;
   created_at: string;
   last_sign_in_at: string | null;
   email_confirmed_at: string | null;
+};
+
+const ROLE_LABELS: Record<AppRole, string> = {
+  admin: "Admin",
+  magasinier: "Magasinier",
+  mobile: "Mobile",
+};
+
+const ROLE_DESCRIPTIONS: Record<AppRole, string> = {
+  admin: "Accès complet, y compris paramètres et gestion des utilisateurs.",
+  magasinier: "Gère catalogue, BDC, affaires, mouvements et inventaire. Pas d'accès aux paramètres.",
+  mobile: "Sortie de stock uniquement via scan. Aucun autre accès.",
 };
 
 export const Route = createFileRoute("/_app/parametres")({

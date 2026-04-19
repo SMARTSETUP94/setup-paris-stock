@@ -36,8 +36,41 @@ type Row = {
   action: "create" | "skip" | "overwrite";
 };
 
-const EXPECTED = ["code_chantier", "nom", "client"];
+// Colonnes attendues (libellés humains tels qu'exportés depuis Excel)
+const EXPECTED = ["code affaire", "libelle", "client"];
 const VALID_STATUTS: StatutAffaire[] = STATUTS.map((s) => s.value);
+
+/**
+ * Normalise un en-tête de colonne pour matching tolérant :
+ * minuscule, sans accents, sans ponctuation, espaces compactés.
+ * "Chargé(e) d'affaires" → "charge e d affaires"
+ */
+function normalizeHeader(h: string): string {
+  return h
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9 ]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
+ * Mappe une clé brute du CSV vers un champ interne reconnu.
+ * Tolère les variantes : "Code affaire" / "code_chantier" / "code chantier".
+ */
+function canonicalKey(rawKey: string): string {
+  const k = normalizeHeader(rawKey);
+  if (k === "code affaire" || k === "code chantier" || k === "code_chantier") return "code_chantier";
+  if (k === "libelle" || k === "nom" || k === "intitule") return "nom";
+  if (k === "client") return "client";
+  if (k.startsWith("charge")) return "charge_affaires"; // "charge e d affaires", "charge d affaires", "charge affaires"
+  if (k === "adresse") return "adresse";
+  if (k === "numero" || k === "n" || k === "num") return "numero";
+  if (k === "code interne" || k === "code_interne") return "code_interne";
+  if (k === "statut" || k === "status" || k === "etat") return "statut";
+  return k;
+}
 
 function parseStatut(v: string | undefined): StatutAffaire {
   const norm = (v ?? "").trim().toLowerCase();

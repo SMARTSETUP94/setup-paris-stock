@@ -14,13 +14,13 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { to: "/", label: "Tableau de bord", icon: LayoutDashboard, mobile: true },
-  { to: "/catalogue/matieres", label: "Catalogue", icon: Package, mobile: true },
-  { to: "/fournisseurs", label: "Fournisseurs", icon: Truck, mobile: false },
-  { to: "/affaires", label: "Affaires", icon: Briefcase, mobile: true },
-  { to: "/bdc", label: "Bons de commande", icon: FileText, mobile: true },
-  { to: "/mouvements", label: "Mouvements", icon: ArrowLeftRight, mobile: false },
-  { to: "/parametres", label: "Paramètres", icon: Settings, mobile: false },
+  { to: "/", label: "Tableau de bord", icon: LayoutDashboard, mobile: true, adminOnly: false },
+  { to: "/catalogue/matieres", label: "Catalogue", icon: Package, mobile: true, adminOnly: false },
+  { to: "/fournisseurs", label: "Fournisseurs", icon: Truck, mobile: false, adminOnly: false },
+  { to: "/affaires", label: "Affaires", icon: Briefcase, mobile: true, adminOnly: false },
+  { to: "/bdc", label: "Bons de commande", icon: FileText, mobile: true, adminOnly: false },
+  { to: "/mouvements", label: "Mouvements", icon: ArrowLeftRight, mobile: false, adminOnly: false },
+  { to: "/parametres", label: "Paramètres", icon: Settings, mobile: false, adminOnly: true },
 ] as const;
 
 function SetupLogo() {
@@ -58,7 +58,7 @@ export function AppLayout() {
           <p className="eyebrow mt-3">Stock · Setup Paris</p>
         </div>
         <nav className="flex-1 p-3 space-y-0.5">
-          {navItems.map((item) => {
+          {navItems.filter((i) => !i.adminOnly || profile?.role === "admin").map((item) => {
             const active =
               item.to === "/"
                 ? location.pathname === "/"

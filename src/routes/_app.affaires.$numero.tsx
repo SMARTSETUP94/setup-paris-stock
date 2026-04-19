@@ -251,10 +251,14 @@ function AffaireDetail() {
     }
   }
 
+  const valeurConsommee = useMemo(
+    () => stockLignes.reduce((acc, l) => acc + Number(l.valeur_consommee_ht ?? 0), 0),
+    [stockLignes],
+  );
   const reliquat = useMemo(() => {
     if (!affaire?.budget_panneaux_ht) return null;
-    return affaire.budget_panneaux_ht; // placeholder — passe 4 fournira la consommation réelle
-  }, [affaire]);
+    return Number(affaire.budget_panneaux_ht) - valeurConsommee;
+  }, [affaire, valeurConsommee]);
 
   if (!ready || loading) return <AdminLoader />;
   if (!affaire) {
@@ -348,8 +352,8 @@ function AffaireDetail() {
             </Card>
             <Card className="p-6">
               <p className="eyebrow mb-2">Valeur consommée</p>
-              <p className="text-2xl font-semibold text-muted-foreground">—</p>
-              <p className="text-xs text-muted-foreground mt-1">Disponible passe Mouvements</p>
+              <p className="text-2xl font-semibold">{formatEuro(valeurConsommee)}</p>
+              <p className="text-xs text-muted-foreground mt-1">Sorties valorisées au CUMP</p>
             </Card>
             <Card className="p-6">
               <p className="eyebrow mb-2">Reliquat budget</p>

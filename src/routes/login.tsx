@@ -46,6 +46,27 @@ function LoginPage() {
     }
   }
 
+  async function handleForgotPassword() {
+    if (!email) {
+      toast.error("Email requis", {
+        description: "Saisissez votre email avant de demander une réinitialisation.",
+      });
+      return;
+    }
+    setSubmitting(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setSubmitting(false);
+    if (error) {
+      toast.error("Envoi impossible", { description: error.message });
+    } else {
+      toast.success("Email envoyé", {
+        description: "Vérifiez votre boîte mail pour réinitialiser votre mot de passe.",
+      });
+    }
+  }
+
   async function handleMagicLink(e: React.FormEvent) {
     e.preventDefault();
     setSubmitting(true);
@@ -153,6 +174,14 @@ function LoginPage() {
                 {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Se connecter
               </Button>
+              <button
+                type="button"
+                onClick={handleForgotPassword}
+                className="block w-full text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
+                disabled={submitting}
+              >
+                Mot de passe oublié ?
+              </button>
             </form>
           </TabsContent>
 

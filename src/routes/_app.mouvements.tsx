@@ -44,6 +44,7 @@ import { TYPES_MVT } from "@/lib/mouvements";
 import { formatEuro, formatNumber } from "@/lib/familles";
 import { formatDateTimeFr } from "@/lib/affaires";
 import { useAuth } from "@/hooks/useAuth";
+import { useEffectiveRole } from "@/hooks/useEffectiveRole";
 import { useStockRealtime } from "@/hooks/useStockRealtime";
 import {
   exportMouvementsXLSX,
@@ -198,8 +199,9 @@ function MouvementsPage() {
 
   if (!ready) return <AdminLoader />;
 
-  // Admin et magasinier ont les mêmes droits sur les mouvements (création de corrections, etc.)
-  const isAdmin = profile?.role === "admin" || profile?.role === "magasinier";
+  // L'affichage suit le rôle effectif (preview admin), la sécurité reste côté RLS.
+  // Seul un admin effectif peut créer/utiliser les corrections.
+  const isAdmin = effectiveRole === "admin";
 
   function openCorrection(r: Row) {
     const qte = Number(r.quantite);
@@ -275,14 +277,16 @@ function MouvementsPage() {
                 >
                   <ArrowUpFromLine className="h-4 w-4 mr-2" /> Sortie
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => {
-                    setPrefill(null);
-                    setOpenMode("correction");
-                  }}
-                >
-                  <Wrench className="h-4 w-4 mr-2" /> Correction
-                </DropdownMenuItem>
+                {isAdmin && (
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setPrefill(null);
+                      setOpenMode("correction");
+                    }}
+                  >
+                    <Wrench className="h-4 w-4 mr-2" /> Correction
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </>

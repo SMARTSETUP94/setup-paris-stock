@@ -362,7 +362,7 @@ function AffaireDetail() {
               affaire.charge_affaires_libre ??
               "Sans chargé d'affaires"}
             {affaire.charge_affaires_libre && !affaire.charge_affaires_id && (
-              <span className="ml-1 inline-flex items-center gap-0.5 text-xs text-amber-700">
+              <span className="ml-1 inline-flex items-center gap-0.5 text-xs text-warning">
                 ⚠ non matché
               </span>
             )}
@@ -496,8 +496,8 @@ function AffaireDetail() {
                       <div
                         className={
                           Number(m.quantite) < 0
-                            ? "text-rose-700 font-medium"
-                            : "text-emerald-700 font-medium"
+                            ? "text-destructive font-medium"
+                            : "text-success font-medium"
                         }
                       >
                         {Number(m.quantite) > 0 ? "+" : ""}
@@ -569,10 +569,10 @@ function AffaireDetail() {
                       <TableCell className="font-mono text-xs whitespace-nowrap">
                         {l.panneau ? `${l.panneau.longueur_mm}×${l.panneau.largeur_mm}` : "—"}
                       </TableCell>
-                      <TableCell className="text-right text-emerald-700">
+                      <TableCell className="text-right text-success">
                         {formatNumber(Number(l.qte_entree ?? 0), 2)}
                       </TableCell>
-                      <TableCell className="text-right text-rose-700">
+                      <TableCell className="text-right text-destructive">
                         {formatNumber(Number(l.qte_sortie ?? 0), 2)}
                       </TableCell>
                       <TableCell className="text-right font-medium">

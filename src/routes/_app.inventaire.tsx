@@ -243,7 +243,7 @@ function InventairePage() {
         <div>
           <div className="text-xs text-muted-foreground">Écarts détectés</div>
           <div
-            className={`text-2xl font-semibold tabular-nums ${totalEcarts > 0 ? "text-amber-700" : ""}`}
+            className={`text-2xl font-semibold tabular-nums ${totalEcarts > 0 ? "text-warning" : ""}`}
           >
             {totalEcarts}
           </div>
@@ -361,10 +361,10 @@ function InventairePage() {
                               ecart === null
                                 ? "text-muted-foreground"
                                 : ecart === 0
-                                  ? "text-emerald-700"
+                                  ? "text-success"
                                   : ecart > 0
-                                    ? "text-blue-700"
-                                    : "text-rose-700"
+                                    ? "text-info"
+                                    : "text-destructive"
                             }`}
                           >
                             {ecart === null ? "—" : (ecart > 0 ? "+" : "") + formatNumber(ecart, 2)}
@@ -430,7 +430,7 @@ function InventairePage() {
                     </td>
                     <td className="p-2 text-right tabular-nums">{formatNumber(compte, 2)}</td>
                     <td
-                      className={`p-2 text-right tabular-nums font-medium ${ecart > 0 ? "text-blue-700" : "text-rose-700"}`}
+                      className={`p-2 text-right tabular-nums font-medium ${ecart > 0 ? "text-info" : "text-destructive"}`}
                     >
                       {(ecart > 0 ? "+" : "") + formatNumber(ecart, 2)}
                     </td>

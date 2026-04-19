@@ -341,7 +341,7 @@ function AffaireDetail() {
             { v: "apercu", l: "Aperçu" },
             { v: "stock", l: "Stock alloué" },
             { v: "bdc", l: "BDC" },
-            { v: "acces", l: "Accès tiers" },
+            { v: "acces", l: "Lien externe" },
           ].map((t) => (
             <TabsTrigger
               key={t.v}
@@ -479,12 +479,20 @@ function AffaireDetail() {
           </Card>
         </TabsContent>
 
-        {/* Onglet Accès tiers */}
+        {/* Onglet Lien externe (lecture seule pour client/fournisseur) */}
         <TabsContent value="acces" className="mt-8 space-y-4">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">{accesList.length} invitation(s)</p>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm text-muted-foreground">
+                {accesList.length} lien(s) de visualisation externe
+              </p>
+              <p className="text-xs text-muted-foreground/80 mt-1 max-w-2xl">
+                Génère un lien en lecture seule à partager (client, fournisseur, sous-traitant) pour
+                consulter le stock alloué et la consommation. Les sorties atelier passent par le scan QR.
+              </p>
+            </div>
             <Button onClick={() => setInviteOpen(true)}>
-              <Plus className="h-4 w-4" /> Inviter un tiers
+              <Plus className="h-4 w-4" /> Nouveau lien
             </Button>
           </div>
           <Card className="overflow-hidden">

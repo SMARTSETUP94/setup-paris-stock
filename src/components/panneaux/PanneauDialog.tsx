@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
 import { FAMILLES } from "@/lib/familles";
+import { useFamilles } from "@/hooks/useFamilles";
 import type { Typologie } from "@/lib/typologies";
 import type { CatRow, Matiere } from "./types";
 
@@ -107,7 +108,7 @@ export function PanneauDialog({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Toutes</SelectItem>
-                  {FAMILLES.map((f) => (
+                  {familles.map((f) => (
                     <SelectItem key={f.value} value={f.value}>
                       {f.label}
                     </SelectItem>

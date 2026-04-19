@@ -18,8 +18,11 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import type { AppRole } from "@/hooks/useAuth";
+import { useEffectiveRole, isAtelierRole } from "@/hooks/useEffectiveRole";
 import { Button } from "@/components/ui/button";
 import { BrandingLogo } from "@/components/BrandingLogo";
+import { PreviewModeBanner } from "@/components/PreviewModeBanner";
+import { PreviewRoleSwitcher } from "@/components/PreviewRoleSwitcher";
 import { cn } from "@/lib/utils";
 
 type NavItem = {
@@ -118,12 +121,16 @@ function SidebarSubLink({ item, active }: { item: NavItem; active: boolean }) {
 
 export function AppLayout() {
   const { profile, signOut } = useAuth();
+  const { effectiveRole } = useEffectiveRole();
   const location = useLocation();
   const navigate = useNavigate();
 
-  const role = profile?.role;
-  const isMobile = role === "mobile";
-  const showCatalogue = catalogueChildren.some((c) => canSee(c, role));
+  // Le rendu de l'UI suit le rôle EFFECTIF (preview admin), pas le rôle réel.
+  const role = (effectiveRole ?? profile?.role) as AppRole | "mobile_atelier" | undefined;
+  const isMobile = isAtelierRole(role); // mobile DB OU vue mobile_atelier
+  const navRole: AppRole | undefined =
+    role === "mobile_atelier" ? "mobile" : (role as AppRole | undefined);
+  const showCatalogue = catalogueChildren.some((c) => canSee(c, navRole));
 
   const catalogueIsActive = location.pathname.startsWith("/catalogue");
   const [catalogueOpen, setCatalogueOpen] = useState(catalogueIsActive);
@@ -158,7 +165,7 @@ export function AppLayout() {
     navigate({ to: "/login" });
   };
 
-  // Bottom-nav mobile : adapté selon le rôle.
+  // Bottom-nav mobile : adapté selon le rôle effectif.
   const mobileNav = isMobile
     ? [{ to: "/scan", label: "Scanner", icon: QrCode } as const]
     : ([
@@ -168,88 +175,21 @@ export function AppLayout() {
         { to: "/scan", label: "Scan", icon: QrCode },
       ] as const);
 
+  const isMobileAtelierPreview = role === "mobile_atelier";
+
   return (
-    <div className="flex min-h-screen bg-background">
-      {/* Sidebar desktop — masquée pour les utilisateurs mobile */}
-      {!isMobile && (
-        <aside className="hidden md:flex w-64 flex-col border-r border-border bg-sidebar">
-          <div className="px-6 py-7 border-b border-border">
-            <SetupLogo size="md" />
-          </div>
-          <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
-            {mainItems
-              .filter((i) => canSee(i, role))
-              .map((item) => (
-                <SidebarLink
-                  key={item.to}
-                  item={item}
-                  active={isPathActive(location.pathname, item.to)}
-                />
-              ))}
-
-            {/* Catalogue accordion */}
-            {showCatalogue && (
-              <div>
-                <button
-                  type="button"
-                  onClick={toggleCatalogue}
-                  aria-expanded={catalogueOpen}
-                  className={cn(
-                    "group relative flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm transition-colors",
-                    catalogueIsActive
-                      ? "font-semibold text-foreground"
-                      : "font-medium text-foreground/80 hover:bg-muted",
-                  )}
-                >
-                  {catalogueIsActive && (
-                    <span
-                      aria-hidden
-                      className="absolute left-0 top-1/2 h-1.5 w-1.5 -translate-x-2 -translate-y-1/2 rounded-full bg-primary"
-                    />
-                  )}
-                  <Package className="h-4 w-4" />
-                  <span className="flex-1 text-left">Catalogue</span>
-                  <ChevronDown
-                    className={cn(
-                      "h-4 w-4 transition-transform",
-                      catalogueOpen ? "rotate-0" : "-rotate-90",
-                    )}
-                  />
-                </button>
-                {catalogueOpen && (
-                  <div className="mt-0.5 space-y-0.5">
-                    {catalogueChildren
-                      .filter((c) => canSee(c, role))
-                      .map((child) => (
-                        <SidebarSubLink
-                          key={child.to}
-                          item={child}
-                          active={
-                            location.pathname === child.to ||
-                            location.pathname.startsWith(child.to + "/")
-                          }
-                        />
-                      ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {afterCatalogueItems
-              .filter((i) => canSee(i, role))
-              .map((item) => (
-                <SidebarLink
-                  key={item.to}
-                  item={item}
-                  active={isPathActive(location.pathname, item.to)}
-                />
-              ))}
-
-            {/* Atelier section */}
-            <div className="pt-4 mt-2 border-t border-border">
-              <p className="eyebrow px-3 pb-1.5">Atelier</p>
-              {atelierItems
-                .filter((i) => canSee(i, role))
+    <div className="flex flex-col min-h-screen bg-background">
+      <PreviewModeBanner />
+      <div className="flex flex-1 min-h-0">
+        {/* Sidebar desktop — masquée pour les vues atelier (mobile DB ou preview mobile_atelier) */}
+        {!isMobile && (
+          <aside className="hidden md:flex w-64 flex-col border-r border-border bg-sidebar">
+            <div className="px-6 py-7 border-b border-border">
+              <SetupLogo size="md" />
+            </div>
+            <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
+              {mainItems
+                .filter((i) => canSee(i, navRole))
                 .map((item) => (
                   <SidebarLink
                     key={item.to}
@@ -257,68 +197,164 @@ export function AppLayout() {
                     active={isPathActive(location.pathname, item.to)}
                   />
                 ))}
+
+              {/* Catalogue accordion */}
+              {showCatalogue && (
+                <div>
+                  <button
+                    type="button"
+                    onClick={toggleCatalogue}
+                    aria-expanded={catalogueOpen}
+                    className={cn(
+                      "group relative flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm transition-colors",
+                      catalogueIsActive
+                        ? "font-semibold text-foreground"
+                        : "font-medium text-foreground/80 hover:bg-muted",
+                    )}
+                  >
+                    {catalogueIsActive && (
+                      <span
+                        aria-hidden
+                        className="absolute left-0 top-1/2 h-1.5 w-1.5 -translate-x-2 -translate-y-1/2 rounded-full bg-primary"
+                      />
+                    )}
+                    <Package className="h-4 w-4" />
+                    <span className="flex-1 text-left">Catalogue</span>
+                    <ChevronDown
+                      className={cn(
+                        "h-4 w-4 transition-transform",
+                        catalogueOpen ? "rotate-0" : "-rotate-90",
+                      )}
+                    />
+                  </button>
+                  {catalogueOpen && (
+                    <div className="mt-0.5 space-y-0.5">
+                      {catalogueChildren
+                        .filter((c) => canSee(c, navRole))
+                        .map((child) => (
+                          <SidebarSubLink
+                            key={child.to}
+                            item={child}
+                            active={
+                              location.pathname === child.to ||
+                              location.pathname.startsWith(child.to + "/")
+                            }
+                          />
+                        ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {afterCatalogueItems
+                .filter((i) => canSee(i, navRole))
+                .map((item) => (
+                  <SidebarLink
+                    key={item.to}
+                    item={item}
+                    active={isPathActive(location.pathname, item.to)}
+                  />
+                ))}
+
+              {/* Atelier section */}
+              <div className="pt-4 mt-2 border-t border-border">
+                <p className="eyebrow px-3 pb-1.5">Atelier</p>
+                {atelierItems
+                  .filter((i) => canSee(i, navRole))
+                  .map((item) => (
+                    <SidebarLink
+                      key={item.to}
+                      item={item}
+                      active={isPathActive(location.pathname, item.to)}
+                    />
+                  ))}
+              </div>
+            </nav>
+            <div className="border-t border-border p-3 space-y-2">
+              <PreviewRoleSwitcher />
+              <div className="px-3 py-2">
+                <p className="text-sm font-medium truncate text-foreground">
+                  {profile?.nom_complet ?? profile?.email}
+                </p>
+                <p className="eyebrow mt-1">{profile?.role}</p>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start"
+                onClick={handleSignOut}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                Déconnexion
+              </Button>
+            </div>
+          </aside>
+        )}
+
+        {/* Main content */}
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Mobile header (et header desktop pour les vues atelier) */}
+          <header
+            className={cn(
+              "flex items-center justify-between px-4 h-14 border-b border-border bg-card",
+              isMobile ? "flex" : "md:hidden flex",
+            )}
+          >
+            <SetupLogo />
+            <Button variant="ghost" size="sm" onClick={handleSignOut}>
+              <LogOut className="h-4 w-4" />
+            </Button>
+          </header>
+
+          <main
+            className={cn(
+              "flex-1 overflow-x-hidden",
+              isMobileAtelierPreview
+                ? // Vue mobile atelier : largeur max 480px centrée, padding réduit
+                  "mx-auto w-full max-w-[480px] px-4 py-6 pb-24"
+                : "px-4 py-8 md:px-10 md:py-12 pb-24 md:pb-12",
+            )}
+          >
+            <Outlet />
+          </main>
+
+          {/* Bottom nav mobile (toujours présente sur mobile, même pour utilisateur mobile) */}
+          <nav
+            className={cn(
+              "fixed bottom-0 inset-x-0 bg-card border-t border-border flex",
+              // En preview mobile_atelier on l'affiche aussi sur desktop (sinon md:hidden la cache)
+              isMobileAtelierPreview ? "" : "md:hidden",
+            )}
+          >
+            <div
+              className={cn(
+                "flex flex-1",
+                isMobileAtelierPreview && "mx-auto w-full max-w-[480px]",
+              )}
+            >
+              {mobileNav.map((item) => {
+                const active =
+                  item.to === "/"
+                    ? location.pathname === "/"
+                    : location.pathname.startsWith(item.to);
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    className={cn(
+                      "flex-1 flex flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium transition-colors",
+                      active ? "text-primary" : "text-muted-foreground",
+                    )}
+                  >
+                    <Icon className="h-5 w-5" />
+                    <span className="truncate max-w-full px-1">{item.label}</span>
+                  </Link>
+                );
+              })}
             </div>
           </nav>
-          <div className="border-t border-border p-3">
-            <div className="px-3 py-2 mb-2">
-              <p className="text-sm font-medium truncate text-foreground">
-                {profile?.nom_complet ?? profile?.email}
-              </p>
-              <p className="eyebrow mt-1">{profile?.role}</p>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full justify-start"
-              onClick={handleSignOut}
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Déconnexion
-            </Button>
-          </div>
-        </aside>
-      )}
-
-      {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Mobile header (et header desktop pour les utilisateurs mobile) */}
-        <header
-          className={cn(
-            "flex items-center justify-between px-4 h-14 border-b border-border bg-card",
-            isMobile ? "flex" : "md:hidden flex",
-          )}
-        >
-          <SetupLogo />
-          <Button variant="ghost" size="sm" onClick={handleSignOut}>
-            <LogOut className="h-4 w-4" />
-          </Button>
-        </header>
-
-        <main className="flex-1 px-4 py-8 md:px-10 md:py-12 pb-24 md:pb-12 overflow-x-hidden">
-          <Outlet />
-        </main>
-
-        {/* Bottom nav mobile (toujours présente sur mobile, même pour utilisateur mobile) */}
-        <nav className="md:hidden fixed bottom-0 inset-x-0 bg-card border-t border-border flex">
-          {mobileNav.map((item) => {
-            const active =
-              item.to === "/" ? location.pathname === "/" : location.pathname.startsWith(item.to);
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={cn(
-                  "flex-1 flex flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium transition-colors",
-                  active ? "text-primary" : "text-muted-foreground",
-                )}
-              >
-                <Icon className="h-5 w-5" />
-                <span className="truncate max-w-full px-1">{item.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
+        </div>
       </div>
     </div>
   );

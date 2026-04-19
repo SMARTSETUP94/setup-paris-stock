@@ -18,8 +18,11 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import type { AppRole } from "@/hooks/useAuth";
+import { useEffectiveRole, isAtelierRole } from "@/hooks/useEffectiveRole";
 import { Button } from "@/components/ui/button";
 import { BrandingLogo } from "@/components/BrandingLogo";
+import { PreviewModeBanner } from "@/components/PreviewModeBanner";
+import { PreviewRoleSwitcher } from "@/components/PreviewRoleSwitcher";
 import { cn } from "@/lib/utils";
 
 type NavItem = {

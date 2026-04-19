@@ -340,6 +340,53 @@ export type Database = {
         }
         Relationships: []
       }
+      invitations: {
+        Row: {
+          created_at: string
+          email: string
+          expire_at: string
+          id: string
+          inviter_id: string | null
+          kind: string
+          nom_complet: string | null
+          role: Database["public"]["Enums"]["app_role"] | null
+          token: string
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          expire_at: string
+          id?: string
+          inviter_id?: string | null
+          kind?: string
+          nom_complet?: string | null
+          role?: Database["public"]["Enums"]["app_role"] | null
+          token: string
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          expire_at?: string
+          id?: string
+          inviter_id?: string | null
+          kind?: string
+          nom_complet?: string | null
+          role?: Database["public"]["Enums"]["app_role"] | null
+          token?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitations_inviter_id_fkey"
+            columns: ["inviter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       matieres: {
         Row: {
           actif: boolean

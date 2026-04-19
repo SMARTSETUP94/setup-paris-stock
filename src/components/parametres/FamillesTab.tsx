@@ -15,9 +15,7 @@ type Draft = { label: string; couleur: string };
 
 export function FamillesTab() {
   const { familles, loading, refresh } = useFamilles();
-  const [drafts, setDrafts] = useState<Record<Famille, Draft>>(
-    {} as Record<Famille, Draft>,
-  );
+  const [drafts, setDrafts] = useState<Record<Famille, Draft>>({} as Record<Famille, Draft>);
   const [savingKey, setSavingKey] = useState<Famille | null>(null);
 
   useEffect(() => {
@@ -64,10 +62,7 @@ export function FamillesTab() {
       const couleurIsDefault = couleur.toLowerCase() === f.defaultColor.toLowerCase();
 
       if (labelIsDefault && couleurIsDefault) {
-        const { error } = await supabase
-          .from("familles_overrides")
-          .delete()
-          .eq("famille", f.value);
+        const { error } = await supabase.from("familles_overrides").delete().eq("famille", f.value);
         if (error) throw error;
       } else {
         const { error } = await supabase.from("familles_overrides").upsert(
@@ -94,10 +89,7 @@ export function FamillesTab() {
   async function reset(f: FamilleMeta) {
     setSavingKey(f.value);
     try {
-      const { error } = await supabase
-        .from("familles_overrides")
-        .delete()
-        .eq("famille", f.value);
+      const { error } = await supabase.from("familles_overrides").delete().eq("famille", f.value);
       if (error) throw error;
       setDrafts((prev) => ({
         ...prev,

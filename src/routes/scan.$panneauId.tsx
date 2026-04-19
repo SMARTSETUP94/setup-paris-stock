@@ -268,11 +268,7 @@ function ScanSortiePage() {
           {/* Sticky footer mobile pour valider sans scroller */}
           <div className="fixed bottom-0 inset-x-0 z-40 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             <div className="max-w-md mx-auto">
-              <Button
-                type="submit"
-                className="w-full h-12 text-base"
-                disabled={submitting}
-              >
+              <Button type="submit" className="w-full h-12 text-base" disabled={submitting}>
                 {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
                 Valider la sortie
               </Button>

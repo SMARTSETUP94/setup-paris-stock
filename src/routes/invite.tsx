@@ -1,3 +1,13 @@
+/**
+ * ROUTE PUBLIQUE — consomme un token unique généré par la server function
+ * `inviteUser`. Le token est vérifié côté serveur via `inspectToken` avant
+ * d'autoriser toute action (création de compte + définition du mot de passe).
+ *
+ * Sécurité :
+ *   - Token aléatoire 256 bits (crypto.getRandomValues), à usage unique
+ *   - Expiration 7 jours côté DB (table `invitations.expire_at`)
+ *   - Marqué `used_at` après acceptation pour bloquer le replay
+ */
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";

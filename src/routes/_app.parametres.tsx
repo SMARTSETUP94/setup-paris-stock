@@ -76,7 +76,8 @@ const ROLE_LABELS: Record<AppRole, string> = {
 
 const ROLE_DESCRIPTIONS: Record<AppRole, string> = {
   admin: "Accès complet, y compris paramètres et gestion des utilisateurs.",
-  magasinier: "Gère catalogue, BDC, affaires, mouvements et inventaire. Pas d'accès aux paramètres.",
+  magasinier:
+    "Gère catalogue, BDC, affaires, mouvements et inventaire. Pas d'accès aux paramètres.",
   mobile: "Sortie de stock uniquement via scan. Aucun autre accès.",
 };
 
@@ -135,7 +136,7 @@ function UsersTab() {
     try {
       const res = await listUsersFn();
       console.log("[UsersTab] listUsersFn raw response:", res);
-      const list = (res as { users?: UserRow[] } | UserRow[] | null | undefined);
+      const list = res as { users?: UserRow[] } | UserRow[] | null | undefined;
       const users = Array.isArray(list) ? list : (list?.users ?? []);
       console.log("[UsersTab] parsed users:", users.length, users);
       setUsers(users as UserRow[]);

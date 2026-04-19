@@ -1,6 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth, type AuthedContext } from "@/integrations/supabase/auth-middleware";
-import { getSupabaseAdminClient, requireSupabaseAdminClient, supabaseAdmin } from "@/integrations/supabase/client.server";
+import {
+  getSupabaseAdminClient,
+  requireSupabaseAdminClient,
+  supabaseAdmin,
+} from "@/integrations/supabase/client.server";
 import { sendEmailServer, getAppBaseUrl } from "@/lib/email.functions";
 import { inviteAdminTemplate, passwordResetTemplate } from "@/lib/email-templates";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -82,11 +86,7 @@ export const listUsers = createServerFn({ method: "POST" })
 export const inviteUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
-    (input: {
-      email: string;
-      nom_complet?: string;
-      role: "admin" | "magasinier" | "mobile";
-    }) => {
+    (input: { email: string; nom_complet?: string; role: "admin" | "magasinier" | "mobile" }) => {
       const email = input.email?.trim().toLowerCase();
       if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         throw new Error("Email invalide");
@@ -128,7 +128,12 @@ export const inviteUser = createServerFn({ method: "POST" })
 
       const resetUrl = `${getAppBaseUrl()}/reset-password?token=${token}`;
       const tpl = passwordResetTemplate({ resetUrl });
-      await sendEmailServer({ to: data.email, subject: tpl.subject, html: tpl.html, text: tpl.text });
+      await sendEmailServer({
+        to: data.email,
+        subject: tpl.subject,
+        html: tpl.html,
+        text: tpl.text,
+      });
 
       return { success: true, mode: "reset_existing" as const };
     }
@@ -303,10 +308,7 @@ export const acceptInvite = createServerFn({ method: "POST" })
     );
     if (profileErr) throw new Error(profileErr.message);
 
-    await admin
-      .from("invitations")
-      .update({ used_at: new Date().toISOString() })
-      .eq("id", inv.id);
+    await admin.from("invitations").update({ used_at: new Date().toISOString() }).eq("id", inv.id);
 
     return { success: true, email: inv.email };
   });
@@ -342,10 +344,7 @@ export const resetPasswordWithToken = createServerFn({ method: "POST" })
     });
     if (updErr) throw new Error(updErr.message);
 
-    await admin
-      .from("invitations")
-      .update({ used_at: new Date().toISOString() })
-      .eq("id", inv.id);
+    await admin.from("invitations").update({ used_at: new Date().toISOString() }).eq("id", inv.id);
 
     return { success: true, email: inv.email };
   });
@@ -363,7 +362,10 @@ export const setUserActive = createServerFn({ method: "POST" })
     }
 
     const admin = requireSupabaseAdminClient("La gestion des utilisateurs");
-    const { error } = await admin.from("profiles").update({ actif: data.actif }).eq("id", data.user_id);
+    const { error } = await admin
+      .from("profiles")
+      .update({ actif: data.actif })
+      .eq("id", data.user_id);
     if (error) throw new Error(error.message);
 
     await admin.auth.admin.updateUserById(data.user_id, {
@@ -388,7 +390,10 @@ export const setUserRole = createServerFn({ method: "POST" })
     }
 
     const admin = requireSupabaseAdminClient("La gestion des rôles");
-    const { error } = await admin.from("profiles").update({ role: data.role }).eq("id", data.user_id);
+    const { error } = await admin
+      .from("profiles")
+      .update({ role: data.role })
+      .eq("id", data.user_id);
     if (error) throw new Error(error.message);
     return { success: true };
   });

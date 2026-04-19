@@ -1,3 +1,14 @@
+/**
+ * ROUTE PUBLIQUE — consomme un token unique généré par la server function
+ * `requestPasswordReset` (ou `inviteUser` pour un email déjà existant).
+ * Le token est vérifié côté serveur via `inspectToken` avant d'autoriser
+ * la mise à jour du mot de passe.
+ *
+ * Sécurité :
+ *   - Token aléatoire 256 bits, à usage unique
+ *   - Expiration 2 heures côté DB
+ *   - Compatibilité legacy : accepte aussi un access_token Supabase dans le hash
+ */
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";

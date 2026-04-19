@@ -110,10 +110,7 @@ export function BrandingTab() {
     try {
       const id = await getRowId();
       if (!id) throw new Error("Configuration introuvable");
-      const { error } = await supabase
-        .from("app_settings")
-        .update({ logo_url: null })
-        .eq("id", id);
+      const { error } = await supabase.from("app_settings").update({ logo_url: null }).eq("id", id);
       if (error) throw error;
       toast.success("Logo supprimé");
       await refresh();
@@ -147,12 +144,7 @@ export function BrandingTab() {
             </p>
           </div>
           {branding.logo_url && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRemoveLogo}
-              disabled={uploading}
-            >
+            <Button variant="outline" size="sm" onClick={handleRemoveLogo} disabled={uploading}>
               <Trash2 className="h-4 w-4 mr-2" />
               Supprimer
             </Button>
@@ -161,11 +153,7 @@ export function BrandingTab() {
 
         {branding.logo_url && (
           <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/30 border border-border">
-            <img
-              src={branding.logo_url}
-              alt="Logo actuel"
-              className="h-14 w-auto object-contain"
-            />
+            <img src={branding.logo_url} alt="Logo actuel" className="h-14 w-auto object-contain" />
             <div className="text-xs text-muted-foreground break-all">{branding.logo_url}</div>
           </div>
         )}

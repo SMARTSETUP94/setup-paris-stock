@@ -48,7 +48,9 @@ export function getSupabaseAdminClient(): SupabaseAdminClient | null {
 export function requireSupabaseAdminClient(feature = "Cette action"): SupabaseAdminClient {
   const client = getSupabaseAdminClient();
   if (!client) {
-    throw new Error(`${feature} n'est pas disponible dans cette preview. Testez sur l'URL publiée.`);
+    throw new Error(
+      `${feature} n'est pas disponible dans cette preview. Testez sur l'URL publiée.`,
+    );
   }
   return client;
 }

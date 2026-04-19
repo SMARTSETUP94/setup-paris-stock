@@ -52,13 +52,9 @@ export function BrandingProvider({ children }: { children: ReactNode }) {
     // Realtime — le branding change rarement mais on synchronise quand un admin l'édite
     const channel = supabase
       .channel("app_settings_changes")
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "app_settings" },
-        () => {
-          void load();
-        },
-      )
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "app_settings" }, () => {
+        void load();
+      })
       .subscribe();
     return () => {
       void supabase.removeChannel(channel);

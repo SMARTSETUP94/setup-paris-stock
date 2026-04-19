@@ -153,7 +153,21 @@ function MesAccesPage() {
                   </div>
                   <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0" />
                 </div>
+              </>
+            );
+            return a.affaire ? (
+              <Link
+                key={a.id}
+                to="/affaires/$code"
+                params={{ code: a.affaire.code_chantier }}
+                className={cardClasses}
+              >
+                {inner}
               </Link>
+            ) : (
+              <div key={a.id} className={`${cardClasses} opacity-60 cursor-not-allowed`}>
+                {inner}
+              </div>
             );
           })}
         </div>

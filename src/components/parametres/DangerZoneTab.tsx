@@ -136,7 +136,7 @@ export function DangerZoneTab() {
     try {
       const result = await resetFn();
       toast.success("Données métier remises à zéro", {
-        description: `${result.mouvements_supprimes} mouvements, ${result.bdc_supprimes} BDC, ${result.affaires_supprimees} affaires supprimés.`,
+        description: `${result.mouvements_supprimes} mouvements et ${result.bdc_supprimes} BDC supprimés. Affaires conservées.`,
       });
       setOpen(false);
       setConfirm("");

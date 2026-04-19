@@ -160,6 +160,83 @@ function PanneauxPage() {
     return { familleLabel, typoNom: t.nom, matCount, panCount };
   }, [typoFilter, typologies, matieres, items]);
 
+  // Arborescence : matière → format (LxL) → épaisseurs (panneaux)
+  type TreeFormat = { key: string; longueur: number; largeur: number; surface: number | null; panneaux: CatRow[] };
+  type TreeMatiere = {
+    key: string;
+    matiere_id: string;
+    matiere_code: string;
+    matiere_libelle: string;
+    matiere_variante: string | null;
+    typo_nom: string | null;
+    famille: string;
+    formats: TreeFormat[];
+    totalPanneaux: number;
+    totalStock: number;
+  };
+  const tree = useMemo<TreeMatiere[]>(() => {
+    const byMat = new Map<string, TreeMatiere>();
+    for (const p of filtered) {
+      let m = byMat.get(p.matiere_id);
+      if (!m) {
+        m = {
+          key: p.matiere_id,
+          matiere_id: p.matiere_id,
+          matiere_code: p.matiere_code,
+          matiere_libelle: p.matiere_libelle,
+          matiere_variante: p.matiere_variante,
+          typo_nom: p.typo_nom,
+          famille: p.famille,
+          formats: [],
+          totalPanneaux: 0,
+          totalStock: 0,
+        };
+        byMat.set(p.matiere_id, m);
+      }
+      const fmtKey = `${p.longueur_mm}x${p.largeur_mm}`;
+      let fmt = m.formats.find((f) => f.key === fmtKey);
+      if (!fmt) {
+        fmt = { key: fmtKey, longueur: p.longueur_mm, largeur: p.largeur_mm, surface: p.surface_m2, panneaux: [] };
+        m.formats.push(fmt);
+      }
+      fmt.panneaux.push(p);
+      m.totalPanneaux += 1;
+      m.totalStock += p.stock_actuel;
+    }
+    // tri
+    const arr = Array.from(byMat.values()).sort((a, b) =>
+      (a.typo_nom ?? a.matiere_libelle).localeCompare(b.typo_nom ?? b.matiere_libelle, "fr"),
+    );
+    for (const m of arr) {
+      m.formats.sort((a, b) => b.longueur * b.largeur - a.longueur * a.largeur);
+      for (const f of m.formats) f.panneaux.sort((a, b) => a.epaisseur_mm - b.epaisseur_mm);
+    }
+    return arr;
+  }, [filtered]);
+
+  function toggleMat(key: string) {
+    setExpandedMat((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  }
+  function toggleFmt(key: string) {
+    setExpandedFmt((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  }
+  function expandAllTree() {
+    setExpandedMat(new Set(tree.map((m) => m.key)));
+    setExpandedFmt(new Set(tree.flatMap((m) => m.formats.map((f) => `${m.key}::${f.key}`))));
+  }
+  function collapseAllTree() {
+    setExpandedMat(new Set());
+    setExpandedFmt(new Set());
+  }
+
   if (!ready) return <AdminLoader />;
 
   async function toggleActif(p: CatRow) {

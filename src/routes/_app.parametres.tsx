@@ -109,7 +109,7 @@ function UsersTab() {
     try {
       const res = await listUsers();
       setUsers(res.users as UserRow[]);
-    } catch (e: any) {
+    } catch (e) {
       toast.error("Chargement impossible", { description: e.message });
     } finally {
       setLoading(false);
@@ -134,7 +134,7 @@ function UsersTab() {
       await setUserActive({ data: { user_id: u.id, actif: !u.actif } });
       toast.success(u.actif ? "Compte désactivé" : "Compte réactivé");
       void refresh();
-    } catch (e: any) {
+    } catch (e) {
       toast.error("Action impossible", { description: e.message });
     }
   }
@@ -145,7 +145,7 @@ function UsersTab() {
       await setUserRole({ data: { user_id: u.id, role } });
       toast.success("Rôle mis à jour");
       void refresh();
-    } catch (e: any) {
+    } catch (e) {
       toast.error("Action impossible", { description: e.message });
     }
   }
@@ -158,7 +158,7 @@ function UsersTab() {
       toast.success("Email envoyé", {
         description: "Un lien de réinitialisation a été envoyé.",
       });
-    } catch (e: any) {
+    } catch (e) {
       toast.error("Envoi impossible", { description: e.message });
     }
   }
@@ -170,7 +170,7 @@ function UsersTab() {
       toast.success("Compte supprimé");
       setConfirmDelete(null);
       void refresh();
-    } catch (e: any) {
+    } catch (e) {
       toast.error("Suppression impossible", { description: e.message });
     }
   }
@@ -359,7 +359,7 @@ function InviteDialog({
         description: `${email} va recevoir un email pour créer son mot de passe.`,
       });
       onInvited();
-    } catch (err: any) {
+    } catch (err) {
       toast.error("Invitation impossible", { description: err.message });
     } finally {
       setSubmitting(false);

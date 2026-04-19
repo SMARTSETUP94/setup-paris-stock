@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Plus, Search, Upload, AlertTriangle } from "lucide-react";
+import { Plus, Search, Upload, AlertTriangle, ArrowUpRight } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminGuard, AdminLoader, useDebounced } from "@/hooks/useAdminGuard";
@@ -106,13 +106,20 @@ function AffairesIndex() {
     });
   }, [rows, dq, statut, chargeFilter]);
 
+  // Top 3 affaires "en cours" les plus récentes — spotlight éditorial
+  const spotlightAffaires = useMemo(
+    () => rows.filter((r) => r.statut === "en_cours").slice(0, 3),
+    [rows],
+  );
+
   if (!ready) return <AdminLoader />;
 
   return (
     <div>
       <PageHeader
+        sectionNumber="02"
         eyebrow="Affaires"
-        title="Affaires"
+        title="Affaires en cours"
         description="Pilotez chaque chantier : budget, statut, mouvements et accès tiers."
         actions={
           <>
@@ -125,6 +132,42 @@ function AffairesIndex() {
           </>
         }
       />
+
+      {/* Spotlight cards éditoriales — top 3 affaires en cours */}
+      {spotlightAffaires.length > 0 && (
+        <div className="mb-10">
+          <p className="section-marker mb-4">— Spotlight · En cours</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-border rounded-2xl overflow-hidden border border-border">
+            {spotlightAffaires.map((a, idx) => (
+              <Link
+                key={a.id}
+                to="/affaires/$code"
+                params={{ code: a.code_chantier }}
+                className="relative bg-card p-6 hover:bg-muted/40 transition-all group overflow-hidden min-h-[180px] flex flex-col justify-between"
+              >
+                <span className="editorial-number absolute -top-4 -right-2 text-[100px] select-none pointer-events-none">
+                  0{idx + 1}
+                </span>
+                <div className="relative">
+                  <p className="font-mono text-[10px] text-primary tracking-wider mb-2">
+                    — 0{idx + 1}
+                  </p>
+                  <h3 className="font-display text-xl tracking-tight font-semibold mb-1 truncate">
+                    {a.nom}
+                  </h3>
+                  <p className="text-xs text-muted-foreground truncate">{a.client}</p>
+                </div>
+                <div className="relative flex items-center justify-between mt-4">
+                  <span className="font-mono text-[11px] px-2 py-0.5 rounded-full bg-muted truncate max-w-[140px]">
+                    {a.code_chantier}
+                  </span>
+                  <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       <Card className="p-4 mb-6">
         <div className="grid gap-3 md:grid-cols-[1fr_180px_220px]">
@@ -232,7 +275,7 @@ function AffairesIndex() {
                         </span>
                       ) : r.charge_affaires_libre ? (
                         <span
-                          className="inline-flex items-center gap-1 text-xs text-amber-700"
+                          className="inline-flex items-center gap-1 text-xs text-warning"
                           title="Non matché à un profil"
                         >
                           <AlertTriangle className="h-3 w-3" /> {r.charge_affaires_libre}

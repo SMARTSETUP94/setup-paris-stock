@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AlertTriangle, ArrowRight, TrendingUp } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useStockRealtime } from "@/hooks/useStockRealtime";
@@ -241,35 +241,47 @@ function DashboardPage() {
   ];
 
   return (
-    <div className="max-w-6xl space-y-16 md:space-y-20">
-      <header className="space-y-3">
-        <p className="eyebrow">Tableau de bord</p>
-        <h1 className="text-3xl md:text-5xl">Vue d'ensemble</h1>
-        <p className="max-w-2xl text-sm md:text-base text-muted-foreground">
-          Suivi en temps réel de votre stock, de vos affaires et de vos bons de commande
-          fournisseurs.
+    <div className="max-w-6xl space-y-16 md:space-y-24">
+      {/* Hero éditorial — style Setup Paris */}
+      <header className="relative pt-4 md:pt-8">
+        <p className="section-marker mb-6 flex items-center gap-3">
+          <span>— 01</span>
+          <span className="h-px flex-1 max-w-[120px] bg-primary/40" />
+          <span className="text-muted-foreground">Setup Paris · Stock atelier</span>
+        </p>
+        <h1 className="text-5xl md:text-7xl lg:text-[88px] tracking-tight max-w-4xl">
+          Pilotage du{" "}
+          <span className="text-muted-foreground/60">stock panneaux</span>
+          <br />
+          en temps réel.
+        </h1>
+        <p className="mt-6 max-w-xl text-base md:text-lg text-muted-foreground">
+          Suivi continu des affaires, bons de commande et mouvements — toutes les données de
+          l'atelier en un coup d'œil.
         </p>
       </header>
 
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {cards.map((kpi) => (
-          <Card key={kpi.label}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground tracking-normal normal-case">
-                <span className="font-sans">{kpi.label}</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-1">
-              <div className="font-sans text-3xl md:text-4xl font-semibold text-[color:var(--color-heading)]">
+      {/* KPIs — grid éditorial avec gros chiffres */}
+      <section>
+        <p className="section-marker mb-6">— 02 · Indicateurs</p>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-border rounded-2xl overflow-hidden border border-border">
+          {cards.map((kpi, idx) => (
+            <div key={kpi.label} className="bg-card p-5 md:p-6 relative group">
+              <span className="absolute top-3 right-4 font-mono text-[10px] text-muted-foreground tracking-wider">
+                0{idx + 1}
+              </span>
+              <p className="eyebrow mb-3">{kpi.label}</p>
+              <div className="font-display text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-[color:var(--color-heading)]">
                 {kpi.value === null ? "—" : kpi.format(kpi.value)}
               </div>
-              <p className="text-xs text-muted-foreground">{kpi.hint}</p>
-            </CardContent>
-          </Card>
-        ))}
+              <p className="text-xs text-muted-foreground mt-2">{kpi.hint}</p>
+            </div>
+          ))}
+        </div>
       </section>
 
       <section>
+        <p className="section-marker mb-6">— 03 · Consommation</p>
         <DashboardConsoChart />
       </section>
 
@@ -278,8 +290,9 @@ function DashboardPage() {
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-amber-600" />
-              <h2 className="text-base font-semibold">Alertes seuil bas</h2>
+              <span className="section-marker">— 04</span>
+              <AlertTriangle className="h-4 w-4 text-warning" />
+              <h2 className="font-display text-lg font-semibold tracking-tight">Alertes seuil bas</h2>
             </div>
             <Link to="/inventaire" className="link-arrow text-xs">
               Voir l'inventaire →
@@ -304,7 +317,7 @@ function DashboardPage() {
                     </span>
                   </div>
                   <div className="shrink-0 text-right">
-                    <div className="text-amber-700 font-medium">
+                    <div className="text-warning font-medium">
                       {formatNumber(Number(a.stock_actuel ?? 0), 2)}
                     </div>
                     <div className="text-xs text-muted-foreground">
@@ -321,8 +334,9 @@ function DashboardPage() {
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
+              <span className="section-marker">— 05</span>
               <TrendingUp className="h-4 w-4 text-primary" />
-              <h2 className="text-base font-semibold">Top affaires consommatrices</h2>
+              <h2 className="font-display text-lg font-semibold tracking-tight">Top affaires</h2>
             </div>
             <Link to="/affaires" className="link-arrow text-xs">
               Voir toutes →
@@ -359,7 +373,10 @@ function DashboardPage() {
       <section>
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-semibold">Mouvements récents</h2>
+            <div className="flex items-center gap-3">
+              <span className="section-marker">— 06</span>
+              <h2 className="font-display text-lg font-semibold tracking-tight">Mouvements récents</h2>
+            </div>
             <Link to="/mouvements" className="link-arrow text-xs">
               Tout l'historique →
             </Link>
@@ -395,8 +412,8 @@ function DashboardPage() {
                     <div
                       className={
                         Number(m.quantite) < 0
-                          ? "text-rose-700 font-medium"
-                          : "text-emerald-700 font-medium"
+                          ? "text-destructive font-medium"
+                          : "text-success font-medium"
                       }
                     >
                       {Number(m.quantite) > 0 ? "+" : ""}
@@ -415,32 +432,33 @@ function DashboardPage() {
 
       {hasData === false && (
         <section className="space-y-8">
-          <div className="flex items-end justify-between gap-4">
-            <div className="space-y-2">
-              <p className="eyebrow">Modules</p>
-              <h2 className="text-2xl md:text-3xl">Pour démarrer</h2>
-              <p className="text-sm text-muted-foreground max-w-2xl">
-                Ces 4 modules constituent le cœur de l'application. Commence par le catalogue pour
-                référencer tes matières et tes panneaux.
-              </p>
-            </div>
+          <div className="space-y-3">
+            <p className="section-marker">— 07 · Modules</p>
+            <h2 className="text-3xl md:text-4xl tracking-tight">Pour démarrer</h2>
+            <p className="text-sm text-muted-foreground max-w-2xl">
+              Ces 4 modules constituent le cœur de l'application. Commence par le catalogue pour
+              référencer tes matières et tes panneaux.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-border rounded-2xl overflow-hidden border border-border">
             {sections.map((s) => (
-              <Link key={s.num} to={s.to}>
-                <Card className="p-6 hover:bg-muted/40 transition-colors cursor-pointer h-full">
-                  <div className="flex items-start gap-6">
-                    <span className="font-display text-3xl text-muted-foreground/70">{s.num}</span>
-                    <div className="space-y-1">
-                      <h3 className="text-lg flex items-center gap-2">
-                        {s.title}
-                        <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                      </h3>
-                      <p className="text-sm text-muted-foreground">{s.desc}</p>
-                    </div>
-                  </div>
-                </Card>
+              <Link
+                key={s.num}
+                to={s.to}
+                className="relative bg-card p-8 hover:bg-muted/40 transition-all cursor-pointer group overflow-hidden"
+              >
+                <span className="editorial-number absolute -top-2 -right-3 text-[120px] select-none pointer-events-none">
+                  {s.num}
+                </span>
+                <div className="relative">
+                  <p className="section-marker mb-3">— {s.num}</p>
+                  <h3 className="font-display text-2xl md:text-3xl tracking-tight flex items-center gap-2 mb-2">
+                    {s.title}
+                    <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:translate-x-1 group-hover:text-primary transition-all" />
+                  </h3>
+                  <p className="text-sm text-muted-foreground max-w-xs">{s.desc}</p>
+                </div>
               </Link>
             ))}
           </div>

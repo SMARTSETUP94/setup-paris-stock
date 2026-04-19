@@ -459,12 +459,13 @@ function InviteDialog({
             </div>
             <div className="space-y-2">
               <Label htmlFor="invite-role">Rôle</Label>
-              <Select value={role} onValueChange={(v) => setRole(v as "admin" | "tiers")}>
+              <Select value={role} onValueChange={(v) => setRole(v as AppRole)}>
                 <SelectTrigger id="invite-role">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="tiers">Tiers — accès limité aux affaires invitées</SelectItem>
+                  <SelectItem value="mobile">Mobile — sortie de stock uniquement</SelectItem>
+                  <SelectItem value="magasinier">Magasinier — gestion stock & BDC</SelectItem>
                   <SelectItem value="admin">Admin — accès complet</SelectItem>
                 </SelectContent>
               </Select>

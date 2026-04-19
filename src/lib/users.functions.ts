@@ -150,9 +150,9 @@ export const setUserActive = createServerFn({ method: "POST" })
 
 export const setUserRole = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { user_id: string; role: "admin" | "tiers" }) => {
+  .inputValidator((input: { user_id: string; role: "admin" | "magasinier" | "mobile" }) => {
     if (!input.user_id) throw new Error("user_id requis");
-    if (input.role !== "admin" && input.role !== "tiers") {
+    if (input.role !== "admin" && input.role !== "magasinier" && input.role !== "mobile") {
       throw new Error("Rôle invalide");
     }
     return { user_id: input.user_id, role: input.role };

@@ -3,19 +3,41 @@ import { useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/useAuth";
 import { Loader2 } from "lucide-react";
 
-export function useAdminGuard() {
+type GuardOptions = {
+  /**
+   * Si true, seul un admin est autorisé.
+   * Sinon (défaut) : admin OU magasinier.
+   */
+  adminOnly?: boolean;
+};
+
+/**
+ * Garde de routes back-office.
+ * - Par défaut : admin OU magasinier ont accès.
+ * - Avec `{ adminOnly: true }` : uniquement admin (utilisé pour Paramètres).
+ * Les utilisateurs `mobile` sont redirigés vers /scan, les autres vers /.
+ */
+export function useAdminGuard(options: GuardOptions = {}) {
+  const { adminOnly = false } = options;
   const { profile, loading } = useAuth();
   const navigate = useNavigate();
   const [checked, setChecked] = useState(false);
 
   useEffect(() => {
     if (loading) return;
-    if (!profile || profile.role !== "admin") {
-      navigate({ to: "/" });
+    if (!profile) {
+      navigate({ to: "/login" });
+      return;
+    }
+    const role = profile.role;
+    const allowed = adminOnly ? role === "admin" : role === "admin" || role === "magasinier";
+    if (!allowed) {
+      // Mobile -> scan ; tout autre cas (magasinier sur page admin) -> dashboard
+      navigate({ to: role === "mobile" ? "/scan" : "/" });
       return;
     }
     setChecked(true);
-  }, [profile, loading, navigate]);
+  }, [profile, loading, navigate, adminOnly]);
 
   return { ready: checked, profile };
 }

@@ -174,7 +174,12 @@ function ScanSortiePage() {
     );
   }
 
-  const m = panneau.matiere as any;
+  const m = panneau.matiere as {
+    code?: string | null;
+    libelle?: string | null;
+    famille?: string | null;
+    unite_stock?: string | null;
+  } | null;
   const stockBas = (panneau.stock_actuel ?? 0) <= 0;
 
   return (

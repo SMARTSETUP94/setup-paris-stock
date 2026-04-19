@@ -295,9 +295,10 @@ export function AffairesImportDialog({ open, onClose, onImported }: Props) {
         <DialogHeader>
           <DialogTitle>Importer des affaires (CSV)</DialogTitle>
           <DialogDescription>
-            CSV UTF-8, séparateur virgule ou point-virgule auto-détecté. Colonnes attendues :{" "}
-            <span className="font-mono text-xs">code_chantier, nom, client</span> (obligatoires) ·{" "}
-            <span className="font-mono text-xs">numero, adresse, charge_affaires, code_interne, statut</span> (optionnelles)
+            CSV / XLSX — séparateur virgule ou point-virgule auto-détecté. Colonnes attendues :{" "}
+            <span className="font-mono text-xs">Code affaire, Libelle, Client</span> (obligatoires) ·{" "}
+            <span className="font-mono text-xs">Chargé(e) d'affaires, adresse, code_interne, statut</span> (optionnelles).
+            Les en-têtes sont reconnus en majuscules/minuscules, avec ou sans accents.
           </DialogDescription>
         </DialogHeader>
 

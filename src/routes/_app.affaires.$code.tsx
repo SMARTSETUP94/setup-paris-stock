@@ -7,8 +7,6 @@ import {
   Plus,
   Trash2,
   Archive,
-  RefreshCw,
-  Ban,
   ArrowDownToLine,
   ArrowUpFromLine,
   Wrench,
@@ -49,14 +47,11 @@ import {
 import { StatutBadge } from "@/components/StatutBadge";
 import { AffaireFormDialog } from "@/components/AffaireFormDialog";
 import { BudgetProgressCard } from "@/components/BudgetProgressCard";
-import { InviteTiersDialog } from "@/components/InviteTiersDialog";
 import { MouvementDialog } from "@/components/MouvementDialog";
 import { TypeMouvementBadge } from "@/components/TypeMouvementBadge";
 import {
   formatDateFr,
   formatDateTimeFr,
-  permissionLabel,
-  buildInvitationLink,
 } from "@/lib/affaires";
 import { formatEuro, formatNumber } from "@/lib/familles";
 import type { Database } from "@/integrations/supabase/types";
@@ -64,7 +59,6 @@ import type { Database } from "@/integrations/supabase/types";
 type Affaire = Database["public"]["Tables"]["affaires"]["Row"] & {
   charge?: { nom_complet: string | null; email: string } | null;
 };
-type Acces = Database["public"]["Tables"]["affaire_acces"]["Row"];
 
 type StockLigne = {
   panneau_id: string | null;

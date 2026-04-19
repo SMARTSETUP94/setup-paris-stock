@@ -17,6 +17,7 @@ import { Route as AppMouvementsRouteImport } from './routes/_app.mouvements'
 import { Route as AppFournisseursRouteImport } from './routes/_app.fournisseurs'
 import { Route as AppBdcRouteImport } from './routes/_app.bdc'
 import { Route as AppAffairesRouteImport } from './routes/_app.affaires'
+import { Route as AppCatalogueIndexRouteImport } from './routes/_app.catalogue.index'
 import { Route as AppCataloguePanneauxRouteImport } from './routes/_app.catalogue.panneaux'
 import { Route as AppCatalogueMatieresRouteImport } from './routes/_app.catalogue.matieres'
 
@@ -59,6 +60,11 @@ const AppAffairesRoute = AppAffairesRouteImport.update({
   path: '/affaires',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCatalogueIndexRoute = AppCatalogueIndexRouteImport.update({
+  id: '/catalogue/',
+  path: '/catalogue/',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppCataloguePanneauxRoute = AppCataloguePanneauxRouteImport.update({
   id: '/catalogue/panneaux',
   path: '/catalogue/panneaux',
@@ -80,6 +86,7 @@ export interface FileRoutesByFullPath {
   '/parametres': typeof AppParametresRoute
   '/catalogue/matieres': typeof AppCatalogueMatieresRoute
   '/catalogue/panneaux': typeof AppCataloguePanneauxRoute
+  '/catalogue/': typeof AppCatalogueIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -91,6 +98,7 @@ export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
   '/catalogue/matieres': typeof AppCatalogueMatieresRoute
   '/catalogue/panneaux': typeof AppCataloguePanneauxRoute
+  '/catalogue': typeof AppCatalogueIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -104,6 +112,7 @@ export interface FileRoutesById {
   '/_app/': typeof AppIndexRoute
   '/_app/catalogue/matieres': typeof AppCatalogueMatieresRoute
   '/_app/catalogue/panneaux': typeof AppCataloguePanneauxRoute
+  '/_app/catalogue/': typeof AppCatalogueIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -117,6 +126,7 @@ export interface FileRouteTypes {
     | '/parametres'
     | '/catalogue/matieres'
     | '/catalogue/panneaux'
+    | '/catalogue/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -128,6 +138,7 @@ export interface FileRouteTypes {
     | '/'
     | '/catalogue/matieres'
     | '/catalogue/panneaux'
+    | '/catalogue'
   id:
     | '__root__'
     | '/_app'
@@ -140,6 +151,7 @@ export interface FileRouteTypes {
     | '/_app/'
     | '/_app/catalogue/matieres'
     | '/_app/catalogue/panneaux'
+    | '/_app/catalogue/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -205,6 +217,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAffairesRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/catalogue/': {
+      id: '/_app/catalogue/'
+      path: '/catalogue'
+      fullPath: '/catalogue/'
+      preLoaderRoute: typeof AppCatalogueIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/catalogue/panneaux': {
       id: '/_app/catalogue/panneaux'
       path: '/catalogue/panneaux'
@@ -231,6 +250,7 @@ interface AppRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
   AppCatalogueMatieresRoute: typeof AppCatalogueMatieresRoute
   AppCataloguePanneauxRoute: typeof AppCataloguePanneauxRoute
+  AppCatalogueIndexRoute: typeof AppCatalogueIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -242,6 +262,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppIndexRoute: AppIndexRoute,
   AppCatalogueMatieresRoute: AppCatalogueMatieresRoute,
   AppCataloguePanneauxRoute: AppCataloguePanneauxRoute,
+  AppCatalogueIndexRoute: AppCatalogueIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

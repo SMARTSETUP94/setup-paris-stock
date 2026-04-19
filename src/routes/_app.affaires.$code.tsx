@@ -560,8 +560,8 @@ function AffaireDetail() {
         onOpenChange={setEditOpen}
         initial={affaire}
         onSaved={(a) => {
-          if (a.numero !== affaire.numero) {
-            navigate({ to: "/affaires/$numero", params: { numero: a.numero } });
+          if (a.code_chantier !== affaire.code_chantier) {
+            navigate({ to: "/affaires/$code", params: { code: a.code_chantier } });
           } else {
             void loadAffaire();
           }

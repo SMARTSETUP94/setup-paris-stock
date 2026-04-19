@@ -59,8 +59,8 @@ const mobileItems = [
   { to: "/scan", label: "Scan", icon: QrCode },
 ] as const;
 
-function SetupLogo() {
-  return <BrandingLogo size="sm" />;
+function SetupLogo({ size = "sm" as const }: { size?: "sm" | "md" }) {
+  return <BrandingLogo size={size} showTagline />;
 }
 
 const CATALOGUE_KEY = "sidebar-catalogue-open";
@@ -156,9 +156,8 @@ export function AppLayout() {
     <div className="flex min-h-screen bg-background">
       {/* Sidebar desktop */}
       <aside className="hidden md:flex w-64 flex-col border-r border-border bg-sidebar">
-        <div className="px-6 py-6 border-b border-border">
-          <SetupLogo />
-          <p className="eyebrow mt-3">Stock · Setup Paris</p>
+        <div className="px-6 py-7 border-b border-border">
+          <SetupLogo size="md" />
         </div>
         <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
           {mainItems

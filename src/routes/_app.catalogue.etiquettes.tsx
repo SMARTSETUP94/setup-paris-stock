@@ -115,8 +115,8 @@ function EtiquettesPage() {
       setQrDataMap(map);
       // Laisse le DOM se rafraîchir avant impression
       setTimeout(() => window.print(), 200);
-    } catch (e: any) {
-      toast.error(e.message ?? "Erreur de génération");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erreur de génération");
     } finally {
       setGenerating(false);
     }

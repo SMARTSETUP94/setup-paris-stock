@@ -109,8 +109,10 @@ function UsersTab() {
     try {
       const res = await listUsers();
       setUsers(res.users as UserRow[]);
-    } catch (e: any) {
-      toast.error("Chargement impossible", { description: e.message });
+    } catch (e) {
+      toast.error("Chargement impossible", {
+        description: e instanceof Error ? e.message : String(e),
+      });
     } finally {
       setLoading(false);
     }
@@ -134,8 +136,10 @@ function UsersTab() {
       await setUserActive({ data: { user_id: u.id, actif: !u.actif } });
       toast.success(u.actif ? "Compte désactivé" : "Compte réactivé");
       void refresh();
-    } catch (e: any) {
-      toast.error("Action impossible", { description: e.message });
+    } catch (e) {
+      toast.error("Action impossible", {
+        description: e instanceof Error ? e.message : String(e),
+      });
     }
   }
 
@@ -145,8 +149,10 @@ function UsersTab() {
       await setUserRole({ data: { user_id: u.id, role } });
       toast.success("Rôle mis à jour");
       void refresh();
-    } catch (e: any) {
-      toast.error("Action impossible", { description: e.message });
+    } catch (e) {
+      toast.error("Action impossible", {
+        description: e instanceof Error ? e.message : String(e),
+      });
     }
   }
 
@@ -158,8 +164,10 @@ function UsersTab() {
       toast.success("Email envoyé", {
         description: "Un lien de réinitialisation a été envoyé.",
       });
-    } catch (e: any) {
-      toast.error("Envoi impossible", { description: e.message });
+    } catch (e) {
+      toast.error("Envoi impossible", {
+        description: e instanceof Error ? e.message : String(e),
+      });
     }
   }
 
@@ -170,8 +178,10 @@ function UsersTab() {
       toast.success("Compte supprimé");
       setConfirmDelete(null);
       void refresh();
-    } catch (e: any) {
-      toast.error("Suppression impossible", { description: e.message });
+    } catch (e) {
+      toast.error("Suppression impossible", {
+        description: e instanceof Error ? e.message : String(e),
+      });
     }
   }
 
@@ -359,8 +369,10 @@ function InviteDialog({
         description: `${email} va recevoir un email pour créer son mot de passe.`,
       });
       onInvited();
-    } catch (err: any) {
-      toast.error("Invitation impossible", { description: err.message });
+    } catch (err) {
+      toast.error("Invitation impossible", {
+        description: err instanceof Error ? err.message : String(err),
+      });
     } finally {
       setSubmitting(false);
     }

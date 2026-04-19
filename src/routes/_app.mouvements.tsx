@@ -19,6 +19,7 @@ import { TYPES_MVT } from "@/lib/mouvements";
 import { formatEuro, formatNumber } from "@/lib/familles";
 import { formatDateTimeFr } from "@/lib/affaires";
 import { useAuth } from "@/hooks/useAuth";
+import { useStockRealtime } from "@/hooks/useStockRealtime";
 import {
   exportMouvementsXLSX, exportMouvementsCSV, exportMouvementsPDF,
   type MouvementExport,
@@ -109,6 +110,9 @@ function MouvementsPage() {
   useEffect(() => {
     if (ready) void loadAffairesOpts();
   }, [ready]);
+
+  // Stock temps réel : recharge la liste à chaque nouveau mouvement
+  useStockRealtime(() => { void load(); }, ready);
 
   const filtered = useMemo(() => {
     const ql = dq.trim().toLowerCase();

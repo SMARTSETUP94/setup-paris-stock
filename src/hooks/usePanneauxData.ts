@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useDebounced } from "@/hooks/useAdminGuard";
+import { useStockRealtime } from "@/hooks/useStockRealtime";
 import type { Typologie } from "@/lib/typologies";
 import type { CatRow, Matiere, TreeMatiere, TreeFormat } from "@/components/panneaux/types";
 
@@ -70,6 +71,9 @@ export function usePanneauxData(ready: boolean, initialMatiere?: string) {
   useEffect(() => {
     if (ready) void fetchData();
   }, [ready]);
+
+  // Stock temps réel
+  useStockRealtime(() => { void fetchData(); }, ready);
 
   const typologiesFiltered = useMemo(() => {
     if (familleFilter === "all") return typologies;

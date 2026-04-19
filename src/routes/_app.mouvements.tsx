@@ -200,6 +200,19 @@ function MouvementsPage() {
 
   const isAdmin = profile?.role === "admin";
 
+  function openCorrection(r: Row) {
+    const qte = Number(r.quantite);
+    // On crée un mouvement inverse : si l'origine était négative, on remet du stock (+), et vice versa.
+    setPrefill({
+      panneauId: r.panneau_id,
+      affaireId: r.affaire_id,
+      quantite: Math.abs(qte),
+      signe: qte < 0 ? "plus" : "moins",
+      commentaire: `Correction du mouvement ${r.id.slice(0, 8)} du ${formatDateTimeFr(r.created_at)} — `,
+    });
+    setOpenMode("correction");
+  }
+
   return (
     <div>
       <PageHeader

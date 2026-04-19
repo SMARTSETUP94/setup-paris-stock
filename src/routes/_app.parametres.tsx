@@ -113,6 +113,11 @@ function ParametresPage() {
 
 function UsersTab() {
   const { profile } = useAuth();
+  const listUsersFn = useServerFn(listUsers);
+  const setUserActiveFn = useServerFn(setUserActive);
+  const setUserRoleFn = useServerFn(setUserRole);
+  const resendInvitationFn = useServerFn(resendInvitation);
+  const deleteUserFn = useServerFn(deleteUser);
   const [users, setUsers] = useState<UserRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -123,8 +128,8 @@ function UsersTab() {
   async function refresh() {
     setLoading(true);
     try {
-      const res = await listUsers();
-      setUsers(res.users as UserRow[]);
+      const res = await listUsersFn();
+      setUsers((res?.users ?? []) as UserRow[]);
     } catch (e) {
       toast.error("Chargement impossible", {
         description: e instanceof Error ? e.message : String(e),

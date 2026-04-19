@@ -12,7 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
+import { Route as ScanIndexRouteImport } from './routes/scan.index'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
+import { Route as ScanPanneauIdRouteImport } from './routes/scan.$panneauId'
 import { Route as AppParametresRouteImport } from './routes/_app.parametres'
 import { Route as AppMouvementsRouteImport } from './routes/_app.mouvements'
 import { Route as AppFournisseursRouteImport } from './routes/_app.fournisseurs'
@@ -22,6 +24,7 @@ import { Route as AppCatalogueIndexRouteImport } from './routes/_app.catalogue.i
 import { Route as AppAffairesIndexRouteImport } from './routes/_app.affaires.index'
 import { Route as AppCataloguePanneauxRouteImport } from './routes/_app.catalogue.panneaux'
 import { Route as AppCatalogueMatieresRouteImport } from './routes/_app.catalogue.matieres'
+import { Route as AppCatalogueEtiquettesRouteImport } from './routes/_app.catalogue.etiquettes'
 import { Route as AppBdcIdRouteImport } from './routes/_app.bdc.$id'
 import { Route as AppAffairesCodeRouteImport } from './routes/_app.affaires.$code'
 
@@ -39,10 +42,20 @@ const AppRoute = AppRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ScanIndexRoute = ScanIndexRouteImport.update({
+  id: '/scan/',
+  path: '/scan/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppIndexRoute = AppIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AppRoute,
+} as any)
+const ScanPanneauIdRoute = ScanPanneauIdRouteImport.update({
+  id: '/scan/$panneauId',
+  path: '/scan/$panneauId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AppParametresRoute = AppParametresRouteImport.update({
   id: '/parametres',
@@ -89,6 +102,11 @@ const AppCatalogueMatieresRoute = AppCatalogueMatieresRouteImport.update({
   path: '/catalogue/matieres',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCatalogueEtiquettesRoute = AppCatalogueEtiquettesRouteImport.update({
+  id: '/catalogue/etiquettes',
+  path: '/catalogue/etiquettes',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppBdcIdRoute = AppBdcIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -109,8 +127,11 @@ export interface FileRoutesByFullPath {
   '/fournisseurs': typeof AppFournisseursRoute
   '/mouvements': typeof AppMouvementsRoute
   '/parametres': typeof AppParametresRoute
+  '/scan/$panneauId': typeof ScanPanneauIdRoute
+  '/scan/': typeof ScanIndexRoute
   '/affaires/$code': typeof AppAffairesCodeRoute
   '/bdc/$id': typeof AppBdcIdRoute
+  '/catalogue/etiquettes': typeof AppCatalogueEtiquettesRoute
   '/catalogue/matieres': typeof AppCatalogueMatieresRoute
   '/catalogue/panneaux': typeof AppCataloguePanneauxRoute
   '/affaires/': typeof AppAffairesIndexRoute
@@ -123,9 +144,12 @@ export interface FileRoutesByTo {
   '/fournisseurs': typeof AppFournisseursRoute
   '/mouvements': typeof AppMouvementsRoute
   '/parametres': typeof AppParametresRoute
+  '/scan/$panneauId': typeof ScanPanneauIdRoute
   '/': typeof AppIndexRoute
+  '/scan': typeof ScanIndexRoute
   '/affaires/$code': typeof AppAffairesCodeRoute
   '/bdc/$id': typeof AppBdcIdRoute
+  '/catalogue/etiquettes': typeof AppCatalogueEtiquettesRoute
   '/catalogue/matieres': typeof AppCatalogueMatieresRoute
   '/catalogue/panneaux': typeof AppCataloguePanneauxRoute
   '/affaires': typeof AppAffairesIndexRoute
@@ -141,9 +165,12 @@ export interface FileRoutesById {
   '/_app/fournisseurs': typeof AppFournisseursRoute
   '/_app/mouvements': typeof AppMouvementsRoute
   '/_app/parametres': typeof AppParametresRoute
+  '/scan/$panneauId': typeof ScanPanneauIdRoute
   '/_app/': typeof AppIndexRoute
+  '/scan/': typeof ScanIndexRoute
   '/_app/affaires/$code': typeof AppAffairesCodeRoute
   '/_app/bdc/$id': typeof AppBdcIdRoute
+  '/_app/catalogue/etiquettes': typeof AppCatalogueEtiquettesRoute
   '/_app/catalogue/matieres': typeof AppCatalogueMatieresRoute
   '/_app/catalogue/panneaux': typeof AppCataloguePanneauxRoute
   '/_app/affaires/': typeof AppAffairesIndexRoute
@@ -160,8 +187,11 @@ export interface FileRouteTypes {
     | '/fournisseurs'
     | '/mouvements'
     | '/parametres'
+    | '/scan/$panneauId'
+    | '/scan/'
     | '/affaires/$code'
     | '/bdc/$id'
+    | '/catalogue/etiquettes'
     | '/catalogue/matieres'
     | '/catalogue/panneaux'
     | '/affaires/'
@@ -174,9 +204,12 @@ export interface FileRouteTypes {
     | '/fournisseurs'
     | '/mouvements'
     | '/parametres'
+    | '/scan/$panneauId'
     | '/'
+    | '/scan'
     | '/affaires/$code'
     | '/bdc/$id'
+    | '/catalogue/etiquettes'
     | '/catalogue/matieres'
     | '/catalogue/panneaux'
     | '/affaires'
@@ -191,9 +224,12 @@ export interface FileRouteTypes {
     | '/_app/fournisseurs'
     | '/_app/mouvements'
     | '/_app/parametres'
+    | '/scan/$panneauId'
     | '/_app/'
+    | '/scan/'
     | '/_app/affaires/$code'
     | '/_app/bdc/$id'
+    | '/_app/catalogue/etiquettes'
     | '/_app/catalogue/matieres'
     | '/_app/catalogue/panneaux'
     | '/_app/affaires/'
@@ -204,6 +240,8 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ScanPanneauIdRoute: typeof ScanPanneauIdRoute
+  ScanIndexRoute: typeof ScanIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -229,12 +267,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/scan/': {
+      id: '/scan/'
+      path: '/scan'
+      fullPath: '/scan/'
+      preLoaderRoute: typeof ScanIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app/': {
       id: '/_app/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/scan/$panneauId': {
+      id: '/scan/$panneauId'
+      path: '/scan/$panneauId'
+      fullPath: '/scan/$panneauId'
+      preLoaderRoute: typeof ScanPanneauIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_app/parametres': {
       id: '/_app/parametres'
@@ -299,6 +351,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCatalogueMatieresRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/catalogue/etiquettes': {
+      id: '/_app/catalogue/etiquettes'
+      path: '/catalogue/etiquettes'
+      fullPath: '/catalogue/etiquettes'
+      preLoaderRoute: typeof AppCatalogueEtiquettesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/bdc/$id': {
       id: '/_app/bdc/$id'
       path: '/$id'
@@ -348,6 +407,7 @@ interface AppRouteChildren {
   AppMouvementsRoute: typeof AppMouvementsRoute
   AppParametresRoute: typeof AppParametresRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppCatalogueEtiquettesRoute: typeof AppCatalogueEtiquettesRoute
   AppCatalogueMatieresRoute: typeof AppCatalogueMatieresRoute
   AppCataloguePanneauxRoute: typeof AppCataloguePanneauxRoute
   AppCatalogueIndexRoute: typeof AppCatalogueIndexRoute
@@ -360,6 +420,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppMouvementsRoute: AppMouvementsRoute,
   AppParametresRoute: AppParametresRoute,
   AppIndexRoute: AppIndexRoute,
+  AppCatalogueEtiquettesRoute: AppCatalogueEtiquettesRoute,
   AppCatalogueMatieresRoute: AppCatalogueMatieresRoute,
   AppCataloguePanneauxRoute: AppCataloguePanneauxRoute,
   AppCatalogueIndexRoute: AppCatalogueIndexRoute,
@@ -371,7 +432,18 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ScanPanneauIdRoute: ScanPanneauIdRoute,
+  ScanIndexRoute: ScanIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}

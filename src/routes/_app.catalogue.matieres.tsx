@@ -359,7 +359,6 @@ function MatiereDialog({
   const [famille, setFamille] = useState<Famille>(initialTypo?.famille ?? matiere?.famille ?? "bois");
   const [typoId, setTypoId] = useState<string>(matiere?.typologie_id ?? "");
   const [variante, setVariante] = useState<string>(matiere?.variante ?? "");
-  const [epaisseur, setEpaisseur] = useState<number>(matiere?.epaisseur_mm ?? 0);
   const [unite, setUnite] = useState<UniteStock>(matiere?.unite_stock ?? "m2");
   const [seuil, setSeuil] = useState<number>(matiere?.seuil_alerte ?? 0);
   const [actif, setActif] = useState<boolean>(matiere?.actif ?? true);
@@ -387,12 +386,12 @@ function MatiereDialog({
     return Array.from(set).sort();
   }, [existing, typoId]);
 
-  // Auto-libellé / auto-code
+  // Auto-libellé / auto-code (sans épaisseur — déplacée au panneau)
   useEffect(() => {
     if (!currentTypo) return;
-    if (!codeTouched) setCode(autoMatiereCode(currentTypo.code, variante, epaisseur));
-    if (!libelleTouched) setLibelle(autoMatiereLibelle(currentTypo.nom, variante, epaisseur));
-  }, [currentTypo, variante, epaisseur, codeTouched, libelleTouched]);
+    if (!codeTouched) setCode(autoMatiereCode(currentTypo.code, variante, null));
+    if (!libelleTouched) setLibelle(autoMatiereLibelle(currentTypo.nom, variante, null));
+  }, [currentTypo, variante, codeTouched, libelleTouched]);
 
   async function handleCreateTypo() {
     if (!newTypo.nom.trim()) { toast.error("Nom de typologie requis"); return; }
@@ -410,7 +409,6 @@ function MatiereDialog({
 
   async function handleSave() {
     if (!typoId) { toast.error("Typologie requise"); return; }
-    if (!epaisseur || epaisseur <= 0) { toast.error("Épaisseur requise"); return; }
     if (!code.trim() || !libelle.trim()) { toast.error("Code et libellé requis"); return; }
 
     setSaving(true);
@@ -419,7 +417,6 @@ function MatiereDialog({
       libelle: libelle.trim(),
       typologie_id: typoId,
       variante: variante.trim() || null,
-      epaisseur_mm: epaisseur,
       unite_stock: unite,
       seuil_alerte: seuil,
       actif,
@@ -495,22 +492,10 @@ function MatiereDialog({
             )}
           </div>
 
-          {/* 4. Épaisseur + unité + seuil */}
-          <div className="grid grid-cols-3 gap-3">
+          {/* 4. Unité + seuil */}
+          <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label>Épaisseur (mm) *</Label>
-              <Input
-                type="text"
-                inputMode="decimal"
-                value={epaisseur || ""}
-                onChange={(e) => {
-                  const n = Number(e.target.value.replace(",", "."));
-                  setEpaisseur(Number.isFinite(n) ? n : 0);
-                }}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Unité</Label>
+              <Label>Unité de stock</Label>
               <Select value={unite} onValueChange={(v) => setUnite(v as UniteStock)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -523,6 +508,9 @@ function MatiereDialog({
               <Input type="number" value={seuil} onChange={(e) => setSeuil(Number(e.target.value))} />
             </div>
           </div>
+          <p className="text-xs text-muted-foreground -mt-1">
+            L'épaisseur sera définie au niveau de chaque panneau.
+          </p>
 
           {/* 5. Libellé + code (auto, éditables) */}
           <div className="space-y-2">

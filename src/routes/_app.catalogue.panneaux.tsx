@@ -37,6 +37,7 @@ type CatRow = {
   matiere_id: string;
   longueur_mm: number;
   largeur_mm: number;
+  epaisseur_mm: number;
   surface_m2: number | null;
   prix_achat_ht: number | null;
   reference_fournisseur: string | null;
@@ -45,7 +46,6 @@ type CatRow = {
   matiere_code: string;
   matiere_libelle: string;
   matiere_variante: string | null;
-  matiere_epaisseur: number;
   typo_id: string | null;
   typo_nom: string | null;
   famille: string;
@@ -96,6 +96,7 @@ function PanneauxPage() {
         matiere_id: p.matiere_id,
         longueur_mm: p.longueur_mm,
         largeur_mm: p.largeur_mm,
+        epaisseur_mm: p.epaisseur_mm,
         surface_m2: p.surface_m2,
         prix_achat_ht: p.prix_achat_ht,
         reference_fournisseur: p.reference_fournisseur,
@@ -104,7 +105,6 @@ function PanneauxPage() {
         matiere_code: m?.code ?? "—",
         matiere_libelle: m?.libelle ?? "—",
         matiere_variante: m?.variante ?? null,
-        matiere_epaisseur: m?.epaisseur_mm ?? 0,
         typo_id: m?.typologie_id ?? null,
         typo_nom: typo?.nom ?? null,
         famille: m?.famille ?? "autre",
@@ -341,12 +341,14 @@ function PanneauxPage() {
                         <FamilleBadge famille={p.famille} />
                         {p.typo_nom && <span className="font-medium">{p.typo_nom}</span>}
                         {p.matiere_variante && <span className="text-muted-foreground">{p.matiere_variante}</span>}
-                        {p.matiere_epaisseur > 0 && <span className="text-muted-foreground tabular-nums">{p.matiere_epaisseur}mm</span>}
                       </div>
                       <span className="text-xs text-muted-foreground font-mono">{p.matiere_code}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 font-mono text-xs tabular-nums">{p.longueur_mm} × {p.largeur_mm} mm</td>
+                  <td className="px-6 py-4 font-mono text-xs tabular-nums">
+                    {p.longueur_mm} × {p.largeur_mm} mm
+                    {p.epaisseur_mm ? <span className="ml-2 text-muted-foreground">· {p.epaisseur_mm}mm ép.</span> : null}
+                  </td>
                   <td className="px-6 py-4 text-right tabular-nums">{formatNumber(p.surface_m2, 3)} m²</td>
                   <td className="px-6 py-4 text-right tabular-nums">{formatEuro(p.prix_achat_ht)}</td>
                   <td className="px-6 py-4 text-center">

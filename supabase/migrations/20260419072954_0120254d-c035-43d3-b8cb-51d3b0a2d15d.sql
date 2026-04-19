@@ -1,0 +1,1 @@
+UPDATE storage.buckets SET public = false WHERE id IN ('matieres-photos', 'mouvements-photos');

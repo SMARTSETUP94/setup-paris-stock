@@ -83,7 +83,7 @@ export type Database = {
       affaires: {
         Row: {
           budget_panneaux_ht: number | null
-          client: string | null
+          client_id: string
           created_at: string
           date_debut: string | null
           date_fin_prevue: string | null
@@ -96,7 +96,7 @@ export type Database = {
         }
         Insert: {
           budget_panneaux_ht?: number | null
-          client?: string | null
+          client_id: string
           created_at?: string
           date_debut?: string | null
           date_fin_prevue?: string | null
@@ -109,7 +109,7 @@ export type Database = {
         }
         Update: {
           budget_panneaux_ht?: number | null
-          client?: string | null
+          client_id?: string
           created_at?: string
           date_debut?: string | null
           date_fin_prevue?: string | null
@@ -121,6 +121,13 @@ export type Database = {
           statut?: Database["public"]["Enums"]["statut_affaire"]
         }
         Relationships: [
+          {
+            foreignKeyName: "affaires_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "affaires_responsable_id_fkey"
             columns: ["responsable_id"]
@@ -272,6 +279,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      clients: {
+        Row: {
+          actif: boolean
+          adresse: string | null
+          contact_principal: string | null
+          created_at: string
+          email: string | null
+          id: string
+          nom: string
+          notes: string | null
+          siret: string | null
+          telephone: string | null
+        }
+        Insert: {
+          actif?: boolean
+          adresse?: string | null
+          contact_principal?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          nom: string
+          notes?: string | null
+          siret?: string | null
+          telephone?: string | null
+        }
+        Update: {
+          actif?: boolean
+          adresse?: string | null
+          contact_principal?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          nom?: string
+          notes?: string | null
+          siret?: string | null
+          telephone?: string | null
+        }
+        Relationships: []
       }
       fournisseurs: {
         Row: {

@@ -11,30 +11,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  Plus,
-  Pencil,
-  Search,
-  Loader2,
-  Upload,
-  Boxes,
-  ChevronDown,
-  ChevronRight,
-} from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Plus, Pencil, Search, Loader2, Upload, Boxes, ChevronDown, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { FAMILLES, UNITES, type Famille, type UniteStock } from "@/lib/familles";
 import { autoMatiereCode, autoMatiereLibelle, type Typologie } from "@/lib/typologies";
@@ -76,9 +55,7 @@ function MatieresPage() {
     setLoading(false);
   }
 
-  useEffect(() => {
-    if (ready) void fetchData();
-  }, [ready]);
+  useEffect(() => { if (ready) void fetchData(); }, [ready]);
 
   const typologiesFiltered = useMemo(() => {
     if (familleFilter === "all") return typologies;
@@ -135,8 +112,7 @@ function MatieresPage() {
   function toggleCollapse(typoId: string) {
     setCollapsed((prev) => {
       const next = new Set(prev);
-      if (next.has(typoId)) next.delete(typoId);
-      else next.add(typoId);
+      if (next.has(typoId)) next.delete(typoId); else next.add(typoId);
       return next;
     });
   }
@@ -166,49 +142,26 @@ function MatieresPage() {
       <div className="mb-6 grid gap-3 md:grid-cols-[1fr_180px_220px_140px]">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Rechercher code, libellé, variante…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
-          />
+          <Input placeholder="Rechercher code, libellé, variante…" value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
         </div>
-        <Select
-          value={familleFilter}
-          onValueChange={(v) => {
-            setFamilleFilter(v);
-            setTypoFilter("all");
-          }}
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
+        <Select value={familleFilter} onValueChange={(v) => { setFamilleFilter(v); setTypoFilter("all"); }}>
+          <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Toutes familles</SelectItem>
-            {FAMILLES.map((f) => (
-              <SelectItem key={f.value} value={f.value}>
-                {f.label}
-              </SelectItem>
-            ))}
+            {FAMILLES.map((f) => <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={typoFilter} onValueChange={setTypoFilter}>
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
+          <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Toutes typologies</SelectItem>
             {typologiesFiltered.map((t) => (
-              <SelectItem key={t.id} value={t.id}>
-                {t.nom}
-              </SelectItem>
+              <SelectItem key={t.id} value={t.id}>{t.nom}</SelectItem>
             ))}
           </SelectContent>
         </Select>
         <Select value={actifFilter} onValueChange={(v) => setActifFilter(v as typeof actifFilter)}>
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
+          <SelectTrigger><SelectValue /></SelectTrigger>
           <SelectContent>
             <SelectItem value="yes">Actives</SelectItem>
             <SelectItem value="no">Inactives</SelectItem>
@@ -218,9 +171,7 @@ function MatieresPage() {
       </div>
 
       {loading && (
-        <Card className="p-12 text-center">
-          <Loader2 className="h-4 w-4 animate-spin inline text-muted-foreground" />
-        </Card>
+        <Card className="p-12 text-center"><Loader2 className="h-4 w-4 animate-spin inline text-muted-foreground" /></Card>
       )}
 
       {!loading && grouped.length === 0 && (
@@ -241,18 +192,12 @@ function MatieresPage() {
                   className="w-full flex items-center justify-between gap-3 px-5 py-3 border-b border-border bg-muted/30 hover:bg-muted/50 text-left"
                 >
                   <div className="flex items-center gap-3">
-                    {isCollapsed ? (
-                      <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                    )}
+                    {isCollapsed ? <ChevronRight className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                     {typo ? (
                       <>
                         <FamilleBadge famille={typo.famille} />
                         <span className="font-semibold">{typo.nom}</span>
-                        <span className="text-xs px-2 py-0.5 rounded font-mono bg-muted">
-                          {typo.code}
-                        </span>
+                        <span className="text-xs px-2 py-0.5 rounded font-mono bg-muted">{typo.code}</span>
                       </>
                     ) : (
                       <span className="font-semibold text-muted-foreground">Sans typologie</span>
@@ -267,21 +212,11 @@ function MatieresPage() {
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="border-b border-border">
-                          <th className="text-left px-5 py-3 font-medium text-muted-foreground">
-                            Code
-                          </th>
-                          <th className="text-left px-5 py-3 font-medium text-muted-foreground">
-                            Variante
-                          </th>
-                          <th className="text-left px-5 py-3 font-medium text-muted-foreground">
-                            Unité
-                          </th>
-                          <th className="text-right px-5 py-3 font-medium text-muted-foreground">
-                            Seuil
-                          </th>
-                          <th className="text-center px-5 py-3 font-medium text-muted-foreground">
-                            Actif
-                          </th>
+                          <th className="text-left px-5 py-3 font-medium text-muted-foreground">Code</th>
+                          <th className="text-left px-5 py-3 font-medium text-muted-foreground">Variante</th>
+                          <th className="text-left px-5 py-3 font-medium text-muted-foreground">Unité</th>
+                          <th className="text-right px-5 py-3 font-medium text-muted-foreground">Seuil</th>
+                          <th className="text-center px-5 py-3 font-medium text-muted-foreground">Actif</th>
                           <th className="px-5 py-3 w-24"></th>
                         </tr>
                       </thead>
@@ -292,34 +227,16 @@ function MatieresPage() {
                             className={`border-b border-border last:border-0 hover:bg-muted/40 ${idx % 2 === 1 ? "bg-muted/20" : ""} ${!m.actif ? "opacity-60" : ""}`}
                           >
                             <td className="px-5 py-3">
-                              <span className="inline-block px-2 py-0.5 rounded font-mono text-xs bg-muted">
-                                {m.code}
-                              </span>
+                              <span className="inline-block px-2 py-0.5 rounded font-mono text-xs bg-muted">{m.code}</span>
                             </td>
-                            <td className="px-5 py-3">
-                              {m.variante || (
-                                <span className="text-muted-foreground text-xs">—</span>
-                              )}
-                            </td>
-                            <td className="px-5 py-3 text-muted-foreground">
-                              {UNITES.find((u) => u.value === m.unite_stock)?.label ??
-                                m.unite_stock}
-                            </td>
+                            <td className="px-5 py-3">{m.variante || <span className="text-muted-foreground text-xs">—</span>}</td>
+                            <td className="px-5 py-3 text-muted-foreground">{UNITES.find((u) => u.value === m.unite_stock)?.label ?? m.unite_stock}</td>
                             <td className="px-5 py-3 text-right tabular-nums">{m.seuil_alerte}</td>
                             <td className="px-5 py-3 text-center">
                               <Switch checked={m.actif} onCheckedChange={() => toggleActif(m)} />
                             </td>
                             <td className="px-5 py-3 text-right whitespace-nowrap">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() =>
-                                  navigate({
-                                    to: "/catalogue/panneaux",
-                                    search: { matiere: m.id } as never,
-                                  })
-                                }
-                              >
+                              <Button variant="ghost" size="sm" onClick={() => navigate({ to: "/catalogue/panneaux", search: { matiere: m.id } as never })}>
                                 <Boxes className="h-3.5 w-3.5" />
                               </Button>
                               <Button variant="ghost" size="sm" onClick={() => setEditing(m)}>
@@ -347,15 +264,8 @@ function MatieresPage() {
           matiere={editing}
           typologies={typologies}
           existing={items}
-          onClose={() => {
-            setCreating(false);
-            setEditing(null);
-          }}
-          onSaved={() => {
-            void fetchData();
-            setCreating(false);
-            setEditing(null);
-          }}
+          onClose={() => { setCreating(false); setEditing(null); }}
+          onSaved={() => { void fetchData(); setCreating(false); setEditing(null); }}
           onTypologiesRefresh={fetchData}
         />
       )}
@@ -363,10 +273,7 @@ function MatieresPage() {
       {importing && (
         <ImportDialog<TablesInsert<"matieres">>
           open
-          onClose={() => {
-            setImporting(false);
-            void fetchData();
-          }}
+          onClose={() => { setImporting(false); void fetchData(); }}
           title="Importer des matières"
           description="Format CSV ou XLSX. La typologie doit déjà exister (par code)."
           expectedColumns={["code", "libelle", "typologie_code"]}
@@ -376,9 +283,7 @@ function MatieresPage() {
             if (!code) errors.push("Code requis");
             const libelle = String(raw.libelle ?? "").trim();
             if (!libelle) errors.push("Libellé requis");
-            const typoCode = String(raw.typologie_code ?? "")
-              .trim()
-              .toUpperCase();
+            const typoCode = String(raw.typologie_code ?? "").trim().toUpperCase();
             const typo = typologies.find((t) => t.code.toUpperCase() === typoCode);
             if (!typoCode) errors.push("typologie_code requis");
             else if (!typo) errors.push(`Typologie inconnue : ${typoCode}`);
@@ -386,30 +291,24 @@ function MatieresPage() {
             const unite = String(raw.unite_stock ?? "m2").trim() as UniteStock;
             if (!UNITES.find((u) => u.value === unite)) errors.push("Unité invalide");
             const seuil = Number(String(raw.seuil_alerte ?? "0").replace(",", "."));
-            const actifStr = String(raw.actif ?? "true")
-              .trim()
-              .toLowerCase();
+            const actifStr = String(raw.actif ?? "true").trim().toLowerCase();
             const actif = !["false", "0", "non", "no"].includes(actifStr);
-            const isDuplicate = items.some(
-              (m) =>
-                m.code.toLowerCase() === code.toLowerCase() ||
-                (typo &&
-                  m.typologie_id === typo.id &&
-                  (m.variante ?? "").toLowerCase() === (variante ?? "").toLowerCase()),
+            const isDuplicate = items.some((m) =>
+              m.code.toLowerCase() === code.toLowerCase()
+              || (typo
+                && m.typologie_id === typo.id
+                && (m.variante ?? "").toLowerCase() === (variante ?? "").toLowerCase()),
             );
             return {
-              data:
-                errors.length || !typo
-                  ? null
-                  : {
-                      code,
-                      libelle,
-                      typologie_id: typo.id,
-                      variante,
-                      unite_stock: unite,
-                      seuil_alerte: Number.isFinite(seuil) ? seuil : 0,
-                      actif,
-                    },
+              data: errors.length || !typo ? null : {
+                code,
+                libelle,
+                typologie_id: typo.id,
+                variante,
+                unite_stock: unite,
+                seuil_alerte: Number.isFinite(seuil) ? seuil : 0,
+                actif,
+              },
               errors,
               isDuplicate,
             };
@@ -422,26 +321,15 @@ function MatieresPage() {
             { key: "unite_stock", label: "Unité" },
           ]}
           importRows={async (rows: ImportRow<TablesInsert<"matieres">>[]) => {
-            let inserted = 0,
-              updated = 0,
-              skipped = 0,
-              errors = 0;
+            let inserted = 0, updated = 0, skipped = 0, errors = 0;
             for (const r of rows) {
-              if (!r.data) {
-                skipped++;
-                continue;
-              }
+              if (!r.data) { skipped++; continue; }
               if (r.action === "overwrite") {
-                const { error } = await supabase
-                  .from("matieres")
-                  .update(r.data)
-                  .eq("code", r.data.code);
-                if (error) errors++;
-                else updated++;
+                const { error } = await supabase.from("matieres").update(r.data).eq("code", r.data.code);
+                if (error) errors++; else updated++;
               } else if (r.action === "create") {
                 const { error } = await supabase.from("matieres").insert(r.data);
-                if (error) errors++;
-                else inserted++;
+                if (error) errors++; else inserted++;
               } else skipped++;
             }
             return { inserted, updated, skipped, errors };
@@ -467,12 +355,8 @@ function MatiereDialog({
   onSaved: () => void;
   onTypologiesRefresh: () => Promise<void>;
 }) {
-  const initialTypo = matiere
-    ? (typologies.find((t) => t.id === matiere.typologie_id) ?? null)
-    : null;
-  const [famille, setFamille] = useState<Famille>(
-    initialTypo?.famille ?? matiere?.famille ?? "bois",
-  );
+  const initialTypo = matiere ? typologies.find((t) => t.id === matiere.typologie_id) ?? null : null;
+  const [famille, setFamille] = useState<Famille>(initialTypo?.famille ?? matiere?.famille ?? "bois");
   const [typoId, setTypoId] = useState<string>(matiere?.typologie_id ?? "");
   const [variante, setVariante] = useState<string>(matiere?.variante ?? "");
   const [unite, setUnite] = useState<UniteStock>(matiere?.unite_stock ?? "m2");
@@ -491,10 +375,7 @@ function MatiereDialog({
     [typologies, famille],
   );
 
-  const currentTypo = useMemo(
-    () => typologies.find((t) => t.id === typoId) ?? null,
-    [typologies, typoId],
-  );
+  const currentTypo = useMemo(() => typologies.find((t) => t.id === typoId) ?? null, [typologies, typoId]);
 
   const variantesSuggerees = useMemo(() => {
     if (!typoId) return [];
@@ -513,29 +394,12 @@ function MatiereDialog({
   }, [currentTypo, variante, codeTouched, libelleTouched]);
 
   async function handleCreateTypo() {
-    if (!newTypo.nom.trim()) {
-      toast.error("Nom de typologie requis");
-      return;
-    }
-    const tcode = (newTypo.code || newTypo.nom)
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toUpperCase()
-      .replace(/[^A-Z0-9]+/g, "")
-      .slice(0, 6);
-    const { data, error } = await supabase
-      .from("typologies")
-      .insert({
-        code: tcode,
-        nom: newTypo.nom.trim(),
-        famille,
-      })
-      .select()
-      .single();
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
+    if (!newTypo.nom.trim()) { toast.error("Nom de typologie requis"); return; }
+    const tcode = (newTypo.code || newTypo.nom).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().replace(/[^A-Z0-9]+/g, "").slice(0, 6);
+    const { data, error } = await supabase.from("typologies").insert({
+      code: tcode, nom: newTypo.nom.trim(), famille,
+    }).select().single();
+    if (error) { toast.error(error.message); return; }
     toast.success("Typologie créée");
     await onTypologiesRefresh();
     setTypoId(data.id);
@@ -544,14 +408,8 @@ function MatiereDialog({
   }
 
   async function handleSave() {
-    if (!typoId) {
-      toast.error("Typologie requise");
-      return;
-    }
-    if (!code.trim() || !libelle.trim()) {
-      toast.error("Code et libellé requis");
-      return;
-    }
+    if (!typoId) { toast.error("Typologie requise"); return; }
+    if (!code.trim() || !libelle.trim()) { toast.error("Code et libellé requis"); return; }
 
     setSaving(true);
     const payload: TablesInsert<"matieres"> = {
@@ -568,38 +426,21 @@ function MatiereDialog({
       : await supabase.from("matieres").insert(payload);
     setSaving(false);
     if (res.error) toast.error(res.error.message);
-    else {
-      toast.success(matiere ? "Matière modifiée" : "Matière créée");
-      onSaved();
-    }
+    else { toast.success(matiere ? "Matière modifiée" : "Matière créée"); onSaved(); }
   }
 
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{matiere ? "Modifier" : "Nouvelle"} matière</DialogTitle>
-        </DialogHeader>
+        <DialogHeader><DialogTitle>{matiere ? "Modifier" : "Nouvelle"} matière</DialogTitle></DialogHeader>
         <div className="space-y-4">
           {/* 1. Famille */}
           <div className="space-y-2">
             <Label>1. Famille *</Label>
-            <Select
-              value={famille}
-              onValueChange={(v) => {
-                setFamille(v as Famille);
-                setTypoId("");
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
+            <Select value={famille} onValueChange={(v) => { setFamille(v as Famille); setTypoId(""); }}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                {FAMILLES.map((f) => (
-                  <SelectItem key={f.value} value={f.value}>
-                    {f.label}
-                  </SelectItem>
-                ))}
+                {FAMILLES.map((f) => <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
@@ -610,54 +451,26 @@ function MatiereDialog({
             <div className="flex gap-2">
               <Select value={typoId} onValueChange={setTypoId}>
                 <SelectTrigger className="flex-1">
-                  <SelectValue
-                    placeholder={
-                      typoOptions.length
-                        ? "Sélectionner une typologie…"
-                        : "Aucune typologie pour cette famille"
-                    }
-                  />
+                  <SelectValue placeholder={typoOptions.length ? "Sélectionner une typologie…" : "Aucune typologie pour cette famille"} />
                 </SelectTrigger>
                 <SelectContent>
                   {typoOptions.map((t) => (
-                    <SelectItem key={t.id} value={t.id}>
-                      {t.nom} ({t.code})
-                    </SelectItem>
+                    <SelectItem key={t.id} value={t.id}>{t.nom} ({t.code})</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setCreateTypo((v) => !v)}
-              >
+              <Button type="button" variant="outline" size="sm" onClick={() => setCreateTypo((v) => !v)}>
                 <Plus className="h-3.5 w-3.5" />
               </Button>
             </div>
             {createTypo && (
               <Card className="p-3 space-y-2 bg-muted/30">
-                <p className="eyebrow text-xs">
-                  Nouvelle typologie · {FAMILLES.find((f) => f.value === famille)?.label}
-                </p>
-                <Input
-                  placeholder="Nom (ex: Contreplaqué)"
-                  value={newTypo.nom}
-                  onChange={(e) => setNewTypo({ ...newTypo, nom: e.target.value })}
-                />
-                <Input
-                  placeholder="Code (auto si vide)"
-                  className="font-mono"
-                  value={newTypo.code}
-                  onChange={(e) => setNewTypo({ ...newTypo, code: e.target.value.toUpperCase() })}
-                />
+                <p className="eyebrow text-xs">Nouvelle typologie · {FAMILLES.find((f) => f.value === famille)?.label}</p>
+                <Input placeholder="Nom (ex: Contreplaqué)" value={newTypo.nom} onChange={(e) => setNewTypo({ ...newTypo, nom: e.target.value })} />
+                <Input placeholder="Code (auto si vide)" className="font-mono" value={newTypo.code} onChange={(e) => setNewTypo({ ...newTypo, code: e.target.value.toUpperCase() })} />
                 <div className="flex gap-2 justify-end">
-                  <Button variant="ghost" size="sm" onClick={() => setCreateTypo(false)}>
-                    Annuler
-                  </Button>
-                  <Button size="sm" onClick={handleCreateTypo}>
-                    Créer
-                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setCreateTypo(false)}>Annuler</Button>
+                  <Button size="sm" onClick={handleCreateTypo}>Créer</Button>
                 </div>
               </Card>
             )}
@@ -674,9 +487,7 @@ function MatiereDialog({
             />
             {variantesSuggerees.length > 0 && (
               <datalist id="variantes-list">
-                {variantesSuggerees.map((v) => (
-                  <option key={v} value={v} />
-                ))}
+                {variantesSuggerees.map((v) => <option key={v} value={v} />)}
               </datalist>
             )}
           </div>
@@ -686,25 +497,15 @@ function MatiereDialog({
             <div className="space-y-2">
               <Label>Unité de stock</Label>
               <Select value={unite} onValueChange={(v) => setUnite(v as UniteStock)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {UNITES.map((u) => (
-                    <SelectItem key={u.value} value={u.value}>
-                      {u.label}
-                    </SelectItem>
-                  ))}
+                  {UNITES.map((u) => <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
               <Label>Seuil alerte</Label>
-              <Input
-                type="number"
-                value={seuil}
-                onChange={(e) => setSeuil(Number(e.target.value))}
-              />
+              <Input type="number" value={seuil} onChange={(e) => setSeuil(Number(e.target.value))} />
             </div>
           </div>
           <p className="text-xs text-muted-foreground -mt-1">
@@ -714,23 +515,14 @@ function MatiereDialog({
           {/* 5. Libellé + code (auto, éditables) */}
           <div className="space-y-2">
             <Label>Libellé (auto)</Label>
-            <Input
-              value={libelle}
-              onChange={(e) => {
-                setLibelleTouched(true);
-                setLibelle(e.target.value);
-              }}
-            />
+            <Input value={libelle} onChange={(e) => { setLibelleTouched(true); setLibelle(e.target.value); }} />
           </div>
           <div className="grid grid-cols-[1fr_auto] gap-3 items-end">
             <div className="space-y-2">
               <Label>Code (auto)</Label>
               <Input
                 value={code}
-                onChange={(e) => {
-                  setCodeTouched(true);
-                  setCode(e.target.value.toUpperCase());
-                }}
+                onChange={(e) => { setCodeTouched(true); setCode(e.target.value.toUpperCase()); }}
                 className="font-mono"
               />
             </div>
@@ -741,9 +533,7 @@ function MatiereDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            Annuler
-          </Button>
+          <Button variant="outline" onClick={onClose}>Annuler</Button>
           <Button onClick={handleSave} disabled={saving}>
             {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />} Enregistrer
           </Button>

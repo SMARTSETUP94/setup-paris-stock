@@ -129,10 +129,7 @@ export function useBdcDetail(id: string, ready: boolean, userId: string | undefi
 
   async function handleHeaderUpdate(
     patch: Partial<
-      Pick<
-        BdcDetail,
-        "fournisseur_id" | "numero_bdc" | "date_bdc" | "affaire_id" | "montant_ht_total"
-      >
+      Pick<BdcDetail, "fournisseur_id" | "numero_bdc" | "date_bdc" | "affaire_id" | "montant_ht_total">
     >,
   ) {
     if (!bdc) return;

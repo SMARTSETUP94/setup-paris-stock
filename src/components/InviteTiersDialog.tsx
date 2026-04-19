@@ -13,8 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { PERMISSIONS, buildInvitationLink, type PermissionAcces } from "@/lib/affaires";
+import { buildInvitationLink } from "@/lib/affaires";
 
 interface Props {
   open: boolean;
@@ -31,7 +30,6 @@ function isoPlusDays(days: number) {
 
 export function InviteTiersDialog({ open, onOpenChange, affaireId, onCreated }: Props) {
   const [email, setEmail] = useState("");
-  const [permissions, setPermissions] = useState<PermissionAcces>("lecture");
   const [expire, setExpire] = useState(isoPlusDays(30));
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -39,7 +37,6 @@ export function InviteTiersDialog({ open, onOpenChange, affaireId, onCreated }: 
   useEffect(() => {
     if (open) {
       setEmail("");
-      setPermissions("lecture");
       setExpire(isoPlusDays(30));
       setMessage("");
     }
@@ -58,7 +55,7 @@ export function InviteTiersDialog({ open, onOpenChange, affaireId, onCreated }: 
       affaire_id: affaireId,
       email_invite: trimmed,
       token,
-      permissions,
+      permissions: "lecture",
       expire_le: expireIso,
     });
     setLoading(false);
@@ -71,9 +68,9 @@ export function InviteTiersDialog({ open, onOpenChange, affaireId, onCreated }: 
     const fullText = message ? `${message}\n\n${link}` : link;
     try {
       await navigator.clipboard.writeText(fullText);
-      toast.success("Lien copié — collez-le dans WhatsApp/email pour l'envoyer au tiers.");
+      toast.success("Lien copié — collez-le dans WhatsApp/email pour l'envoyer.");
     } catch {
-      toast.success("Invitation créée. Lien : " + link);
+      toast.success("Lien généré : " + link);
     }
     onCreated?.();
     onOpenChange(false);
@@ -83,41 +80,25 @@ export function InviteTiersDialog({ open, onOpenChange, affaireId, onCreated }: 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Inviter un tiers</DialogTitle>
+          <DialogTitle>Nouveau lien externe</DialogTitle>
           <DialogDescription>
-            Génère un lien magique. Aucune email automatique : copiez le lien et envoyez-le par
-            WhatsApp ou email.
+            Génère un lien de consultation en lecture seule à partager avec un client, un
+            fournisseur ou un sous-traitant. Aucune action possible — uniquement la visualisation
+            du stock alloué et de la consommation.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4">
           <div>
-            <Label>Email</Label>
+            <Label>Email du destinataire</Label>
             <Input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="prenom.nom@exemple.fr"
             />
-          </div>
-          <div>
-            <Label className="mb-2 block">Permissions</Label>
-            <RadioGroup
-              value={permissions}
-              onValueChange={(v) => setPermissions(v as PermissionAcces)}
-            >
-              {PERMISSIONS.map((p) => (
-                <label
-                  key={p.value}
-                  className="flex items-start gap-3 rounded-lg border border-border p-3 cursor-pointer hover:bg-muted"
-                >
-                  <RadioGroupItem value={p.value} className="mt-0.5" />
-                  <div>
-                    <div className="text-sm font-medium">{p.label}</div>
-                    <div className="text-xs text-muted-foreground">{p.description}</div>
-                  </div>
-                </label>
-              ))}
-            </RadioGroup>
+            <p className="text-xs text-muted-foreground mt-1">
+              Sert d'étiquette pour identifier le lien — l'envoi reste manuel (WhatsApp/email).
+            </p>
           </div>
           <div>
             <Label>Expiration</Label>

@@ -115,8 +115,8 @@ function EtiquettesPage() {
       setQrDataMap(map);
       // Laisse le DOM se rafraîchir avant impression
       setTimeout(() => window.print(), 200);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Erreur de génération");
+    } catch (e: any) {
+      toast.error(e.message ?? "Erreur de génération");
     } finally {
       setGenerating(false);
     }
@@ -192,7 +192,9 @@ function EtiquettesPage() {
                     <td className="p-3 tabular-nums">
                       {p.longueur_mm} × {p.largeur_mm} mm
                     </td>
-                    <td className="p-3 hidden md:table-cell text-muted-foreground">{p.famille}</td>
+                    <td className="p-3 hidden md:table-cell text-muted-foreground">
+                      {p.famille}
+                    </td>
                   </tr>
                 ))}
                 {filtered.length === 0 && (
@@ -219,8 +221,12 @@ function EtiquettesPage() {
                 className="border border-black p-2 flex flex-col items-center text-center break-inside-avoid"
                 style={{ height: "90mm" }}
               >
-                {dataUrl && <img src={dataUrl} alt="" className="w-32 h-32" />}
-                <div className="mt-2 font-bold text-xs leading-tight">{p.matiere_libelle}</div>
+                {dataUrl && (
+                  <img src={dataUrl} alt="" className="w-32 h-32" />
+                )}
+                <div className="mt-2 font-bold text-xs leading-tight">
+                  {p.matiere_libelle}
+                </div>
                 <div className="text-xs">
                   {p.longueur_mm} × {p.largeur_mm} mm
                 </div>

@@ -1,24 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { STATUTS, suggestCodeChantier, type StatutAffaire } from "@/lib/affaires";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -56,12 +44,7 @@ export function AffaireFormDialog({ open, onOpenChange, initial, onSaved }: Prop
     if (!open) return;
     void (async () => {
       const [adminRes, clientsRes, numerosRes] = await Promise.all([
-        supabase
-          .from("profiles")
-          .select("id, nom_complet, email")
-          .eq("role", "admin")
-          .eq("actif", true)
-          .order("nom_complet"),
+        supabase.from("profiles").select("id, nom_complet, email").eq("role", "admin").eq("actif", true).order("nom_complet"),
         supabase.from("affaires").select("client").not("client", "is", null),
         supabase.from("affaires").select("numero").not("numero", "is", null),
       ]);
@@ -87,7 +70,9 @@ export function AffaireFormDialog({ open, onOpenChange, initial, onSaved }: Prop
           notes: initial.notes ?? "",
         });
         setChargeMode(
-          initial.charge_affaires_id ? "profile" : initial.charge_affaires_libre ? "libre" : "none",
+          initial.charge_affaires_id ? "profile"
+          : initial.charge_affaires_libre ? "libre"
+          : "none"
         );
       } else {
         const nums = ((numerosRes.data ?? []) as { numero: string | null }[]).map((r) => r.numero);
@@ -124,12 +109,8 @@ export function AffaireFormDialog({ open, onOpenChange, initial, onSaved }: Prop
       nom: form.nom.trim(),
       client: form.client.trim(),
       adresse: form.adresse.trim() || null,
-      charge_affaires_id:
-        chargeMode === "profile" && form.charge_affaires_id ? form.charge_affaires_id : null,
-      charge_affaires_libre:
-        chargeMode === "libre" && form.charge_affaires_libre.trim()
-          ? form.charge_affaires_libre.trim()
-          : null,
+      charge_affaires_id: chargeMode === "profile" && form.charge_affaires_id ? form.charge_affaires_id : null,
+      charge_affaires_libre: chargeMode === "libre" && form.charge_affaires_libre.trim() ? form.charge_affaires_libre.trim() : null,
       code_interne: form.code_interne.trim() || null,
       statut: form.statut,
       budget_panneaux_ht: form.budget_panneaux_ht ? Number(form.budget_panneaux_ht) : null,
@@ -169,9 +150,7 @@ export function AffaireFormDialog({ open, onOpenChange, initial, onSaved }: Prop
               placeholder="9198_Stand Maison & Objet"
               className="font-mono"
             />
-            <p className="text-xs text-muted-foreground mt-1">
-              Format libre. Le préfixe numérique sera extrait automatiquement pour le tri.
-            </p>
+            <p className="text-xs text-muted-foreground mt-1">Format libre. Le préfixe numérique sera extrait automatiquement pour le tri.</p>
           </div>
           <div className="sm:col-span-2">
             <Label>Nom *</Label>
@@ -217,11 +196,9 @@ export function AffaireFormDialog({ open, onOpenChange, initial, onSaved }: Prop
             <Label>Chargé d'affaires</Label>
             <Select
               value={
-                chargeMode === "profile"
-                  ? form.charge_affaires_id || "none"
-                  : chargeMode === "libre"
-                    ? FREE_TEXT
-                    : "none"
+                chargeMode === "profile" ? (form.charge_affaires_id || "none")
+                : chargeMode === "libre" ? FREE_TEXT
+                : "none"
               }
               onValueChange={(v) => {
                 if (v === "none") {
@@ -236,15 +213,11 @@ export function AffaireFormDialog({ open, onOpenChange, initial, onSaved }: Prop
                 }
               }}
             >
-              <SelectTrigger>
-                <SelectValue placeholder="—" />
-              </SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">— Aucun</SelectItem>
                 {admins.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.nom_complet ?? p.email}
-                  </SelectItem>
+                  <SelectItem key={p.id} value={p.id}>{p.nom_complet ?? p.email}</SelectItem>
                 ))}
                 <SelectItem value={FREE_TEXT}>Autre (texte libre)</SelectItem>
               </SelectContent>
@@ -268,19 +241,10 @@ export function AffaireFormDialog({ open, onOpenChange, initial, onSaved }: Prop
           </div>
           <div>
             <Label>Statut</Label>
-            <Select
-              value={form.statut}
-              onValueChange={(v) => setForm({ ...form, statut: v as StatutAffaire })}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
+            <Select value={form.statut} onValueChange={(v) => setForm({ ...form, statut: v as StatutAffaire })}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                {STATUTS.map((s) => (
-                  <SelectItem key={s.value} value={s.value}>
-                    {s.label}
-                  </SelectItem>
-                ))}
+                {STATUTS.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
@@ -303,9 +267,7 @@ export function AffaireFormDialog({ open, onOpenChange, initial, onSaved }: Prop
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Annuler
-          </Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Annuler</Button>
           <Button onClick={handleSubmit} disabled={loading}>
             {loading ? "Enregistrement…" : initial ? "Enregistrer" : "Créer l'affaire"}
           </Button>

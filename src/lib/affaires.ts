@@ -14,21 +14,15 @@ export function statutMeta(value: StatutAffaire | string | null | undefined) {
   return STATUTS.find((s) => s.value === value) ?? STATUTS[0];
 }
 
+// NOTE : depuis le retrait du module tiers mobile, seul "lecture" est exposé dans
+// l'UI. L'enum DB conserve "sortie" et "entree_sortie" pour pouvoir réactiver le
+// flow plus tard sans migration. Les sorties terrain passent désormais par le
+// scan QR atelier (voir src/routes/scan.$panneauId.tsx).
 export const PERMISSIONS: { value: PermissionAcces; label: string; description: string }[] = [
   {
     value: "lecture",
     label: "Lecture seule",
-    description: "Le tiers peut consulter le stock alloué à l'affaire.",
-  },
-  {
-    value: "sortie",
-    label: "Sortie uniquement",
-    description: "Le tiers peut déclarer des sorties sur les panneaux alloués.",
-  },
-  {
-    value: "entree_sortie",
-    label: "Entrée + Sortie",
-    description: "Le tiers peut déclarer entrées et sorties sur l'affaire.",
+    description: "Partage en consultation : le destinataire voit le stock alloué et la consommation.",
   },
 ];
 
@@ -72,9 +66,7 @@ export function formatDateFr(value: string | null | undefined) {
 export function formatDateTimeFr(value: string | null | undefined) {
   if (!value) return "—";
   try {
-    return new Intl.DateTimeFormat("fr-FR", { dateStyle: "short", timeStyle: "short" }).format(
-      new Date(value),
-    );
+    return new Intl.DateTimeFormat("fr-FR", { dateStyle: "short", timeStyle: "short" }).format(new Date(value));
   } catch {
     return "—";
   }

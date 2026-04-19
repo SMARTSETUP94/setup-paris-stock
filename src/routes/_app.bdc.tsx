@@ -10,13 +10,7 @@ import { Plus, Search, Loader2, FileText } from "lucide-react";
 import { StatutBdcBadge } from "@/components/StatutBdcBadge";
 import { STATUTS_BDC } from "@/lib/bdc";
 import { formatEuro } from "@/lib/familles";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { NewBdcDialog } from "@/components/NewBdcDialog";
 
 export const Route = createFileRoute("/_app/bdc")({
@@ -49,14 +43,12 @@ function BdcListPage() {
     setLoading(true);
     const { data, error } = await supabase
       .from("bons_de_commande")
-      .select(
-        `
+      .select(`
         id, numero_bdc, date_bdc, statut, montant_ht_total, created_at,
         fournisseur:fournisseurs(nom),
         affaire:affaires(code_chantier, nom),
         cree_par_profile:profiles!bons_de_commande_cree_par_fkey(nom_complet, email)
-      `,
-      )
+      `)
       .order("created_at", { ascending: false });
     if (!error) setItems((data as unknown as BdcRow[]) ?? []);
     setLoading(false);
@@ -111,9 +103,7 @@ function BdcListPage() {
           <SelectContent>
             <SelectItem value="__all__">Tous statuts</SelectItem>
             {STATUTS_BDC.map((s) => (
-              <SelectItem key={s.value} value={s.value}>
-                {s.label}
-              </SelectItem>
+              <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -125,33 +115,25 @@ function BdcListPage() {
             <thead>
               <tr className="border-b border-border">
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">N° BDC</th>
-                <th className="text-left px-4 py-3 font-medium text-muted-foreground">
-                  Fournisseur
-                </th>
+                <th className="text-left px-4 py-3 font-medium text-muted-foreground">Fournisseur</th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Date</th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Affaire</th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Statut</th>
-                <th className="text-right px-4 py-3 font-medium text-muted-foreground">
-                  Montant HT
-                </th>
+                <th className="text-right px-4 py-3 font-medium text-muted-foreground">Montant HT</th>
                 <th className="text-left px-4 py-3 font-medium text-muted-foreground">Créé par</th>
               </tr>
             </thead>
             <tbody>
               {loading && (
-                <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin inline" />
-                  </td>
-                </tr>
+                <tr><td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin inline" />
+                </td></tr>
               )}
               {!loading && filtered.length === 0 && (
-                <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
-                    <FileText className="h-8 w-8 mx-auto mb-2 opacity-40" />
-                    Aucun bon de commande
-                  </td>
-                </tr>
+                <tr><td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
+                  <FileText className="h-8 w-8 mx-auto mb-2 opacity-40" />
+                  Aucun bon de commande
+                </td></tr>
               )}
               {filtered.map((b, idx) => (
                 <tr
@@ -159,11 +141,7 @@ function BdcListPage() {
                   className={`border-b border-border last:border-0 hover:bg-muted/50 ${idx % 2 === 1 ? "bg-[#FAFAFA]" : ""}`}
                 >
                   <td className="px-4 py-3">
-                    <Link
-                      to="/bdc/$id"
-                      params={{ id: b.id }}
-                      className="font-mono text-xs hover:underline"
-                    >
+                    <Link to="/bdc/$id" params={{ id: b.id }} className="font-mono text-xs hover:underline">
                       {b.numero_bdc ?? "—"}
                     </Link>
                   </td>
@@ -171,10 +149,10 @@ function BdcListPage() {
                   <td className="px-4 py-3 text-muted-foreground">
                     {b.date_bdc ? new Date(b.date_bdc).toLocaleDateString("fr-FR") : "—"}
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs">{b.affaire?.code_chantier ?? "—"}</td>
-                  <td className="px-4 py-3">
-                    <StatutBdcBadge value={b.statut} />
+                  <td className="px-4 py-3 font-mono text-xs">
+                    {b.affaire?.code_chantier ?? "—"}
                   </td>
+                  <td className="px-4 py-3"><StatutBdcBadge value={b.statut} /></td>
                   <td className="px-4 py-3 text-right font-mono">
                     {b.montant_ht_total !== null ? formatEuro(b.montant_ht_total) : "—"}
                   </td>
@@ -191,10 +169,7 @@ function BdcListPage() {
       {creating && (
         <NewBdcDialog
           onClose={() => setCreating(false)}
-          onCreated={() => {
-            setCreating(false);
-            fetchData();
-          }}
+          onCreated={() => { setCreating(false); fetchData(); }}
         />
       )}
     </div>

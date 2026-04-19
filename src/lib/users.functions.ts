@@ -1,10 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
-import type { SupabaseClient } from "@supabase/supabase-js";
-import { requireSupabaseAuth, type AuthedContext } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import type { Database } from "@/integrations/supabase/types";
 
-async function assertAdmin(supabase: SupabaseClient<Database>, userId: string) {
+async function assertAdmin(supabase: any, userId: string) {
   const { data, error } = await supabase
     .from("profiles")
     .select("role, actif")
@@ -19,8 +17,7 @@ async function assertAdmin(supabase: SupabaseClient<Database>, userId: string) {
 export const listUsers = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context as AuthedContext;
-    await assertAdmin(supabase, userId);
+    await assertAdmin((context as any).supabase, (context as any).userId);
 
     const { data: profiles, error } = await supabaseAdmin
       .from("profiles")
@@ -54,37 +51,38 @@ export const listUsers = createServerFn({ method: "POST" })
 
 export const inviteUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator(
-    (input: {
-      email: string;
-      nom_complet?: string;
-      role: "admin" | "tiers";
-      redirectTo?: string;
-    }) => {
-      const email = input.email?.trim().toLowerCase();
-      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        throw new Error("Email invalide");
-      }
-      if (input.role !== "admin" && input.role !== "tiers") {
-        throw new Error("Rôle invalide");
-      }
-      return {
-        email,
-        nom_complet: input.nom_complet?.trim() || null,
-        role: input.role,
-        redirectTo: input.redirectTo?.trim() || null,
-      };
-    },
-  )
+  .inputValidator((input: {
+    email: string;
+    nom_complet?: string;
+    role: "admin" | "tiers";
+    redirectTo?: string;
+  }) => {
+    const email = input.email?.trim().toLowerCase();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      throw new Error("Email invalide");
+    }
+    if (input.role !== "admin" && input.role !== "tiers") {
+      throw new Error("Rôle invalide");
+    }
+    return {
+      email,
+      nom_complet: input.nom_complet?.trim() || null,
+      role: input.role,
+      redirectTo: input.redirectTo?.trim() || null,
+    };
+  })
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context as AuthedContext;
-    await assertAdmin(supabase, userId);
+    await assertAdmin((context as any).supabase, (context as any).userId);
 
-    const redirectTo = data.redirectTo ?? `${process.env.SITE_URL ?? ""}/reset-password`;
-    const { data: invited, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(data.email, {
-      data: { nom_complet: data.nom_complet ?? data.email },
-      redirectTo: redirectTo && redirectTo.startsWith("http") ? redirectTo : undefined,
-    });
+    const redirectTo =
+      data.redirectTo ?? `${process.env.SITE_URL ?? ""}/reset-password`;
+    const { data: invited, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(
+      data.email,
+      {
+        data: { nom_complet: data.nom_complet ?? data.email },
+        redirectTo: redirectTo && redirectTo.startsWith("http") ? redirectTo : undefined,
+      },
+    );
     if (error) throw new Error(error.message);
     if (!invited?.user) throw new Error("Invitation échouée");
 
@@ -111,10 +109,10 @@ export const resendInvitation = createServerFn({ method: "POST" })
     return { email, redirectTo: input.redirectTo?.trim() || null };
   })
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context as AuthedContext;
-    await assertAdmin(supabase, userId);
+    await assertAdmin((context as any).supabase, (context as any).userId);
 
-    const redirectTo = data.redirectTo ?? `${process.env.SITE_URL ?? ""}/reset-password`;
+    const redirectTo =
+      data.redirectTo ?? `${process.env.SITE_URL ?? ""}/reset-password`;
     const { error } = await supabaseAdmin.auth.admin.generateLink({
       type: "recovery",
       email: data.email,
@@ -133,9 +131,8 @@ export const setUserActive = createServerFn({ method: "POST" })
     return { user_id: input.user_id, actif: !!input.actif };
   })
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context as AuthedContext;
-    await assertAdmin(supabase, userId);
-    if (data.user_id === userId && !data.actif) {
+    await assertAdmin((context as any).supabase, (context as any).userId);
+    if (data.user_id === (context as any).userId && !data.actif) {
       throw new Error("Vous ne pouvez pas vous désactiver vous-même");
     }
 
@@ -162,9 +159,8 @@ export const setUserRole = createServerFn({ method: "POST" })
     return { user_id: input.user_id, role: input.role };
   })
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context as AuthedContext;
-    await assertAdmin(supabase, userId);
-    if (data.user_id === userId && data.role !== "admin") {
+    await assertAdmin((context as any).supabase, (context as any).userId);
+    if (data.user_id === (context as any).userId && data.role !== "admin") {
       throw new Error("Vous ne pouvez pas vous retirer le rôle admin vous-même");
     }
 
@@ -183,9 +179,8 @@ export const deleteUser = createServerFn({ method: "POST" })
     return { user_id: input.user_id };
   })
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context as AuthedContext;
-    await assertAdmin(supabase, userId);
-    if (data.user_id === userId) {
+    await assertAdmin((context as any).supabase, (context as any).userId);
+    if (data.user_id === (context as any).userId) {
       throw new Error("Vous ne pouvez pas supprimer votre propre compte");
     }
 

@@ -160,9 +160,7 @@ function BdcDetailPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Conserver</AlertDialogCancel>
-            <AlertDialogAction onClick={() => handleAnnuler(goBack)}>
-              Annuler le BDC
-            </AlertDialogAction>
+            <AlertDialogAction onClick={() => handleAnnuler(goBack)}>Annuler le BDC</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

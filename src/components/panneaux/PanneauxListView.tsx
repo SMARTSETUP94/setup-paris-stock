@@ -85,29 +85,19 @@ export function PanneauxListView({
                     <div className="flex items-center gap-2 flex-wrap">
                       <FamilleBadge famille={p.famille} />
                       {p.typo_nom && <span className="font-medium">{p.typo_nom}</span>}
-                      {p.matiere_variante && (
-                        <span className="text-muted-foreground">{p.matiere_variante}</span>
-                      )}
+                      {p.matiere_variante && <span className="text-muted-foreground">{p.matiere_variante}</span>}
                     </div>
-                    <span className="text-xs text-muted-foreground font-mono">
-                      {p.matiere_code}
-                    </span>
+                    <span className="text-xs text-muted-foreground font-mono">{p.matiere_code}</span>
                   </div>
                 </td>
                 <td className="px-6 py-4 font-mono text-xs tabular-nums">
                   {p.longueur_mm} × {p.largeur_mm} mm
-                  {p.epaisseur_mm ? (
-                    <span className="ml-2 text-muted-foreground">· {p.epaisseur_mm}mm ép.</span>
-                  ) : null}
+                  {p.epaisseur_mm ? <span className="ml-2 text-muted-foreground">· {p.epaisseur_mm}mm ép.</span> : null}
                 </td>
-                <td className="px-6 py-4 text-right tabular-nums">
-                  {formatNumber(p.surface_m2, 3)} m²
-                </td>
+                <td className="px-6 py-4 text-right tabular-nums">{formatNumber(p.surface_m2, 3)} m²</td>
                 <td className="px-6 py-4 text-right tabular-nums">{formatEuro(p.prix_achat_ht)}</td>
                 <td className="px-6 py-4 text-center">
-                  <span
-                    className={`inline-block px-2 py-0.5 rounded border text-xs font-medium tabular-nums ${stockBadgeClass(p)}`}
-                  >
+                  <span className={`inline-block px-2 py-0.5 rounded border text-xs font-medium tabular-nums ${stockBadgeClass(p)}`}>
                     {formatNumber(p.stock_actuel, 2)}
                   </span>
                 </td>

@@ -1,41 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import {
-  Plus,
-  Search,
-  Download,
-  FileSpreadsheet,
-  FileText,
-  ArrowDownToLine,
-  ArrowUpFromLine,
-  Wrench,
-} from "lucide-react";
+import { Plus, Search, Download, FileSpreadsheet, FileText, ArrowDownToLine, ArrowUpFromLine, Wrench } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminGuard, AdminLoader, useDebounced } from "@/hooks/useAdminGuard";
 import { PageHeader } from "@/components/PageHeader";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
+  DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { TypeMouvementBadge } from "@/components/TypeMouvementBadge";
 import { NumeroAffairePill } from "@/components/NumeroAffairePill";
@@ -46,9 +21,7 @@ import { formatDateTimeFr } from "@/lib/affaires";
 import { useAuth } from "@/hooks/useAuth";
 import { useStockRealtime } from "@/hooks/useStockRealtime";
 import {
-  exportMouvementsXLSX,
-  exportMouvementsCSV,
-  exportMouvementsPDF,
+  exportMouvementsXLSX, exportMouvementsCSV, exportMouvementsPDF,
   type MouvementExport,
 } from "@/lib/mouvements-export";
 
@@ -91,16 +64,13 @@ function MouvementsPage() {
   const [dateDebut, setDateDebut] = useState<string>("");
   const [dateFin, setDateFin] = useState<string>("");
   const [openMode, setOpenMode] = useState<"entree" | "sortie" | "correction" | null>(null);
-  const [affairesOpts, setAffairesOpts] = useState<
-    { id: string; numero: string | null; nom: string; code_chantier: string }[]
-  >([]);
+  const [affairesOpts, setAffairesOpts] = useState<{ id: string; numero: string | null; nom: string; code_chantier: string }[]>([]);
 
   async function load() {
     setLoading(true);
     let q = supabase
       .from("mouvements_stock")
-      .select(
-        `
+      .select(`
         id, created_at, type, quantite, prix_unitaire_ht, cump_avant, cump_apres,
         valeur_ligne_ht, commentaire, panneau_id, affaire_id, effectue_par,
         panneau:panneaux!mouvements_stock_panneau_id_fkey(
@@ -109,20 +79,18 @@ function MouvementsPage() {
         ),
         affaire:affaires!mouvements_stock_affaire_id_fkey(numero, nom, code_chantier),
         operateur:profiles!mouvements_stock_effectue_par_fkey(nom_complet, email)
-      `,
-      )
+      `)
       .order("created_at", { ascending: false })
       .limit(1000);
 
     if (dateDebut) q = q.gte("created_at", `${dateDebut}T00:00:00Z`);
     if (dateFin) q = q.lte("created_at", `${dateFin}T23:59:59Z`);
-    if (typeFilter !== "all")
-      q = q.eq("type", typeFilter as "entree" | "sortie" | "correction" | "chute_reintegration");
+    if (typeFilter !== "all") q = q.eq("type", typeFilter as "entree" | "sortie" | "correction" | "chute_reintegration");
     if (affaireFilter !== "all") q = q.eq("affaire_id", affaireFilter);
 
     const { data, error } = await q;
     if (error) console.error(error);
-    setRows((data ?? []) as unknown as Row[]);
+    setRows(((data ?? []) as unknown) as Row[]);
     setLoading(false);
   }
 
@@ -131,9 +99,7 @@ function MouvementsPage() {
       .from("affaires")
       .select("id, numero, nom, code_chantier")
       .order("numero", { ascending: false, nullsFirst: false });
-    setAffairesOpts(
-      (data as { id: string; numero: string | null; nom: string; code_chantier: string }[]) ?? [],
-    );
+    setAffairesOpts((data as { id: string; numero: string | null; nom: string; code_chantier: string }[]) ?? []);
   }
 
   useEffect(() => {
@@ -183,8 +149,7 @@ function MouvementsPage() {
   function filtersSummary() {
     const parts: string[] = [];
     if (dateDebut || dateFin) parts.push(`Période : ${dateDebut || "…"} → ${dateFin || "…"}`);
-    if (typeFilter !== "all")
-      parts.push(`Type : ${TYPES_MVT.find((t) => t.value === typeFilter)?.label ?? ""}`);
+    if (typeFilter !== "all") parts.push(`Type : ${TYPES_MVT.find((t) => t.value === typeFilter)?.label ?? ""}`);
     if (affaireFilter !== "all") {
       const a = affairesOpts.find((x) => x.id === affaireFilter);
       if (a) parts.push(`Affaire : ${a.numero} ${a.nom}`);
@@ -212,25 +177,13 @@ function MouvementsPage() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  onClick={() => exportMouvementsXLSX(toExport(), { dateDebut, dateFin })}
-                >
+                <DropdownMenuItem onClick={() => exportMouvementsXLSX(toExport(), { dateDebut, dateFin })}>
                   <FileSpreadsheet className="h-4 w-4 mr-2" /> XLSX (3 feuilles)
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => exportMouvementsCSV(toExport(), { dateDebut, dateFin })}
-                >
+                <DropdownMenuItem onClick={() => exportMouvementsCSV(toExport(), { dateDebut, dateFin })}>
                   <FileText className="h-4 w-4 mr-2" /> CSV (UTF-8)
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() =>
-                    exportMouvementsPDF(toExport(), {
-                      dateDebut,
-                      dateFin,
-                      filtersSummary: filtersSummary(),
-                    })
-                  }
-                >
+                <DropdownMenuItem onClick={() => exportMouvementsPDF(toExport(), { dateDebut, dateFin, filtersSummary: filtersSummary() })}>
                   <FileText className="h-4 w-4 mr-2" /> PDF (paysage)
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -269,22 +222,16 @@ function MouvementsPage() {
             />
           </div>
           <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
+            <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tous types</SelectItem>
               {TYPES_MVT.map((t) => (
-                <SelectItem key={t.value} value={t.value}>
-                  {t.label}
-                </SelectItem>
+                <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
               ))}
             </SelectContent>
           </Select>
           <Select value={affaireFilter} onValueChange={setAffaireFilter}>
-            <SelectTrigger>
-              <SelectValue placeholder="Toutes affaires" />
-            </SelectTrigger>
+            <SelectTrigger><SelectValue placeholder="Toutes affaires" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Toutes affaires</SelectItem>
               {affairesOpts.map((a) => (
@@ -295,18 +242,8 @@ function MouvementsPage() {
               ))}
             </SelectContent>
           </Select>
-          <Input
-            type="date"
-            value={dateDebut}
-            onChange={(e) => setDateDebut(e.target.value)}
-            placeholder="Du"
-          />
-          <Input
-            type="date"
-            value={dateFin}
-            onChange={(e) => setDateFin(e.target.value)}
-            placeholder="Au"
-          />
+          <Input type="date" value={dateDebut} onChange={(e) => setDateDebut(e.target.value)} placeholder="Du" />
+          <Input type="date" value={dateFin} onChange={(e) => setDateFin(e.target.value)} placeholder="Au" />
         </div>
       </Card>
 
@@ -330,60 +267,30 @@ function MouvementsPage() {
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow>
-                  <TableCell colSpan={11} className="text-center py-10 text-muted-foreground">
-                    Chargement…
-                  </TableCell>
-                </TableRow>
+                <TableRow><TableCell colSpan={11} className="text-center py-10 text-muted-foreground">Chargement…</TableCell></TableRow>
               ) : filtered.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={11} className="text-center py-10 text-muted-foreground">
-                    Aucun mouvement
-                  </TableCell>
-                </TableRow>
+                <TableRow><TableCell colSpan={11} className="text-center py-10 text-muted-foreground">Aucun mouvement</TableCell></TableRow>
               ) : (
                 filtered.map((r, idx) => (
                   <TableRow key={r.id} className={idx % 2 === 1 ? "bg-[#FAFAFA]" : ""}>
-                    <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
-                      {formatDateTimeFr(r.created_at)}
-                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{formatDateTimeFr(r.created_at)}</TableCell>
+                    <TableCell><TypeMouvementBadge value={r.type} /></TableCell>
                     <TableCell>
-                      <TypeMouvementBadge value={r.type} />
-                    </TableCell>
-                    <TableCell>
-                      <span className="font-mono text-xs px-2 py-0.5 rounded bg-muted mr-2">
-                        {r.panneau?.matiere?.code}
-                      </span>
+                      <span className="font-mono text-xs px-2 py-0.5 rounded bg-muted mr-2">{r.panneau?.matiere?.code}</span>
                       <span className="text-muted-foreground">{r.panneau?.matiere?.libelle}</span>
                     </TableCell>
                     <TableCell className="font-mono text-xs whitespace-nowrap">
                       {r.panneau ? `${r.panneau.longueur_mm}×${r.panneau.largeur_mm}` : "—"}
                     </TableCell>
-                    <TableCell
-                      className={`text-right font-medium ${Number(r.quantite) < 0 ? "text-rose-700" : "text-emerald-700"}`}
-                    >
-                      {Number(r.quantite) > 0 ? "+" : ""}
-                      {formatNumber(Number(r.quantite), 2)}
+                    <TableCell className={`text-right font-medium ${Number(r.quantite) < 0 ? "text-rose-700" : "text-emerald-700"}`}>
+                      {Number(r.quantite) > 0 ? "+" : ""}{formatNumber(Number(r.quantite), 2)}
                     </TableCell>
                     <TableCell>
-                      {r.affaire ? (
-                        <NumeroAffairePill
-                          numero={r.affaire.numero}
-                          codeChantier={r.affaire.code_chantier}
-                        />
-                      ) : (
-                        <span className="text-muted-foreground text-xs">—</span>
-                      )}
+                      {r.affaire ? <NumeroAffairePill numero={r.affaire.numero} codeChantier={r.affaire.code_chantier} /> : <span className="text-muted-foreground text-xs">—</span>}
                     </TableCell>
-                    <TableCell className="text-right text-muted-foreground">
-                      {r.cump_avant !== null ? formatEuro(Number(r.cump_avant)) : "—"}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {r.cump_apres !== null ? formatEuro(Number(r.cump_apres)) : "—"}
-                    </TableCell>
-                    <TableCell className="text-right font-medium">
-                      {r.valeur_ligne_ht !== null ? formatEuro(Number(r.valeur_ligne_ht)) : "—"}
-                    </TableCell>
+                    <TableCell className="text-right text-muted-foreground">{r.cump_avant !== null ? formatEuro(Number(r.cump_avant)) : "—"}</TableCell>
+                    <TableCell className="text-right">{r.cump_apres !== null ? formatEuro(Number(r.cump_apres)) : "—"}</TableCell>
+                    <TableCell className="text-right font-medium">{r.valeur_ligne_ht !== null ? formatEuro(Number(r.valeur_ligne_ht)) : "—"}</TableCell>
                     <TableCell className="text-xs text-muted-foreground truncate max-w-[120px]">
                       {r.operateur?.nom_complet ?? r.operateur?.email ?? "—"}
                     </TableCell>
@@ -404,9 +311,7 @@ function MouvementsPage() {
 
       <MouvementDialog
         open={openMode !== null}
-        onOpenChange={(v) => {
-          if (!v) setOpenMode(null);
-        }}
+        onOpenChange={(v) => { if (!v) setOpenMode(null); }}
         mode={openMode ?? "entree"}
         isAdmin={isAdmin}
         userId={user?.id ?? null}

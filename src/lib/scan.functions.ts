@@ -1,28 +1,10 @@
-/**
- * ROUTES PUBLIQUES — accessibles sans authentification.
- *
- * Usage prévu : un ouvrier d'atelier scanne un QR collé physiquement sur un
- * panneau pour déclarer une sortie de stock.
- *
- * Sécurité :
- * - L'URL contient un UUID v4 impossible à deviner (2^128 possibilités)
- * - Les QR codes ne sont imprimés que depuis /catalogue/etiquettes (admin)
- *   et collés dans l'atelier privé Setup Paris
- * - Le nom de l'opérateur saisi est conservé dans le commentaire du mouvement
- *   (traçabilité weak, fiable uniquement en bonne foi)
- * - Pas de rate limiting — à ajouter via Cloudflare Worker rules si besoin
- *   (ex: 10 sorties/min/IP sur /scan/*)
- *
- * Ce flow est DIFFÉRENT du lien magique tiers (/tiers/acces?token=...) :
- * le scan QR est pour usage interne atelier, le lien magique pour des
- * sous-traitants externes.
- */
 import { createServerFn } from "@tanstack/react-start";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { z } from "zod";
 
 /**
  * Récupère les infos d'un panneau pour la page publique /scan/$id.
+ * Pas d'auth : utilisé par les ouvriers atelier qui scannent un QR.
  */
 export const getPanneauPublic = createServerFn({ method: "POST" })
   .inputValidator(
@@ -44,16 +26,6 @@ export const getPanneauPublic = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     if (!panneau) throw new Error("Panneau introuvable");
 
-    // stock_actuel est une vue jointe qui peut renvoyer un objet ou un
-    // tableau selon le shape de la query. On normalise dans les deux cas.
-    const stockField = panneau.stock_actuel as
-      | { quantite_actuelle: number | null }
-      | { quantite_actuelle: number | null }[]
-      | null;
-    const stockActuel = Array.isArray(stockField)
-      ? (stockField[0]?.quantite_actuelle ?? 0)
-      : (stockField?.quantite_actuelle ?? 0);
-
     return {
       id: panneau.id,
       longueur_mm: panneau.longueur_mm,
@@ -62,22 +34,24 @@ export const getPanneauPublic = createServerFn({ method: "POST" })
       reference_fournisseur: panneau.reference_fournisseur,
       actif: panneau.actif,
       matiere: panneau.matieres,
-      stock_actuel: stockActuel,
+      stock_actuel: (panneau.stock_actuel as any)?.quantite_actuelle ?? 0,
     };
   });
 
 /**
  * Liste des affaires actives (devis + en_cours) pour le selecteur public.
  */
-export const listAffairesActivesPublic = createServerFn({ method: "POST" }).handler(async () => {
-  const { data, error } = await supabaseAdmin
-    .from("affaires")
-    .select("id, code_chantier, nom, client, statut")
-    .in("statut", ["devis", "en_cours"])
-    .order("code_chantier", { ascending: true });
-  if (error) throw new Error(error.message);
-  return data ?? [];
-});
+export const listAffairesActivesPublic = createServerFn({ method: "POST" }).handler(
+  async () => {
+    const { data, error } = await supabaseAdmin
+      .from("affaires")
+      .select("id, code_chantier, nom, client, statut")
+      .in("statut", ["devis", "en_cours"])
+      .order("code_chantier", { ascending: true });
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  },
+);
 
 /**
  * Déclare une sortie de stock depuis un scan QR public.

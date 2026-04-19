@@ -49,8 +49,6 @@ export function toNum(v: unknown): number | null {
 
 export function toBool(v: unknown): boolean {
   if (typeof v === "boolean") return v;
-  const s = String(v ?? "")
-    .trim()
-    .toLowerCase();
+  const s = String(v ?? "").trim().toLowerCase();
   return ["1", "true", "vrai", "oui", "yes", "y", "x"].includes(s);
 }

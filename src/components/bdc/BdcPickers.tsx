@@ -29,12 +29,7 @@ export function FournisseurPicker({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full justify-between font-normal"
-          disabled={disabled}
-        >
+        <Button type="button" variant="outline" className="w-full justify-between font-normal" disabled={disabled}>
           <span className={cn("truncate", !sel && "text-muted-foreground")}>{sel?.nom ?? "—"}</span>
           <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
         </Button>
@@ -49,14 +44,9 @@ export function FournisseurPicker({
                 <CommandItem
                   key={f.id}
                   value={f.nom}
-                  onSelect={() => {
-                    onChange(f.id);
-                    setOpen(false);
-                  }}
+                  onSelect={() => { onChange(f.id); setOpen(false); }}
                 >
-                  <Check
-                    className={cn("mr-2 h-4 w-4", value === f.id ? "opacity-100" : "opacity-0")}
-                  />
+                  <Check className={cn("mr-2 h-4 w-4", value === f.id ? "opacity-100" : "opacity-0")} />
                   {f.nom}
                 </CommandItem>
               ))}
@@ -84,21 +74,14 @@ export function AffairePicker({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full justify-between font-normal"
-          disabled={disabled}
-        >
+        <Button type="button" variant="outline" className="w-full justify-between font-normal" disabled={disabled}>
           <span className={cn("truncate", !sel && "text-muted-foreground")}>
             {sel ? (
               <>
                 <span className="font-mono text-xs mr-2">{sel.code_chantier}</span>
                 {sel.nom}
               </>
-            ) : (
-              "— Aucune"
-            )}
+            ) : "— Aucune"}
           </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
         </Button>
@@ -109,13 +92,7 @@ export function AffairePicker({
           <CommandList>
             <CommandEmpty>Aucune</CommandEmpty>
             <CommandGroup>
-              <CommandItem
-                value="__none__"
-                onSelect={() => {
-                  onChange(null);
-                  setOpen(false);
-                }}
-              >
+              <CommandItem value="__none__" onSelect={() => { onChange(null); setOpen(false); }}>
                 <Check className={cn("mr-2 h-4 w-4", !value ? "opacity-100" : "opacity-0")} />
                 <span className="text-muted-foreground">— Aucune</span>
               </CommandItem>
@@ -123,14 +100,9 @@ export function AffairePicker({
                 <CommandItem
                   key={a.id}
                   value={`${a.code_chantier} ${a.nom}`}
-                  onSelect={() => {
-                    onChange(a.id);
-                    setOpen(false);
-                  }}
+                  onSelect={() => { onChange(a.id); setOpen(false); }}
                 >
-                  <Check
-                    className={cn("mr-2 h-4 w-4", value === a.id ? "opacity-100" : "opacity-0")}
-                  />
+                  <Check className={cn("mr-2 h-4 w-4", value === a.id ? "opacity-100" : "opacity-0")} />
                   <span className="font-mono text-xs mr-2">{a.code_chantier}</span>
                   <span className="truncate">{a.nom}</span>
                 </CommandItem>
@@ -171,13 +143,9 @@ export function PanneauPicker({
               <>
                 <span className="font-mono mr-1">{sel.matiere_code}</span>
                 <span>{sel.matiere_libelle}</span>
-                <span className="text-muted-foreground ml-1">
-                  ({sel.longueur_mm}×{sel.largeur_mm})
-                </span>
+                <span className="text-muted-foreground ml-1">({sel.longueur_mm}×{sel.largeur_mm})</span>
               </>
-            ) : (
-              "— À sélectionner"
-            )}
+            ) : "— À sélectionner"}
           </span>
           <ChevronsUpDown className="ml-2 h-3.5 w-3.5 opacity-50" />
         </Button>
@@ -188,13 +156,7 @@ export function PanneauPicker({
           <CommandList>
             <CommandEmpty>Aucun panneau</CommandEmpty>
             <CommandGroup>
-              <CommandItem
-                value="__none__"
-                onSelect={() => {
-                  onChange(null);
-                  setOpen(false);
-                }}
-              >
+              <CommandItem value="__none__" onSelect={() => { onChange(null); setOpen(false); }}>
                 <Check className={cn("mr-2 h-4 w-4", !value ? "opacity-100" : "opacity-0")} />
                 <span className="text-muted-foreground">— Aucun</span>
               </CommandItem>
@@ -202,19 +164,12 @@ export function PanneauPicker({
                 <CommandItem
                   key={p.id}
                   value={`${p.matiere_code} ${p.matiere_libelle} ${p.longueur_mm}x${p.largeur_mm}`}
-                  onSelect={() => {
-                    onChange(p.id);
-                    setOpen(false);
-                  }}
+                  onSelect={() => { onChange(p.id); setOpen(false); }}
                 >
-                  <Check
-                    className={cn("mr-2 h-4 w-4", value === p.id ? "opacity-100" : "opacity-0")}
-                  />
+                  <Check className={cn("mr-2 h-4 w-4", value === p.id ? "opacity-100" : "opacity-0")} />
                   <span className="font-mono text-xs mr-2">{p.matiere_code}</span>
                   <span className="flex-1 truncate">{p.matiere_libelle}</span>
-                  <span className="text-xs text-muted-foreground ml-2">
-                    {p.longueur_mm}×{p.largeur_mm}
-                  </span>
+                  <span className="text-xs text-muted-foreground ml-2">{p.longueur_mm}×{p.largeur_mm}</span>
                 </CommandItem>
               ))}
             </CommandGroup>

@@ -10,34 +10,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { FamilleBadge } from "@/components/FamilleBadge";
 import {
-  Search,
-  Loader2,
-  Camera,
-  AlertCircle,
-  ListChecks,
-  QrCode,
-  Save,
-  Trash2,
-  RotateCw,
-  Check,
+  Search, Loader2, Camera, AlertCircle, ListChecks, QrCode, Save, Trash2,
+  RotateCw, Check,
 } from "lucide-react";
 import { toast } from "sonner";
 import { FAMILLES, formatNumber, uniteLabel, type Famille } from "@/lib/familles";
@@ -79,9 +58,7 @@ function loadSession(): Counts {
 function saveSession(c: Counts) {
   if (typeof window === "undefined") return;
   const obj: Record<string, number> = {};
-  c.forEach((v, k) => {
-    obj[k] = v;
-  });
+  c.forEach((v, k) => { obj[k] = v; });
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(obj));
 }
 
@@ -120,13 +97,11 @@ function InventairePage() {
       .order("matiere_libelle", { ascending: true })
       .limit(2000);
     if (error) toast.error(error.message);
-    else setItems((data ?? []) as unknown as CatRow[]);
+    else setItems(((data ?? []) as unknown) as CatRow[]);
     setLoading(false);
   }
 
-  useEffect(() => {
-    if (ready) void load();
-  }, [ready]);
+  useEffect(() => { if (ready) void load(); }, [ready]);
 
   // Stock temps réel : recharge le catalogue à chaque nouveau mouvement
   useStockRealtime(() => { void load(); }, ready);
@@ -226,8 +201,7 @@ function InventairePage() {
               <Trash2 className="h-4 w-4 mr-2" /> Vider
             </Button>
             <Button onClick={() => setConfirmOpen(true)} disabled={totalEcarts === 0}>
-              <Save className="h-4 w-4 mr-2" /> Valider{" "}
-              {totalEcarts > 0 ? `(${totalEcarts} écart${totalEcarts > 1 ? "s" : ""})` : ""}
+              <Save className="h-4 w-4 mr-2" /> Valider {totalEcarts > 0 ? `(${totalEcarts} écart${totalEcarts > 1 ? "s" : ""})` : ""}
             </Button>
           </div>
         }
@@ -241,9 +215,7 @@ function InventairePage() {
         </div>
         <div>
           <div className="text-xs text-muted-foreground">Écarts détectés</div>
-          <div
-            className={`text-2xl font-semibold tabular-nums ${totalEcarts > 0 ? "text-amber-700" : ""}`}
-          >
+          <div className={`text-2xl font-semibold tabular-nums ${totalEcarts > 0 ? "text-amber-700" : ""}`}>
             {totalEcarts}
           </div>
         </div>
@@ -257,12 +229,8 @@ function InventairePage() {
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as "liste" | "scan")}>
         <TabsList className="mb-4">
-          <TabsTrigger value="liste">
-            <ListChecks className="h-4 w-4 mr-2" /> Liste
-          </TabsTrigger>
-          <TabsTrigger value="scan">
-            <QrCode className="h-4 w-4 mr-2" /> Scan QR
-          </TabsTrigger>
+          <TabsTrigger value="liste"><ListChecks className="h-4 w-4 mr-2" /> Liste</TabsTrigger>
+          <TabsTrigger value="scan"><QrCode className="h-4 w-4 mr-2" /> Scan QR</TabsTrigger>
         </TabsList>
 
         <TabsContent value="liste">
@@ -278,15 +246,11 @@ function InventairePage() {
                 />
               </div>
               <Select value={familleFilter} onValueChange={setFamilleFilter}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Famille" />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Famille" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Toutes familles</SelectItem>
                   {FAMILLES.map((f) => (
-                    <SelectItem key={f.value} value={f.value}>
-                      {f.label}
-                    </SelectItem>
+                    <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -303,9 +267,7 @@ function InventairePage() {
 
           <Card className="overflow-hidden p-0">
             {loading ? (
-              <div className="py-12 flex justify-center">
-                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-              </div>
+              <div className="py-12 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
             ) : (
               <div className="max-h-[60vh] overflow-y-auto">
                 <table className="w-full text-sm">
@@ -328,9 +290,7 @@ function InventairePage() {
                           <td className="p-3">
                             <div className="font-medium">{p.matiere_libelle}</div>
                             <div className="flex items-center gap-2 mt-0.5">
-                              <span className="font-mono text-[11px] text-muted-foreground">
-                                {p.matiere_code}
-                              </span>
+                              <span className="font-mono text-[11px] text-muted-foreground">{p.matiere_code}</span>
                               {p.famille && <FamilleBadge famille={p.famille} />}
                             </div>
                           </td>
@@ -339,9 +299,7 @@ function InventairePage() {
                           </td>
                           <td className="p-3 text-right tabular-nums">
                             {formatNumber(stock, 2)}
-                            <span className="text-xs text-muted-foreground ml-1">
-                              {uniteLabel(p.unite_stock)}
-                            </span>
+                            <span className="text-xs text-muted-foreground ml-1">{uniteLabel(p.unite_stock)}</span>
                           </td>
                           <td className="p-3">
                             <Input
@@ -355,28 +313,19 @@ function InventairePage() {
                               className="h-9 text-right tabular-nums"
                             />
                           </td>
-                          <td
-                            className={`p-3 text-right tabular-nums font-medium ${
-                              ecart === null
-                                ? "text-muted-foreground"
-                                : ecart === 0
-                                  ? "text-emerald-700"
-                                  : ecart > 0
-                                    ? "text-blue-700"
-                                    : "text-rose-700"
-                            }`}
-                          >
+                          <td className={`p-3 text-right tabular-nums font-medium ${
+                            ecart === null ? "text-muted-foreground"
+                              : ecart === 0 ? "text-emerald-700"
+                              : ecart > 0 ? "text-blue-700"
+                              : "text-rose-700"
+                          }`}>
                             {ecart === null ? "—" : (ecart > 0 ? "+" : "") + formatNumber(ecart, 2)}
                           </td>
                         </tr>
                       );
                     })}
                     {filtered.length === 0 && (
-                      <tr>
-                        <td colSpan={5} className="p-8 text-center text-muted-foreground">
-                          Aucun panneau
-                        </td>
-                      </tr>
+                      <tr><td colSpan={5} className="p-8 text-center text-muted-foreground">Aucun panneau</td></tr>
                     )}
                   </tbody>
                 </table>
@@ -385,13 +334,16 @@ function InventairePage() {
           </Card>
 
           <p className="text-xs text-muted-foreground mt-3">
-            {filtered.length} panneau(x) affiché(s) · session sauvegardée localement (vous pouvez
-            fermer l'onglet)
+            {filtered.length} panneau(x) affiché(s) · session sauvegardée localement (vous pouvez fermer l'onglet)
           </p>
         </TabsContent>
 
         <TabsContent value="scan">
-          <ScanInventaire items={items} counts={counts} setCount={setCount} />
+          <ScanInventaire
+            items={items}
+            counts={counts}
+            setCount={setCount}
+          />
         </TabsContent>
       </Tabs>
 
@@ -428,9 +380,7 @@ function InventairePage() {
                       {formatNumber(Number(row.stock_actuel ?? 0), 2)}
                     </td>
                     <td className="p-2 text-right tabular-nums">{formatNumber(compte, 2)}</td>
-                    <td
-                      className={`p-2 text-right tabular-nums font-medium ${ecart > 0 ? "text-blue-700" : "text-rose-700"}`}
-                    >
+                    <td className={`p-2 text-right tabular-nums font-medium ${ecart > 0 ? "text-blue-700" : "text-rose-700"}`}>
                       {(ecart > 0 ? "+" : "") + formatNumber(ecart, 2)}
                     </td>
                   </tr>
@@ -454,11 +404,7 @@ function InventairePage() {
               Annuler
             </Button>
             <Button onClick={commitCorrections} disabled={submitting}>
-              {submitting ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Check className="h-4 w-4 mr-2" />
-              )}
+              {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Check className="h-4 w-4 mr-2" />}
               Confirmer {ecarts.length} correction{ecarts.length > 1 ? "s" : ""}
             </Button>
           </DialogFooter>
@@ -471,9 +417,7 @@ function InventairePage() {
 /* -------------------- Mode scan -------------------- */
 
 function ScanInventaire({
-  items,
-  counts,
-  setCount,
+  items, counts, setCount,
 }: {
   items: CatRow[];
   counts: Counts;
@@ -486,7 +430,7 @@ function ScanInventaire({
   const elRef = useRef<HTMLDivElement>(null);
   const scannerRef = useRef<Html5Qrcode | null>(null);
 
-  const current = currentId ? (items.find((i) => i.id === currentId) ?? null) : null;
+  const current = currentId ? items.find((i) => i.id === currentId) ?? null : null;
 
   async function startScan() {
     setError(null);
@@ -522,11 +466,9 @@ function ScanInventaire({
         () => {},
       );
     } catch (e: any) {
-      setError(
-        e?.message?.includes("Permission")
-          ? "Accès caméra refusé"
-          : "Impossible de démarrer la caméra",
-      );
+      setError(e?.message?.includes("Permission")
+        ? "Accès caméra refusé"
+        : "Impossible de démarrer la caméra");
       setScanning(false);
     }
   }
@@ -534,18 +476,14 @@ function ScanInventaire({
   function stopScan() {
     const s = scannerRef.current;
     if (s) {
-      s.stop()
-        .then(() => s.clear())
-        .catch(() => {});
+      s.stop().then(() => s.clear()).catch(() => {});
       scannerRef.current = null;
     }
     setScanning(false);
   }
 
   useEffect(() => {
-    return () => {
-      stopScan();
-    };
+    return () => { stopScan(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -570,9 +508,7 @@ function ScanInventaire({
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-semibold text-sm">Caméra</h3>
           {scanning ? (
-            <Button size="sm" variant="outline" onClick={stopScan}>
-              Arrêter
-            </Button>
+            <Button size="sm" variant="outline" onClick={stopScan}>Arrêter</Button>
           ) : (
             <Button size="sm" onClick={startScan}>
               <Camera className="h-4 w-4 mr-2" /> Démarrer
@@ -602,7 +538,9 @@ function ScanInventaire({
       <Card className="p-4">
         <h3 className="font-semibold text-sm mb-3">Saisie quantité comptée</h3>
         {!current ? (
-          <p className="text-sm text-muted-foreground py-8 text-center">En attente d'un scan…</p>
+          <p className="text-sm text-muted-foreground py-8 text-center">
+            En attente d'un scan…
+          </p>
         ) : (
           <div className="space-y-4">
             <div className="rounded-md border border-border p-3 bg-muted/30">
@@ -613,8 +551,7 @@ function ScanInventaire({
               <div className="text-xs mt-2">
                 Stock système :{" "}
                 <span className="font-semibold tabular-nums">
-                  {formatNumber(Number(current.stock_actuel ?? 0), 2)}{" "}
-                  {uniteLabel(current.unite_stock)}
+                  {formatNumber(Number(current.stock_actuel ?? 0), 2)} {uniteLabel(current.unite_stock)}
                 </span>
               </div>
             </div>
@@ -629,9 +566,7 @@ function ScanInventaire({
                 autoFocus
                 value={qty}
                 onChange={(e) => setQty(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") validate();
-                }}
+                onKeyDown={(e) => { if (e.key === "Enter") validate(); }}
                 placeholder="0"
                 className="text-lg h-12 text-right tabular-nums"
               />

@@ -9,40 +9,17 @@ export const Route = createFileRoute("/_app/")({
   head: () => ({
     meta: [
       { title: "Tableau de bord — Setup Stock" },
-      {
-        name: "description",
-        content: "Vue d'ensemble du stock, des affaires et des bons de commande.",
-      },
+      { name: "description", content: "Vue d'ensemble du stock, des affaires et des bons de commande." },
     ],
   }),
   component: DashboardPage,
 });
 
 const sections = [
-  {
-    num: "01",
-    title: "Catalogue",
-    desc: "Référentiel matières et panneaux.",
-    to: "/catalogue/matieres" as const,
-  },
-  {
-    num: "02",
-    title: "Affaires",
-    desc: "Suivi par numéro et accès tiers.",
-    to: "/affaires" as const,
-  },
-  {
-    num: "03",
-    title: "Bons de commande",
-    desc: "Import PDF et extraction OCR.",
-    to: "/bdc" as const,
-  },
-  {
-    num: "04",
-    title: "Mouvements",
-    desc: "Entrées, sorties et corrections.",
-    to: "/mouvements" as const,
-  },
+  { num: "01", title: "Catalogue", desc: "Référentiel matières et panneaux.", to: "/catalogue/matieres" as const },
+  { num: "02", title: "Affaires", desc: "Suivi par numéro et accès tiers.", to: "/affaires" as const },
+  { num: "03", title: "Bons de commande", desc: "Import PDF et extraction OCR.", to: "/bdc" as const },
+  { num: "04", title: "Mouvements", desc: "Entrées, sorties et corrections.", to: "/mouvements" as const },
 ];
 
 function DashboardPage() {
@@ -59,23 +36,13 @@ function DashboardPage() {
     if (authLoading || !isAdmin) return;
     void (async () => {
       const [aff, bdc, cat] = await Promise.all([
-        supabase
-          .from("affaires")
-          .select("id", { count: "exact", head: true })
-          .eq("statut", "en_cours"),
-        supabase
-          .from("bons_de_commande")
-          .select("id", { count: "exact", head: true })
-          .in("statut", ["en_attente_ocr", "ocr_termine"]),
+        supabase.from("affaires").select("id", { count: "exact", head: true }).eq("statut", "en_cours"),
+        supabase.from("bons_de_commande").select("id", { count: "exact", head: true }).in("statut", ["en_attente_ocr", "ocr_termine"]),
         supabase.from("catalogue_visible").select("stock_actuel, seuil_alerte, valeur_stock_ht"),
       ]);
       let stockBas = 0;
       let valeur = 0;
-      for (const r of (cat.data ?? []) as {
-        stock_actuel: number | null;
-        seuil_alerte: number | null;
-        valeur_stock_ht: number | null;
-      }[]) {
+      for (const r of (cat.data ?? []) as { stock_actuel: number | null; seuil_alerte: number | null; valeur_stock_ht: number | null }[]) {
         const s = Number(r.stock_actuel ?? 0);
         const seuil = Number(r.seuil_alerte ?? 0);
         if (s > 0 && s < seuil) stockBas += 1;
@@ -91,30 +58,10 @@ function DashboardPage() {
   }, [authLoading, isAdmin]);
 
   const cards = [
-    {
-      label: "Affaires en cours",
-      value: kpis.affaires_en_cours,
-      hint: "Statut « en cours »",
-      format: (v: number) => formatNumber(v, 0),
-    },
-    {
-      label: "BDC en attente",
-      value: kpis.bdc_en_attente,
-      hint: "À traiter ou valider",
-      format: (v: number) => formatNumber(v, 0),
-    },
-    {
-      label: "Stock bas",
-      value: kpis.stock_bas,
-      hint: "Sous le seuil d'alerte",
-      format: (v: number) => formatNumber(v, 0),
-    },
-    {
-      label: "Valeur stock estimée",
-      value: kpis.valeur_stock,
-      hint: "Au CUMP courant",
-      format: (v: number) => formatEuro(v),
-    },
+    { label: "Affaires en cours", value: kpis.affaires_en_cours, hint: "Statut « en cours »", format: (v: number) => formatNumber(v, 0) },
+    { label: "BDC en attente", value: kpis.bdc_en_attente, hint: "À traiter ou valider", format: (v: number) => formatNumber(v, 0) },
+    { label: "Stock bas", value: kpis.stock_bas, hint: "Sous le seuil d'alerte", format: (v: number) => formatNumber(v, 0) },
+    { label: "Valeur stock estimée", value: kpis.valeur_stock, hint: "Au CUMP courant", format: (v: number) => formatEuro(v) },
   ];
 
   return (

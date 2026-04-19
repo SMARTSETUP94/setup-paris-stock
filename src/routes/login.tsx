@@ -106,16 +106,10 @@ function LoginPage() {
 
         <Tabs defaultValue="password" className="w-full">
           <TabsList className="grid grid-cols-2 w-full mb-6 bg-transparent border border-border rounded-lg p-1">
-            <TabsTrigger
-              value="password"
-              className="rounded-md data-[state=active]:bg-foreground data-[state=active]:text-background"
-            >
+            <TabsTrigger value="password" className="rounded-md data-[state=active]:bg-foreground data-[state=active]:text-background">
               Connexion
             </TabsTrigger>
-            <TabsTrigger
-              value="magic"
-              className="rounded-md data-[state=active]:bg-foreground data-[state=active]:text-background"
-            >
+            <TabsTrigger value="magic" className="rounded-md data-[state=active]:bg-foreground data-[state=active]:text-background">
               Lien magique
             </TabsTrigger>
           </TabsList>
@@ -172,8 +166,7 @@ function LoginPage() {
                 />
               </div>
               <p className="text-sm text-muted-foreground">
-                Vous recevrez un lien à usage unique par email pour vous connecter sans mot de
-                passe.
+                Vous recevrez un lien à usage unique par email pour vous connecter sans mot de passe.
               </p>
               <Button type="submit" size="lg" className="w-full" disabled={submitting}>
                 {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}

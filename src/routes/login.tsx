@@ -5,10 +5,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Loader2, Package } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -64,77 +63,90 @@ function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Package className="h-6 w-6" />
-          </div>
-          <CardTitle className="text-2xl">Setup Stock</CardTitle>
-          <CardDescription>Gestion de stock — Setup Paris</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="password" className="w-full">
-            <TabsList className="grid grid-cols-2 w-full mb-4">
-              <TabsTrigger value="password">Mot de passe</TabsTrigger>
-              <TabsTrigger value="magic">Lien magique</TabsTrigger>
-            </TabsList>
+    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-12">
+      <div className="w-full max-w-md">
+        <div className="mb-10 flex items-center justify-center gap-2">
+          <span className="font-display text-xl font-semibold tracking-tight text-[color:var(--color-heading)]">
+            SET UP
+          </span>
+          <span
+            aria-hidden
+            className="inline-flex h-6 w-6 items-center justify-center rounded-sm bg-[#FFB700] text-[12px] font-bold text-black"
+          >
+            ⚡
+          </span>
+        </div>
 
-            <TabsContent value="password">
-              <form onSubmit={handlePassword} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email-pwd">Email</Label>
-                  <Input
-                    id="email-pwd"
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="prenom@setupparis.fr"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">Mot de passe</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={submitting}>
-                  {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  Se connecter
-                </Button>
-              </form>
-            </TabsContent>
+        <p className="eyebrow text-center mb-3">Espace de connexion</p>
+        <h1 className="text-center text-3xl mb-2">Setup Stock</h1>
+        <p className="text-center text-sm text-muted-foreground mb-10">
+          Gestion de stock — Setup Paris
+        </p>
 
-            <TabsContent value="magic">
-              <form onSubmit={handleMagicLink} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email-magic">Email</Label>
-                  <Input
-                    id="email-magic"
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="prenom@setupparis.fr"
-                  />
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Vous recevrez un lien à usage unique par email pour vous connecter sans mot de passe.
-                </p>
-                <Button type="submit" className="w-full" disabled={submitting}>
-                  {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  Envoyer le lien
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+        <Tabs defaultValue="password" className="w-full">
+          <TabsList className="grid grid-cols-2 w-full mb-6 bg-transparent border border-border rounded-lg p-1">
+            <TabsTrigger value="password" className="rounded-md data-[state=active]:bg-foreground data-[state=active]:text-background">
+              Mot de passe
+            </TabsTrigger>
+            <TabsTrigger value="magic" className="rounded-md data-[state=active]:bg-foreground data-[state=active]:text-background">
+              Lien magique
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="password">
+            <form onSubmit={handlePassword} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email-pwd">Email</Label>
+                <Input
+                  id="email-pwd"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="prenom@setupparis.fr"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Mot de passe</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+              <Button type="submit" size="lg" className="w-full" disabled={submitting}>
+                {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                Se connecter
+              </Button>
+            </form>
+          </TabsContent>
+
+          <TabsContent value="magic">
+            <form onSubmit={handleMagicLink} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email-magic">Email</Label>
+                <Input
+                  id="email-magic"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="prenom@setupparis.fr"
+                />
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Vous recevrez un lien à usage unique par email pour vous connecter sans mot de passe.
+              </p>
+              <Button type="submit" size="lg" className="w-full" disabled={submitting}>
+                {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                Envoyer le lien
+              </Button>
+            </form>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 }

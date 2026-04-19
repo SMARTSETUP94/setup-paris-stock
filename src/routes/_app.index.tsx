@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Briefcase, FileText, AlertTriangle, Wallet } from "lucide-react";
 
 export const Route = createFileRoute("/_app/")({
   head: () => ({
@@ -13,54 +12,74 @@ export const Route = createFileRoute("/_app/")({
 });
 
 const kpis = [
-  { label: "Affaires en cours", value: "—", icon: Briefcase, accent: "text-primary" },
-  { label: "BDC en attente", value: "—", icon: FileText, accent: "text-amber-600" },
-  { label: "Stock bas", value: "—", icon: AlertTriangle, accent: "text-destructive" },
-  { label: "Valeur stock estimée", value: "—", icon: Wallet, accent: "text-emerald-600" },
+  { label: "Affaires en cours", value: "—", hint: "Toutes affaires actives" },
+  { label: "BDC en attente", value: "—", hint: "À traiter ou valider" },
+  { label: "Stock bas", value: "—", hint: "Sous le seuil d'alerte" },
+  { label: "Valeur stock estimée", value: "—", hint: "Sur prix d'achat HT" },
+];
+
+const sections = [
+  { num: "01", title: "Catalogue", desc: "Référentiel matières et panneaux." },
+  { num: "02", title: "Affaires", desc: "Suivi par numéro et accès tiers." },
+  { num: "03", title: "Bons de commande", desc: "Import PDF et extraction OCR." },
+  { num: "04", title: "Mouvements", desc: "Entrées, sorties et corrections." },
 ];
 
 function DashboardPage() {
   return (
-    <div className="space-y-6 max-w-6xl">
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Tableau de bord</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Vue d'ensemble de votre stock et de votre activité.
+    <div className="max-w-6xl space-y-16 md:space-y-24">
+      <header className="space-y-3">
+        <p className="eyebrow">Tableau de bord</p>
+        <h1 className="text-3xl md:text-5xl">Vue d'ensemble</h1>
+        <p className="max-w-2xl text-sm md:text-base text-muted-foreground">
+          Suivi en temps réel de votre stock, de vos affaires et de vos bons de commande
+          fournisseurs.
         </p>
-      </div>
+      </header>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-        {kpis.map((kpi) => {
-          const Icon = kpi.icon;
-          return (
-            <Card key={kpi.label}>
-              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                <CardTitle className="text-xs md:text-sm font-medium text-muted-foreground">
-                  {kpi.label}
-                </CardTitle>
-                <Icon className={`h-4 w-4 ${kpi.accent}`} />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl md:text-3xl font-bold">{kpi.value}</div>
-              </CardContent>
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {kpis.map((kpi) => (
+          <Card key={kpi.label}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground tracking-normal normal-case">
+                <span className="font-sans">{kpi.label}</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1">
+              <div className="font-sans text-3xl md:text-4xl font-semibold text-[color:var(--color-heading)]">
+                {kpi.value}
+              </div>
+              <p className="text-xs text-muted-foreground">{kpi.hint}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </section>
+
+      <section className="space-y-8">
+        <div className="flex items-end justify-between gap-4">
+          <div className="space-y-2">
+            <p className="eyebrow">Modules</p>
+            <h2 className="text-2xl md:text-3xl">Ce que vous allez gérer</h2>
+          </div>
+          <a className="link-arrow hidden md:inline-flex" href="#">
+            Voir tout →
+          </a>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {sections.map((s) => (
+            <Card key={s.num} className="p-6">
+              <div className="flex items-start gap-6">
+                <span className="font-display text-3xl text-muted-foreground/70">{s.num}</span>
+                <div className="space-y-1">
+                  <h3 className="text-lg">{s.title}</h3>
+                  <p className="text-sm text-muted-foreground">{s.desc}</p>
+                </div>
+              </div>
             </Card>
-          );
-        })}
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Bienvenue</CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm text-muted-foreground space-y-2">
-          <p>
-            Les modules <strong>Catalogue</strong>, <strong>Affaires</strong>,{" "}
-            <strong>Bons de commande</strong> et <strong>Mouvements</strong> seront ajoutés
-            progressivement.
-          </p>
-          <p>Cette première version pose les fondations : authentification, base de données et structure d'accès.</p>
-        </CardContent>
-      </Card>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

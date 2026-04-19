@@ -136,7 +136,7 @@ export function DangerZoneTab() {
     try {
       const result = await resetFn();
       toast.success("Données métier remises à zéro", {
-        description: `${result.mouvements_supprimes} mouvements, ${result.bdc_supprimes} BDC, ${result.affaires_supprimees} affaires supprimés.`,
+        description: `${result.mouvements_supprimes} mouvements et ${result.bdc_supprimes} BDC supprimés. Affaires conservées.`,
       });
       setOpen(false);
       setConfirm("");
@@ -167,16 +167,15 @@ export function DangerZoneTab() {
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex-1 min-w-[260px]">
             <h3 className="text-base font-semibold text-foreground">
-              Remettre à zéro les données métier
+              Remettre à zéro les mouvements
             </h3>
             <p className="text-sm text-muted-foreground mt-1">
-              Supprime <strong>tous les mouvements de stock</strong>, <strong>bons de commande</strong>{" "}
-              (en-têtes + lignes) et <strong>affaires</strong>. Le CUMP de chaque panneau est remis à
-              zéro.
+              Supprime <strong>tous les mouvements de stock</strong> et les <strong>bons de commande</strong>{" "}
+              (en-têtes + lignes). Le CUMP de chaque panneau est remis à zéro.
             </p>
             <ul className="text-xs text-muted-foreground mt-2 list-disc pl-5 space-y-0.5">
               <li>
-                Conservés : matières, panneaux, fournisseurs, typologies, utilisateurs et branding.
+                Conservés : <strong>affaires</strong>, matières, panneaux, fournisseurs, typologies, utilisateurs et branding.
               </li>
               <li>Une sauvegarde CSV des mouvements est téléchargée automatiquement avant.</li>
               <li>Action impossible à annuler côté application.</li>
@@ -212,9 +211,9 @@ export function DangerZoneTab() {
             <AlertDialogDescription asChild>
               <div className="space-y-3 text-sm">
                 <p>
-                  Cette action va supprimer <strong>toutes les affaires</strong>, <strong>tous les
-                  bons de commande</strong> et <strong>tous les mouvements de stock</strong>. Elle
-                  est <strong>définitive</strong>.
+                  Cette action va supprimer <strong>tous les bons de commande</strong> et{" "}
+                  <strong>tous les mouvements de stock</strong>. Les <strong>affaires sont conservées</strong>.
+                  Elle est <strong>définitive</strong>.
                 </p>
                 <p className="text-muted-foreground">
                   Une sauvegarde CSV des mouvements sera téléchargée juste avant la suppression.

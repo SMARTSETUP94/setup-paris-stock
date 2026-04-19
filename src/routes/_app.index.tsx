@@ -281,6 +281,7 @@ function DashboardPage() {
       </section>
 
       <section>
+        <p className="section-marker mb-6">— 03 · Consommation</p>
         <DashboardConsoChart />
       </section>
 
@@ -289,8 +290,9 @@ function DashboardPage() {
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
+              <span className="section-marker">— 04</span>
               <AlertTriangle className="h-4 w-4 text-warning" />
-              <h2 className="text-base font-semibold">Alertes seuil bas</h2>
+              <h2 className="font-display text-lg font-semibold tracking-tight">Alertes seuil bas</h2>
             </div>
             <Link to="/inventaire" className="link-arrow text-xs">
               Voir l'inventaire →
@@ -332,8 +334,9 @@ function DashboardPage() {
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
+              <span className="section-marker">— 05</span>
               <TrendingUp className="h-4 w-4 text-primary" />
-              <h2 className="text-base font-semibold">Top affaires consommatrices</h2>
+              <h2 className="font-display text-lg font-semibold tracking-tight">Top affaires</h2>
             </div>
             <Link to="/affaires" className="link-arrow text-xs">
               Voir toutes →
@@ -370,7 +373,10 @@ function DashboardPage() {
       <section>
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base font-semibold">Mouvements récents</h2>
+            <div className="flex items-center gap-3">
+              <span className="section-marker">— 06</span>
+              <h2 className="font-display text-lg font-semibold tracking-tight">Mouvements récents</h2>
+            </div>
             <Link to="/mouvements" className="link-arrow text-xs">
               Tout l'historique →
             </Link>
@@ -406,8 +412,8 @@ function DashboardPage() {
                     <div
                       className={
                         Number(m.quantite) < 0
-                          ? "text-rose-700 font-medium"
-                          : "text-emerald-700 font-medium"
+                          ? "text-destructive font-medium"
+                          : "text-success font-medium"
                       }
                     >
                       {Number(m.quantite) > 0 ? "+" : ""}
@@ -427,7 +433,7 @@ function DashboardPage() {
       {hasData === false && (
         <section className="space-y-8">
           <div className="space-y-3">
-            <p className="section-marker">— 06 · Modules</p>
+            <p className="section-marker">— 07 · Modules</p>
             <h2 className="text-3xl md:text-4xl tracking-tight">Pour démarrer</h2>
             <p className="text-sm text-muted-foreground max-w-2xl">
               Ces 4 modules constituent le cœur de l'application. Commence par le catalogue pour

@@ -114,14 +114,10 @@ function MesAccesPage() {
               Math.ceil((expireDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
             );
             const expireSoon = joursRestants <= 7;
-            return (
-              <Link
-                key={a.id}
-                to="/affaires/$code"
-                params={{ code: a.affaire?.code_chantier ?? "" }}
-                disabled={!a.affaire}
-                className="relative bg-card p-6 hover:bg-muted/40 transition-all group overflow-hidden min-h-[180px] flex flex-col justify-between"
-              >
+            const cardClasses =
+              "relative bg-card p-6 hover:bg-muted/40 transition-all group overflow-hidden min-h-[180px] flex flex-col justify-between";
+            const inner = (
+              <>
                 <span className="editorial-number absolute -top-4 -right-2 text-[100px] select-none pointer-events-none">
                   0{idx + 1}
                 </span>

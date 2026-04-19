@@ -17,8 +17,27 @@ export type AuthedContext = {
   claims: Record<string, unknown> & { sub: string };
 };
 
-export const requireSupabaseAuth = createMiddleware({ type: "function" }).server(
-  async ({ next }) => {
+export const requireSupabaseAuth = createMiddleware({ type: "function" })
+  .client(async ({ next }) => {
+    // Forward the current Supabase session token to the server function
+    // so the server-side middleware can validate it.
+    let headers: Record<string, string> = {};
+    if (typeof window !== "undefined") {
+      try {
+        // Lazy import to avoid pulling the browser client into SSR-only paths.
+        const { supabase } = await import("./client");
+        const { data } = await supabase.auth.getSession();
+        const token = data.session?.access_token;
+        if (token) {
+          headers = { Authorization: `Bearer ${token}` };
+        }
+      } catch {
+        // ignore — server middleware will reject with 401 if needed
+      }
+    }
+    return next({ sendContext: {}, headers });
+  })
+  .server(async ({ next }) => {
     const SUPABASE_URL = process.env.SUPABASE_URL;
     const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY;
 

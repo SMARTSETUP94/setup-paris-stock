@@ -39,6 +39,7 @@ function PanneauxPage() {
   const { ready } = useAdminGuard();
   const search = Route.useSearch();
   const data = usePanneauxData(ready, search.matiere);
+  const { familles } = useFamilles();
   const {
     items,
     setItems,
@@ -150,7 +151,7 @@ function PanneauxPage() {
     if (typoFilter === "all") return null;
     const t = typologies.find((x) => x.id === typoFilter);
     if (!t) return null;
-    const familleLabel = FAMILLES.find((f) => f.value === t.famille)?.label ?? t.famille;
+    const familleLabel = familles.find((f) => f.value === t.famille)?.label ?? t.famille;
     const matCount = matieres.filter((m) => m.typologie_id === t.id).length;
     const panCount = items.filter((p) => p.typo_id === t.id).length;
     return { familleLabel, typoNom: t.nom, matCount, panCount };
@@ -208,7 +209,7 @@ function PanneauxPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Toutes familles</SelectItem>
-            {FAMILLES.map((f) => (
+            {familles.map((f) => (
               <SelectItem key={f.value} value={f.value}>
                 {f.label}
               </SelectItem>

@@ -96,9 +96,9 @@ function MouvementsPage() {
   async function loadAffairesOpts() {
     const { data } = await supabase
       .from("affaires")
-      .select("id, numero, nom")
-      .order("numero", { ascending: false });
-    setAffairesOpts((data as { id: string; numero: string; nom: string }[]) ?? []);
+      .select("id, numero, nom, code_chantier")
+      .order("numero", { ascending: false, nullsFirst: false });
+    setAffairesOpts((data as { id: string; numero: string | null; nom: string; code_chantier: string }[]) ?? []);
   }
 
   useEffect(() => {

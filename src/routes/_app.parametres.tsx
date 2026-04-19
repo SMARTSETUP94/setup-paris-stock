@@ -351,6 +351,35 @@ function UsersTab() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AlertDialog open={!!confirmRole} onOpenChange={(o) => !o && setConfirmRole(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Changer le rôle en « {confirmRole ? ROLE_LABELS[confirmRole.newRole] : ""} » ?
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2">
+                <p>
+                  <strong>{confirmRole?.user.email}</strong> passera de{" "}
+                  <strong>{confirmRole ? ROLE_LABELS[confirmRole.user.role] : ""}</strong> à{" "}
+                  <strong>{confirmRole ? ROLE_LABELS[confirmRole.newRole] : ""}</strong>.
+                </p>
+                <p className="text-foreground">
+                  {confirmRole ? ROLE_DESCRIPTIONS[confirmRole.newRole] : ""}
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={updatingRole}>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmRoleChange} disabled={updatingRole}>
+              {updatingRole && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Confirmer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

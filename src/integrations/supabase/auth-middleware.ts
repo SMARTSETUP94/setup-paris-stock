@@ -98,5 +98,5 @@ export const requireSupabaseAuth = createMiddleware({ type: "function" })
         claims: data.claims,
       },
     });
-  },
-);
+  });
+

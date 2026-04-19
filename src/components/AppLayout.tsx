@@ -7,6 +7,7 @@ import {
   ArrowLeftRight,
   Settings,
   LogOut,
+  Truck,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,8 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { to: "/", label: "Tableau de bord", icon: LayoutDashboard, mobile: true },
-  { to: "/catalogue", label: "Catalogue", icon: Package, mobile: true },
+  { to: "/catalogue/matieres", label: "Catalogue", icon: Package, mobile: true },
+  { to: "/fournisseurs", label: "Fournisseurs", icon: Truck, mobile: false },
   { to: "/affaires", label: "Affaires", icon: Briefcase, mobile: true },
   { to: "/bdc", label: "Bons de commande", icon: FileText, mobile: true },
   { to: "/mouvements", label: "Mouvements", icon: ArrowLeftRight, mobile: false },

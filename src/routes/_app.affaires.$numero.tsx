@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Copy, Edit, MoreHorizontal, Plus, Trash2, Archive, RefreshCw, Ban } from "lucide-react";
+import { Copy, Edit, MoreHorizontal, Plus, Trash2, Archive, RefreshCw, Ban, ArrowDownToLine, ArrowUpFromLine, Wrench } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAdminGuard, AdminLoader } from "@/hooks/useAdminGuard";
+import { useAuth } from "@/hooks/useAuth";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,8 +20,10 @@ import {
 import { StatutBadge } from "@/components/StatutBadge";
 import { AffaireFormDialog } from "@/components/AffaireFormDialog";
 import { InviteTiersDialog } from "@/components/InviteTiersDialog";
-import { formatDateFr, permissionLabel, buildInvitationLink } from "@/lib/affaires";
-import { formatEuro } from "@/lib/familles";
+import { MouvementDialog } from "@/components/MouvementDialog";
+import { TypeMouvementBadge } from "@/components/TypeMouvementBadge";
+import { formatDateFr, formatDateTimeFr, permissionLabel, buildInvitationLink } from "@/lib/affaires";
+import { formatEuro, formatNumber } from "@/lib/familles";
 import type { Database } from "@/integrations/supabase/types";
 
 type Affaire = Database["public"]["Tables"]["affaires"]["Row"] & {
@@ -28,6 +31,32 @@ type Affaire = Database["public"]["Tables"]["affaires"]["Row"] & {
   client?: { nom: string; actif: boolean } | null;
 };
 type Acces = Database["public"]["Tables"]["affaire_acces"]["Row"];
+
+type StockLigne = {
+  panneau_id: string | null;
+  matiere_id: string | null;
+  qte_entree: number | null;
+  qte_sortie: number | null;
+  reliquat: number | null;
+  surface_m2_totale: number | null;
+  valeur_consommee_ht: number | null;
+  panneau?: {
+    longueur_mm: number;
+    largeur_mm: number;
+    cump_ht: number | null;
+    matiere?: { code: string; libelle: string; unite_stock: string } | null;
+  } | null;
+};
+
+type MvtRecent = {
+  id: string;
+  created_at: string;
+  type: string;
+  quantite: number;
+  valeur_ligne_ht: number | null;
+  commentaire: string | null;
+  panneau?: { longueur_mm: number; largeur_mm: number; matiere?: { code: string; libelle: string } | null } | null;
+};
 
 export const Route = createFileRoute("/_app/affaires/$numero")({
   head: () => ({ meta: [{ title: "Affaire — Setup Stock" }] }),
@@ -38,6 +67,7 @@ function AffaireDetail() {
   const { numero } = Route.useParams();
   const navigate = useNavigate();
   const { ready } = useAdminGuard();
+  const { user, profile } = useAuth();
   const [affaire, setAffaire] = useState<Affaire | null>(null);
   const [loading, setLoading] = useState(true);
   const [editOpen, setEditOpen] = useState(false);
@@ -45,6 +75,9 @@ function AffaireDetail() {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [notes, setNotes] = useState("");
   const notesTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [stockLignes, setStockLignes] = useState<StockLigne[]>([]);
+  const [mvtRecent, setMvtRecent] = useState<MvtRecent[]>([]);
+  const [mvtMode, setMvtMode] = useState<"entree" | "sortie" | "correction" | null>(null);
 
   async function loadAffaire() {
     setLoading(true);
@@ -78,6 +111,52 @@ function AffaireDetail() {
 
   useEffect(() => {
     if (affaire?.id) void loadAcces(affaire.id);
+  }, [affaire?.id]);
+
+  async function loadStock(id: string) {
+    const { data: cons } = await supabase
+      .from("consommation_par_affaire")
+      .select("panneau_id, matiere_id, qte_entree, qte_sortie, reliquat, surface_m2_totale, valeur_consommee_ht")
+      .eq("affaire_id", id);
+    const lignes = (cons ?? []) as Omit<StockLigne, "panneau">[];
+    const panneauIds = lignes.map((l) => l.panneau_id).filter((x): x is string => !!x);
+    if (panneauIds.length === 0) {
+      setStockLignes([]);
+      return;
+    }
+    const { data: pan } = await supabase
+      .from("panneaux")
+      .select("id, longueur_mm, largeur_mm, cump_ht, matiere:matieres!panneaux_matiere_id_fkey(code, libelle, unite_stock)")
+      .in("id", panneauIds);
+    const panMap = new Map(((pan ?? []) as { id: string; longueur_mm: number; largeur_mm: number; cump_ht: number | null; matiere: { code: string; libelle: string; unite_stock: string } | null }[]).map((p) => [p.id, p]));
+    const merged: StockLigne[] = lignes.map((l) => ({
+      ...l,
+      panneau: l.panneau_id ? panMap.get(l.panneau_id) ?? null : null,
+    }));
+    setStockLignes(merged);
+  }
+
+  async function loadMvtRecent(id: string) {
+    const { data } = await supabase
+      .from("mouvements_stock")
+      .select(`
+        id, created_at, type, quantite, valeur_ligne_ht, commentaire,
+        panneau:panneaux!mouvements_stock_panneau_id_fkey(
+          longueur_mm, largeur_mm,
+          matiere:matieres!panneaux_matiere_id_fkey(code, libelle)
+        )
+      `)
+      .eq("affaire_id", id)
+      .order("created_at", { ascending: false })
+      .limit(10);
+    setMvtRecent(((data ?? []) as unknown) as MvtRecent[]);
+  }
+
+  useEffect(() => {
+    if (affaire?.id) {
+      void loadStock(affaire.id);
+      void loadMvtRecent(affaire.id);
+    }
   }, [affaire?.id]);
 
   function onNotesChange(v: string) {
@@ -172,10 +251,14 @@ function AffaireDetail() {
     }
   }
 
+  const valeurConsommee = useMemo(
+    () => stockLignes.reduce((acc, l) => acc + Number(l.valeur_consommee_ht ?? 0), 0),
+    [stockLignes],
+  );
   const reliquat = useMemo(() => {
     if (!affaire?.budget_panneaux_ht) return null;
-    return affaire.budget_panneaux_ht; // placeholder — passe 4 fournira la consommation réelle
-  }, [affaire]);
+    return Number(affaire.budget_panneaux_ht) - valeurConsommee;
+  }, [affaire, valeurConsommee]);
 
   if (!ready || loading) return <AdminLoader />;
   if (!affaire) {
@@ -269,8 +352,8 @@ function AffaireDetail() {
             </Card>
             <Card className="p-6">
               <p className="eyebrow mb-2">Valeur consommée</p>
-              <p className="text-2xl font-semibold text-muted-foreground">—</p>
-              <p className="text-xs text-muted-foreground mt-1">Disponible passe Mouvements</p>
+              <p className="text-2xl font-semibold">{formatEuro(valeurConsommee)}</p>
+              <p className="text-xs text-muted-foreground mt-1">Sorties valorisées au CUMP</p>
             </Card>
             <Card className="p-6">
               <p className="eyebrow mb-2">Reliquat budget</p>
@@ -289,18 +372,88 @@ function AffaireDetail() {
           </Card>
 
           <Card className="p-6">
-            <p className="eyebrow mb-3">Activité récente</p>
-            <p className="text-sm text-muted-foreground">
-              Les activités apparaîtront ici une fois la passe Mouvements livrée.
-            </p>
+            <div className="flex items-center justify-between mb-3">
+              <p className="eyebrow">Activité récente</p>
+              <Link to="/mouvements" className="link-arrow text-xs">Voir tous →</Link>
+            </div>
+            {mvtRecent.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Aucun mouvement sur cette affaire.</p>
+            ) : (
+              <ul className="divide-y divide-border">
+                {mvtRecent.map((m) => (
+                  <li key={m.id} className="py-2 flex items-center justify-between gap-3 text-sm">
+                    <div className="min-w-0 flex items-center gap-3">
+                      <TypeMouvementBadge value={m.type} />
+                      <span className="truncate">
+                        <span className="font-mono text-xs px-1.5 py-0.5 rounded bg-muted mr-1.5">{m.panneau?.matiere?.code}</span>
+                        <span className="text-muted-foreground">{m.panneau?.matiere?.libelle} · {m.panneau?.longueur_mm}×{m.panneau?.largeur_mm}</span>
+                      </span>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <div className={Number(m.quantite) < 0 ? "text-rose-700 font-medium" : "text-emerald-700 font-medium"}>
+                        {Number(m.quantite) > 0 ? "+" : ""}{formatNumber(Number(m.quantite), 2)}
+                      </div>
+                      <div className="text-xs text-muted-foreground">{formatDateTimeFr(m.created_at)}</div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </Card>
         </TabsContent>
 
         {/* Onglet Stock alloué */}
-        <TabsContent value="stock" className="mt-8">
-          <Card className="p-12 text-center text-sm text-muted-foreground">
-            Les panneaux mouvementés sur cette affaire apparaîtront ici dès que la passe Mouvements sera livrée.
-            <br />Colonnes prévues : Référence panneau, Quantité entrée, Quantité sortie, Reliquat, Valeur consommée au CUMP.
+        <TabsContent value="stock" className="mt-8 space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">{stockLignes.length} référence(s) mouvementée(s)</p>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => setMvtMode("entree")}>
+                <ArrowDownToLine className="h-4 w-4" /> Entrée
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setMvtMode("sortie")}>
+                <ArrowUpFromLine className="h-4 w-4" /> Sortie
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setMvtMode("correction")}>
+                <Wrench className="h-4 w-4" /> Correction
+              </Button>
+            </div>
+          </div>
+          <Card className="overflow-hidden p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Matière</TableHead>
+                  <TableHead>Dimensions</TableHead>
+                  <TableHead className="text-right">Qté entrée</TableHead>
+                  <TableHead className="text-right">Qté sortie</TableHead>
+                  <TableHead className="text-right">Reliquat</TableHead>
+                  <TableHead className="text-right">CUMP courant</TableHead>
+                  <TableHead className="text-right">Valeur consommée HT</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {stockLignes.length === 0 ? (
+                  <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Aucun panneau mouvementé sur cette affaire</TableCell></TableRow>
+                ) : (
+                  stockLignes.map((l, idx) => (
+                    <TableRow key={l.panneau_id ?? idx} className={idx % 2 === 1 ? "bg-[#FAFAFA]" : ""}>
+                      <TableCell>
+                        <span className="font-mono text-xs px-2 py-0.5 rounded bg-muted mr-2">{l.panneau?.matiere?.code ?? "—"}</span>
+                        <span className="text-muted-foreground">{l.panneau?.matiere?.libelle ?? "—"}</span>
+                      </TableCell>
+                      <TableCell className="font-mono text-xs whitespace-nowrap">
+                        {l.panneau ? `${l.panneau.longueur_mm}×${l.panneau.largeur_mm}` : "—"}
+                      </TableCell>
+                      <TableCell className="text-right text-emerald-700">{formatNumber(Number(l.qte_entree ?? 0), 2)}</TableCell>
+                      <TableCell className="text-right text-rose-700">{formatNumber(Number(l.qte_sortie ?? 0), 2)}</TableCell>
+                      <TableCell className="text-right font-medium">{formatNumber(Number(l.reliquat ?? 0), 2)}</TableCell>
+                      <TableCell className="text-right text-muted-foreground">{l.panneau?.cump_ht !== null && l.panneau?.cump_ht !== undefined ? formatEuro(Number(l.panneau.cump_ht)) : "—"}</TableCell>
+                      <TableCell className="text-right font-medium">{formatEuro(Number(l.valeur_consommee_ht ?? 0))}</TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
           </Card>
         </TabsContent>
 
@@ -409,6 +562,20 @@ function AffaireDetail() {
         onOpenChange={setInviteOpen}
         affaireId={affaire.id}
         onCreated={() => void loadAcces(affaire.id)}
+      />
+      <MouvementDialog
+        open={mvtMode !== null}
+        onOpenChange={(v) => { if (!v) setMvtMode(null); }}
+        mode={mvtMode ?? "sortie"}
+        presetAffaireId={affaire.id}
+        isAdmin={profile?.role === "admin"}
+        userId={user?.id ?? null}
+        onCreated={() => {
+          if (affaire) {
+            void loadStock(affaire.id);
+            void loadMvtRecent(affaire.id);
+          }
+        }}
       />
     </div>
   );

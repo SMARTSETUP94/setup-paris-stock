@@ -234,6 +234,11 @@ function DashboardPage() {
     },
   ];
 
+  // Les utilisateurs mobile sont redirigés vers le scanner — après tous les hooks.
+  if (isMobile) {
+    return <Navigate to="/scan" replace />;
+  }
+
   return (
     <div className="max-w-6xl space-y-16 md:space-y-24">
       {/* Hero éditorial — style Setup Paris */}

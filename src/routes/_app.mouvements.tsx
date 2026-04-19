@@ -398,7 +398,7 @@ function MouvementsPage() {
                       {r.panneau ? `${r.panneau.longueur_mm}×${r.panneau.largeur_mm}` : "—"}
                     </TableCell>
                     <TableCell
-                      className={`text-right font-medium ${Number(r.quantite) < 0 ? "text-rose-700" : "text-emerald-700"}`}
+                      className={`text-right font-medium ${Number(r.quantite) < 0 ? "text-destructive" : "text-success"}`}
                     >
                       {Number(r.quantite) > 0 ? "+" : ""}
                       {formatNumber(Number(r.quantite), 2)}

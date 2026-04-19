@@ -103,6 +103,10 @@ function InventairePage() {
 
   useEffect(() => { if (ready) void load(); }, [ready]);
 
+  // Stock temps réel : recharge le catalogue à chaque nouveau mouvement
+  useStockRealtime(() => { void load(); }, ready);
+
+
   const filtered = useMemo(() => {
     const t = debQ.trim().toLowerCase();
     return items.filter((p) => {

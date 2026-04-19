@@ -116,6 +116,8 @@ function UsersTab() {
   const [loading, setLoading] = useState(true);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<UserRow | null>(null);
+  const [confirmRole, setConfirmRole] = useState<{ user: UserRow; newRole: AppRole } | null>(null);
+  const [updatingRole, setUpdatingRole] = useState(false);
 
   async function refresh() {
     setLoading(true);

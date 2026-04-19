@@ -284,7 +284,7 @@ function DashboardPage() {
               <h2 className="font-display text-lg font-semibold tracking-tight">Alertes seuil bas</h2>
             </div>
             <Link to="/inventaire" className="link-arrow text-xs">
-              Voir l'inventaire →
+              Voir tout l'inventaire →
             </Link>
           </div>
           {loadingData ? (
@@ -328,7 +328,7 @@ function DashboardPage() {
               <h2 className="font-display text-lg font-semibold tracking-tight">Top affaires</h2>
             </div>
             <Link to="/affaires" className="link-arrow text-xs">
-              Voir toutes →
+              Voir toutes les affaires →
             </Link>
           </div>
           {loadingData ? (

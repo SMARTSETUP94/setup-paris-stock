@@ -1,6 +1,5 @@
-import * as XLSX from "xlsx";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+// xlsx (~800 kB) et jspdf (~150 kB) chargés à la demande : ces fonctions
+// sont déclenchées par un clic utilisateur, le `await import` est invisible.
 import { typeMeta } from "@/lib/mouvements";
 
 export type MouvementExport = {

@@ -19,11 +19,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Loader2, Camera, AlertCircle, Search, QrCode, Package } from "lucide-react";
+import { Loader2, Camera, AlertCircle, Search, QrCode, Package, Layers } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { listPanneauxPublic, type PanneauSearchResult } from "@/lib/scan.functions";
 import { BrandingLogo } from "@/components/BrandingLogo";
 import { useBranding } from "@/hooks/useBranding";
+import { CascadeSelector } from "@/components/scan/CascadeSelector";
 
 export const Route = createFileRoute("/scan/")({
   head: () => ({

@@ -1,5 +1,10 @@
 import Papa from "papaparse";
-import * as XLSX from "xlsx";
+
+// xlsx (~800 kB) chargé à la demande pour ne pas alourdir le bundle initial.
+// Les deux helpers ci-dessous sont déjà async ou appelés sur action utilisateur.
+async function loadXLSX() {
+  return await import("xlsx");
+}
 
 export type ImportRowStatus = "new" | "duplicate" | "error" | "update";
 
@@ -25,6 +30,7 @@ export async function parseFile(file: File): Promise<Record<string, string>[]> {
     });
   }
   if (ext === "xlsx" || ext === "xls") {
+    const XLSX = await loadXLSX();
     const buffer = await file.arrayBuffer();
     const wb = XLSX.read(buffer, { type: "array" });
     const sheet = wb.Sheets[wb.SheetNames[0]];
@@ -33,7 +39,11 @@ export async function parseFile(file: File): Promise<Record<string, string>[]> {
   throw new Error(`Format non supporté : ${ext}`);
 }
 
-export function exportXLSX<T extends Record<string, unknown>>(rows: T[], filename: string) {
+export async function exportXLSX<T extends Record<string, unknown>>(
+  rows: T[],
+  filename: string,
+) {
+  const XLSX = await loadXLSX();
   const ws = XLSX.utils.json_to_sheet(rows);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Export");

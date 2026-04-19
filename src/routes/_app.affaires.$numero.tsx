@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Copy, Edit, MoreHorizontal, Plus, Trash2, Archive, RefreshCw, Ban } from "lucide-react";
+import { Copy, Edit, MoreHorizontal, Plus, Trash2, Archive, RefreshCw, Ban, ArrowDownToLine, ArrowUpFromLine, Wrench } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAdminGuard, AdminLoader } from "@/hooks/useAdminGuard";
+import { useAuth } from "@/hooks/useAuth";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,8 +20,10 @@ import {
 import { StatutBadge } from "@/components/StatutBadge";
 import { AffaireFormDialog } from "@/components/AffaireFormDialog";
 import { InviteTiersDialog } from "@/components/InviteTiersDialog";
-import { formatDateFr, permissionLabel, buildInvitationLink } from "@/lib/affaires";
-import { formatEuro } from "@/lib/familles";
+import { MouvementDialog } from "@/components/MouvementDialog";
+import { TypeMouvementBadge } from "@/components/TypeMouvementBadge";
+import { formatDateFr, formatDateTimeFr, permissionLabel, buildInvitationLink } from "@/lib/affaires";
+import { formatEuro, formatNumber } from "@/lib/familles";
 import type { Database } from "@/integrations/supabase/types";
 
 type Affaire = Database["public"]["Tables"]["affaires"]["Row"] & {
@@ -28,6 +31,32 @@ type Affaire = Database["public"]["Tables"]["affaires"]["Row"] & {
   client?: { nom: string; actif: boolean } | null;
 };
 type Acces = Database["public"]["Tables"]["affaire_acces"]["Row"];
+
+type StockLigne = {
+  panneau_id: string | null;
+  matiere_id: string | null;
+  qte_entree: number | null;
+  qte_sortie: number | null;
+  reliquat: number | null;
+  surface_m2_totale: number | null;
+  valeur_consommee_ht: number | null;
+  panneau?: {
+    longueur_mm: number;
+    largeur_mm: number;
+    cump_ht: number | null;
+    matiere?: { code: string; libelle: string; unite_stock: string } | null;
+  } | null;
+};
+
+type MvtRecent = {
+  id: string;
+  created_at: string;
+  type: string;
+  quantite: number;
+  valeur_ligne_ht: number | null;
+  commentaire: string | null;
+  panneau?: { longueur_mm: number; largeur_mm: number; matiere?: { code: string; libelle: string } | null } | null;
+};
 
 export const Route = createFileRoute("/_app/affaires/$numero")({
   head: () => ({ meta: [{ title: "Affaire — Setup Stock" }] }),

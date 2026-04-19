@@ -7,8 +7,6 @@ import {
   Plus,
   Trash2,
   Archive,
-  RefreshCw,
-  Ban,
   ArrowDownToLine,
   ArrowUpFromLine,
   Wrench,
@@ -49,14 +47,11 @@ import {
 import { StatutBadge } from "@/components/StatutBadge";
 import { AffaireFormDialog } from "@/components/AffaireFormDialog";
 import { BudgetProgressCard } from "@/components/BudgetProgressCard";
-import { InviteTiersDialog } from "@/components/InviteTiersDialog";
 import { MouvementDialog } from "@/components/MouvementDialog";
 import { TypeMouvementBadge } from "@/components/TypeMouvementBadge";
 import {
   formatDateFr,
   formatDateTimeFr,
-  permissionLabel,
-  buildInvitationLink,
 } from "@/lib/affaires";
 import { formatEuro, formatNumber } from "@/lib/familles";
 import type { Database } from "@/integrations/supabase/types";
@@ -64,7 +59,6 @@ import type { Database } from "@/integrations/supabase/types";
 type Affaire = Database["public"]["Tables"]["affaires"]["Row"] & {
   charge?: { nom_complet: string | null; email: string } | null;
 };
-type Acces = Database["public"]["Tables"]["affaire_acces"]["Row"];
 
 type StockLigne = {
   panneau_id: string | null;
@@ -109,8 +103,6 @@ function AffaireDetail() {
   const [affaire, setAffaire] = useState<Affaire | null>(null);
   const [loading, setLoading] = useState(true);
   const [editOpen, setEditOpen] = useState(false);
-  const [accesList, setAccesList] = useState<Acces[]>([]);
-  const [inviteOpen, setInviteOpen] = useState(false);
   const [notes, setNotes] = useState("");
   const notesTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [stockLignes, setStockLignes] = useState<StockLigne[]>([]);
@@ -134,22 +126,9 @@ function AffaireDetail() {
     setLoading(false);
   }
 
-  async function loadAcces(id: string) {
-    const { data } = await supabase
-      .from("affaire_acces")
-      .select("*")
-      .eq("affaire_id", id)
-      .order("created_at", { ascending: false });
-    setAccesList((data as Acces[]) ?? []);
-  }
-
   useEffect(() => {
     if (ready) void loadAffaire();
   }, [ready, code]);
-
-  useEffect(() => {
-    if (affaire?.id) void loadAcces(affaire.id);
-  }, [affaire?.id]);
 
   async function loadStock(id: string) {
     const { data: cons } = await supabase
@@ -221,38 +200,6 @@ function AffaireDetail() {
       const { error } = await supabase.from("affaires").update({ notes: v }).eq("id", affaire.id);
       if (error) toast.error("Sauvegarde notes impossible");
     }, 1000);
-  }
-
-  async function copyLink(token: string) {
-    try {
-      await navigator.clipboard.writeText(buildInvitationLink(token));
-      toast.success("Lien copié");
-    } catch {
-      toast.error("Impossible de copier");
-    }
-  }
-
-  async function extendAcces(a: Acces) {
-    const newDate = new Date(a.expire_le);
-    newDate.setDate(newDate.getDate() + 30);
-    const { error } = await supabase
-      .from("affaire_acces")
-      .update({ expire_le: newDate.toISOString() })
-      .eq("id", a.id);
-    if (error) toast.error(error.message);
-    else {
-      toast.success("Expiration prolongée de 30 jours");
-      if (affaire) void loadAcces(affaire.id);
-    }
-  }
-
-  async function revokeAcces(a: Acces) {
-    const { error } = await supabase.from("affaire_acces").delete().eq("id", a.id);
-    if (error) toast.error(error.message);
-    else {
-      toast.success("Accès révoqué");
-      if (affaire) void loadAcces(affaire.id);
-    }
   }
 
   async function archiverAffaire() {
@@ -424,7 +371,6 @@ function AffaireDetail() {
             { v: "apercu", l: "Aperçu" },
             { v: "stock", l: "Stock alloué" },
             { v: "bdc", l: "BDC" },
-            { v: "acces", l: "Lien externe" },
           ].map((t) => (
             <TabsTrigger
               key={t.v}
@@ -605,128 +551,6 @@ function AffaireDetail() {
             </div>
           </Card>
         </TabsContent>
-
-        {/* Onglet Lien externe (lecture seule pour client/fournisseur) */}
-        <TabsContent value="acces" className="mt-8 space-y-4">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">
-                {accesList.length} lien(s) de visualisation externe
-              </p>
-              <p className="text-xs text-muted-foreground/80 mt-1 max-w-2xl">
-                Génère un lien en lecture seule à partager (client, fournisseur, sous-traitant) pour
-                consulter le stock alloué et la consommation. Les sorties atelier passent par le
-                scan QR.
-              </p>
-            </div>
-            <Button onClick={() => setInviteOpen(true)}>
-              <Plus className="h-4 w-4" /> Nouveau lien
-            </Button>
-          </div>
-          <Card className="overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Permissions</TableHead>
-                  <TableHead>Expire le</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {accesList.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                      Aucune invitation
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  accesList.map((a, idx) => {
-                    const actif = new Date(a.expire_le).getTime() > Date.now();
-                    return (
-                      <TableRow key={a.id} className={idx % 2 === 1 ? "bg-[#FAFAFA]" : ""}>
-                        <TableCell className="font-medium">{a.email_invite}</TableCell>
-                        <TableCell>
-                          <span
-                            className="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium"
-                            style={{ color: "#2F5BFF", backgroundColor: "rgba(47,91,255,0.10)" }}
-                          >
-                            {permissionLabel(a.permissions)}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {formatDateFr(a.expire_le)}
-                        </TableCell>
-                        <TableCell>
-                          {actif ? (
-                            <span
-                              className="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium"
-                              style={{ color: "#166534", backgroundColor: "rgba(22,101,52,0.10)" }}
-                            >
-                              Actif
-                            </span>
-                          ) : (
-                            <span
-                              className="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium"
-                              style={{
-                                color: "#6B7280",
-                                backgroundColor: "rgba(107,114,128,0.10)",
-                              }}
-                            >
-                              Expiré
-                            </span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="inline-flex gap-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => copyLink(a.token)}
-                              title="Copier le lien"
-                            >
-                              <Copy className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => extendAcces(a)}
-                              title="Prolonger +30j"
-                            >
-                              <RefreshCw className="h-4 w-4" />
-                            </Button>
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button variant="ghost" size="sm" title="Révoquer">
-                                  <Ban className="h-4 w-4 text-destructive" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Révoquer cet accès ?</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Le lien magique cessera immédiatement de fonctionner.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Annuler</AlertDialogCancel>
-                                  <AlertDialogAction onClick={() => revokeAcces(a)}>
-                                    Révoquer
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
-          </Card>
-        </TabsContent>
       </Tabs>
 
       <AffaireFormDialog
@@ -740,12 +564,6 @@ function AffaireDetail() {
             void loadAffaire();
           }
         }}
-      />
-      <InviteTiersDialog
-        open={inviteOpen}
-        onOpenChange={setInviteOpen}
-        affaireId={affaire.id}
-        onCreated={() => void loadAcces(affaire.id)}
       />
       <MouvementDialog
         open={mvtMode !== null}

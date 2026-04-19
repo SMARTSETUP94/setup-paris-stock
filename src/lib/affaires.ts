@@ -1,7 +1,6 @@
 import type { Database } from "@/integrations/supabase/types";
 
 export type StatutAffaire = Database["public"]["Enums"]["statut_affaire"];
-export type PermissionAcces = Database["public"]["Enums"]["permission_acces"];
 
 export const STATUTS: { value: StatutAffaire; label: string; color: string; bg: string }[] = [
   { value: "devis", label: "Devis", color: "#6B7280", bg: "rgba(107,114,128,0.10)" },
@@ -12,23 +11,6 @@ export const STATUTS: { value: StatutAffaire; label: string; color: string; bg: 
 
 export function statutMeta(value: StatutAffaire | string | null | undefined) {
   return STATUTS.find((s) => s.value === value) ?? STATUTS[0];
-}
-
-// NOTE : depuis le retrait du module tiers mobile, seul "lecture" est exposé dans
-// l'UI. L'enum DB conserve "sortie" et "entree_sortie" pour pouvoir réactiver le
-// flow plus tard sans migration. Les sorties terrain passent désormais par le
-// scan QR atelier (voir src/routes/scan.$panneauId.tsx).
-export const PERMISSIONS: { value: PermissionAcces; label: string; description: string }[] = [
-  {
-    value: "lecture",
-    label: "Lecture seule",
-    description:
-      "Partage en consultation : le destinataire voit le stock alloué et la consommation.",
-  },
-];
-
-export function permissionLabel(value: PermissionAcces | string | null | undefined) {
-  return PERMISSIONS.find((p) => p.value === value)?.label ?? String(value ?? "");
 }
 
 /**
@@ -76,8 +58,10 @@ export function formatDateTimeFr(value: string | null | undefined) {
 }
 
 export function buildInvitationLink(token: string) {
-  if (typeof window === "undefined") return `/tiers/acces?token=${token}`;
-  return `${window.location.origin}/tiers/acces?token=${token}`;
+  // Conservé pour compatibilité mais le système d'invitation par lien externe
+  // a été retiré. Cette fonction n'est plus appelée nulle part dans l'UI.
+  if (typeof window === "undefined") return `/?token=${token}`;
+  return `${window.location.origin}/?token=${token}`;
 }
 
 /**

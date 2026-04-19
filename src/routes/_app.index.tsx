@@ -73,15 +73,17 @@ type TopAffaire = {
 
 function DashboardPage() {
   const { profile, loading: authLoading } = useAuth();
-  const isAdmin = profile?.role === "admin";
   const navigate = useNavigate();
+  const isStaff = profile?.role === "admin" || profile?.role === "magasinier";
+  const isAdmin = profile?.role === "admin";
 
-  // Redirige les tiers vers /mes-acces : ils n'ont pas accès aux KPIs globaux
+  // Les utilisateurs mobile sont redirigés vers le scanner.
   useEffect(() => {
-    if (!authLoading && profile && profile.role !== "admin") {
-      navigate({ to: "/mes-acces", replace: true });
+    if (authLoading) return;
+    if (profile?.role === "mobile") {
+      navigate({ to: "/scan", replace: true });
     }
-  }, [authLoading, profile, navigate]);
+  }, [authLoading, profile?.role, navigate]);
 
   const [kpis, setKpis] = useState<{
     affaires_en_cours: number | null;
@@ -199,17 +201,17 @@ function DashboardPage() {
   }
 
   useEffect(() => {
-    if (authLoading || !isAdmin) return;
+    if (authLoading || !isStaff) return;
     void loadDashboard();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, isAdmin]);
+  }, [authLoading, isStaff]);
 
   // Mise à jour temps réel : recharge sur nouveau mouvement
   useStockRealtime(
     () => {
       void loadDashboard();
     },
-    isAdmin && !authLoading,
+    isStaff && !authLoading,
     600,
   );
 

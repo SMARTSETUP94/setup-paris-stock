@@ -198,7 +198,8 @@ function MouvementsPage() {
 
   if (!ready) return <AdminLoader />;
 
-  const isAdmin = profile?.role === "admin";
+  // Admin et magasinier ont les mêmes droits sur les mouvements (création de corrections, etc.)
+  const isAdmin = profile?.role === "admin" || profile?.role === "magasinier";
 
   function openCorrection(r: Row) {
     const qte = Number(r.quantite);

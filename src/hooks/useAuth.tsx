@@ -2,11 +2,13 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
+export type AppRole = "admin" | "magasinier" | "mobile";
+
 type Profile = {
   id: string;
   email: string;
   nom_complet: string | null;
-  role: "admin" | "tiers";
+  role: AppRole;
   actif: boolean;
 };
 

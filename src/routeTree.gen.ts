@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as InviteRouteImport } from './routes/invite'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as ScanIndexRouteImport } from './routes/scan.index'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
@@ -38,6 +39,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InviteRoute = InviteRouteImport.update({
+  id: '/invite',
+  path: '/invite',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppRoute = AppRouteImport.update({
@@ -132,6 +138,7 @@ const AppAffairesCodeRoute = AppAffairesCodeRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
+  '/invite': typeof InviteRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/affaires': typeof AppAffairesRouteWithChildren
@@ -152,6 +159,7 @@ export interface FileRoutesByFullPath {
   '/catalogue/': typeof AppCatalogueIndexRoute
 }
 export interface FileRoutesByTo {
+  '/invite': typeof InviteRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/bdc': typeof AppBdcRouteWithChildren
@@ -174,6 +182,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
+  '/invite': typeof InviteRoute
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_app/affaires': typeof AppAffairesRouteWithChildren
@@ -198,6 +207,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/invite'
     | '/login'
     | '/reset-password'
     | '/affaires'
@@ -218,6 +228,7 @@ export interface FileRouteTypes {
     | '/catalogue/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/invite'
     | '/login'
     | '/reset-password'
     | '/bdc'
@@ -239,6 +250,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_app'
+    | '/invite'
     | '/login'
     | '/reset-password'
     | '/_app/affaires'
@@ -262,6 +274,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
+  InviteRoute: typeof InviteRoute
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ScanPanneauIdRoute: typeof ScanPanneauIdRoute
@@ -282,6 +295,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/invite': {
+      id: '/invite'
+      path: '/invite'
+      fullPath: '/invite'
+      preLoaderRoute: typeof InviteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app': {
@@ -472,6 +492,7 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
+  InviteRoute: InviteRoute,
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ScanPanneauIdRoute: ScanPanneauIdRoute,

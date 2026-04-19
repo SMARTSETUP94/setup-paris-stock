@@ -426,32 +426,33 @@ function DashboardPage() {
 
       {hasData === false && (
         <section className="space-y-8">
-          <div className="flex items-end justify-between gap-4">
-            <div className="space-y-2">
-              <p className="eyebrow">Modules</p>
-              <h2 className="text-2xl md:text-3xl">Pour démarrer</h2>
-              <p className="text-sm text-muted-foreground max-w-2xl">
-                Ces 4 modules constituent le cœur de l'application. Commence par le catalogue pour
-                référencer tes matières et tes panneaux.
-              </p>
-            </div>
+          <div className="space-y-3">
+            <p className="section-marker">— 06 · Modules</p>
+            <h2 className="text-3xl md:text-4xl tracking-tight">Pour démarrer</h2>
+            <p className="text-sm text-muted-foreground max-w-2xl">
+              Ces 4 modules constituent le cœur de l'application. Commence par le catalogue pour
+              référencer tes matières et tes panneaux.
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-border rounded-2xl overflow-hidden border border-border">
             {sections.map((s) => (
-              <Link key={s.num} to={s.to}>
-                <Card className="p-6 hover:bg-muted/40 transition-colors cursor-pointer h-full">
-                  <div className="flex items-start gap-6">
-                    <span className="font-display text-3xl text-muted-foreground/70">{s.num}</span>
-                    <div className="space-y-1">
-                      <h3 className="text-lg flex items-center gap-2">
-                        {s.title}
-                        <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                      </h3>
-                      <p className="text-sm text-muted-foreground">{s.desc}</p>
-                    </div>
-                  </div>
-                </Card>
+              <Link
+                key={s.num}
+                to={s.to}
+                className="relative bg-card p-8 hover:bg-muted/40 transition-all cursor-pointer group overflow-hidden"
+              >
+                <span className="editorial-number absolute -top-2 -right-3 text-[120px] select-none pointer-events-none">
+                  {s.num}
+                </span>
+                <div className="relative">
+                  <p className="section-marker mb-3">— {s.num}</p>
+                  <h3 className="font-display text-2xl md:text-3xl tracking-tight flex items-center gap-2 mb-2">
+                    {s.title}
+                    <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:translate-x-1 group-hover:text-primary transition-all" />
+                  </h3>
+                  <p className="text-sm text-muted-foreground max-w-xs">{s.desc}</p>
+                </div>
               </Link>
             ))}
           </div>

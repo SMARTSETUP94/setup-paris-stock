@@ -67,6 +67,7 @@ function AffaireDetail() {
   const { numero } = Route.useParams();
   const navigate = useNavigate();
   const { ready } = useAdminGuard();
+  const { user, profile } = useAuth();
   const [affaire, setAffaire] = useState<Affaire | null>(null);
   const [loading, setLoading] = useState(true);
   const [editOpen, setEditOpen] = useState(false);
@@ -74,6 +75,9 @@ function AffaireDetail() {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [notes, setNotes] = useState("");
   const notesTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [stockLignes, setStockLignes] = useState<StockLigne[]>([]);
+  const [mvtRecent, setMvtRecent] = useState<MvtRecent[]>([]);
+  const [mvtMode, setMvtMode] = useState<"entree" | "sortie" | "correction" | null>(null);
 
   async function loadAffaire() {
     setLoading(true);
@@ -107,6 +111,43 @@ function AffaireDetail() {
 
   useEffect(() => {
     if (affaire?.id) void loadAcces(affaire.id);
+  }, [affaire?.id]);
+
+  async function loadStock(id: string) {
+    const { data } = await supabase
+      .from("consommation_par_affaire")
+      .select(`
+        panneau_id, matiere_id, qte_entree, qte_sortie, reliquat, surface_m2_totale, valeur_consommee_ht,
+        panneau:panneaux!consommation_par_affaire_panneau_id_fkey(
+          longueur_mm, largeur_mm, cump_ht,
+          matiere:matieres!panneaux_matiere_id_fkey(code, libelle, unite_stock)
+        )
+      `)
+      .eq("affaire_id", id);
+    setStockLignes(((data ?? []) as unknown) as StockLigne[]);
+  }
+
+  async function loadMvtRecent(id: string) {
+    const { data } = await supabase
+      .from("mouvements_stock")
+      .select(`
+        id, created_at, type, quantite, valeur_ligne_ht, commentaire,
+        panneau:panneaux!mouvements_stock_panneau_id_fkey(
+          longueur_mm, largeur_mm,
+          matiere:matieres!panneaux_matiere_id_fkey(code, libelle)
+        )
+      `)
+      .eq("affaire_id", id)
+      .order("created_at", { ascending: false })
+      .limit(10);
+    setMvtRecent(((data ?? []) as unknown) as MvtRecent[]);
+  }
+
+  useEffect(() => {
+    if (affaire?.id) {
+      void loadStock(affaire.id);
+      void loadMvtRecent(affaire.id);
+    }
   }, [affaire?.id]);
 
   function onNotesChange(v: string) {

@@ -27,7 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, CheckCircle2, AlertCircle, ArrowLeft, ScanLine } from "lucide-react";
+import { Loader2, CheckCircle2, AlertCircle, ArrowLeft, ScanLine, Plus, Minus } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/scan/$panneauId")({

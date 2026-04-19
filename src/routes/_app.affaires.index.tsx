@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Plus, Search, Upload, AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminGuard, AdminLoader, useDebounced } from "@/hooks/useAdminGuard";
 import { PageHeader } from "@/components/PageHeader";
@@ -9,11 +10,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { StatutBadge } from "@/components/StatutBadge";
 import { AffaireFormDialog } from "@/components/AffaireFormDialog";
 import { AffairesImportDialog } from "@/components/AffairesImportDialog";
-import { STATUTS, formatDateFr } from "@/lib/affaires";
+import { STATUTS } from "@/lib/affaires";
 import type { Database } from "@/integrations/supabase/types";
+
+type StatutAffaire = Database["public"]["Enums"]["statut_affaire"];
 
 type Affaire = Database["public"]["Tables"]["affaires"]["Row"] & {
   charge?: { nom_complet: string | null; email: string } | null;

@@ -188,7 +188,7 @@ function UsersTab() {
     try {
       const redirectTo =
         typeof window !== "undefined" ? `${window.location.origin}/reset-password` : undefined;
-      await resendInvitation({ data: { email: u.email, redirectTo } });
+      await resendInvitationFn({ data: { email: u.email, redirectTo } });
       toast.success("Email envoyé", {
         description: "Un lien de réinitialisation a été envoyé.",
       });

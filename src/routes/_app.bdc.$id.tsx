@@ -8,9 +8,24 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, ArrowLeft, RefreshCw, X, Trash2, Check as CheckIcon, AlertTriangle } from "lucide-react";
+import {
+  Loader2,
+  ArrowLeft,
+  RefreshCw,
+  X,
+  Trash2,
+  Check as CheckIcon,
+  AlertTriangle,
+} from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { ChevronsUpDown, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -18,7 +33,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { StatutBdcBadge } from "@/components/StatutBdcBadge";
 import { confidenceMeta } from "@/lib/bdc";
 import { formatEuro } from "@/lib/familles";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useServerFn } from "@tanstack/react-start";
 import { ocrBdc } from "@/lib/bdc-ocr.functions";
 
@@ -87,7 +111,9 @@ function BdcDetailPage() {
     const [bRes, lRes, pRes, fRes, aRes] = await Promise.all([
       supabase.from("bons_de_commande").select("*").eq("id", id).maybeSingle(),
       supabase.from("bdc_lignes").select("*").eq("bdc_id", id).order("id"),
-      supabase.from("catalogue_visible").select("id, matiere_code, matiere_libelle, longueur_mm, largeur_mm, cump_ht"),
+      supabase
+        .from("catalogue_visible")
+        .select("id, matiere_code, matiere_libelle, longueur_mm, largeur_mm, cump_ht"),
       supabase.from("fournisseurs").select("id, nom").order("nom"),
       supabase.from("affaires").select("id, code_chantier, nom").order("code_chantier"),
     ]);
@@ -105,20 +131,24 @@ function BdcDetailPage() {
     }
 
     // Extract confidences from extraction_brute_json
-    const raw = bRes.data?.extraction_brute_json as
-      | { document?: { inference?: { prediction?: { line_items?: { confidence?: number | null }[] } } } }
-      | null;
+    const raw = bRes.data?.extraction_brute_json as {
+      document?: { inference?: { prediction?: { line_items?: { confidence?: number | null }[] } } };
+    } | null;
     const items = raw?.document?.inference?.prediction?.line_items;
     if (Array.isArray(items)) {
       const map: Record<number, number | null> = {};
-      items.forEach((it, i) => { map[i] = it?.confidence ?? null; });
+      items.forEach((it, i) => {
+        map[i] = it?.confidence ?? null;
+      });
       setConfidenceByLigne(map);
     }
 
     setLoading(false);
   }
 
-  useEffect(() => { if (ready) load(); }, [ready, id]);
+  useEffect(() => {
+    if (ready) load();
+  }, [ready, id]);
 
   // Realtime: when statut switches to ocr_termine, reload lignes
   useEffect(() => {
@@ -128,10 +158,14 @@ function BdcDetailPage() {
       .on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "bons_de_commande", filter: `id=eq.${id}` },
-        () => { void load(); },
+        () => {
+          void load();
+        },
       )
       .subscribe();
-    return () => { void supabase.removeChannel(channel); };
+    return () => {
+      void supabase.removeChannel(channel);
+    };
   }, [ready, id]);
 
   function updateLigne(ligneId: string, patch: Partial<LigneRow>) {
@@ -162,7 +196,10 @@ function BdcDetailPage() {
   }
 
   const totalCalcule = useMemo(
-    () => lignes.filter((l) => l.ligne_validee).reduce((s, l) => s + Number(l.quantite) * Number(l.prix_unitaire_ht), 0),
+    () =>
+      lignes
+        .filter((l) => l.ligne_validee)
+        .reduce((s, l) => s + Number(l.quantite) * Number(l.prix_unitaire_ht), 0),
     [lignes],
   );
 
@@ -170,7 +207,14 @@ function BdcDetailPage() {
     ? Math.abs((totalCalcule - Number(bdc.montant_ht_total)) / Number(bdc.montant_ht_total))
     : 0;
 
-  async function handleHeaderUpdate(patch: Partial<Pick<BdcDetail, "fournisseur_id" | "numero_bdc" | "date_bdc" | "affaire_id" | "montant_ht_total">>) {
+  async function handleHeaderUpdate(
+    patch: Partial<
+      Pick<
+        BdcDetail,
+        "fournisseur_id" | "numero_bdc" | "date_bdc" | "affaire_id" | "montant_ht_total"
+      >
+    >,
+  ) {
     if (!bdc) return;
     setBdc({ ...bdc, ...patch });
     const { error } = await supabase.from("bons_de_commande").update(patch).eq("id", id);
@@ -287,7 +331,10 @@ function BdcDetailPage() {
         description={`Statut : ${bdc.statut}`}
         actions={
           <Button variant="outline" asChild>
-            <Link to="/bdc"><ArrowLeft className="h-4 w-4 mr-2" />Retour</Link>
+            <Link to="/bdc">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Retour
+            </Link>
           </Button>
         }
       />
@@ -298,7 +345,9 @@ function BdcDetailPage() {
             <Loader2 className="h-5 w-5 animate-spin text-primary" />
             <div>
               <p className="font-medium text-foreground">OCR en cours…</p>
-              <p className="text-sm text-muted-foreground">L'analyse Mindee prend 10 à 30 secondes. Cette page se met à jour automatiquement.</p>
+              <p className="text-sm text-muted-foreground">
+                L'analyse Mindee prend 10 à 30 secondes. Cette page se met à jour automatiquement.
+              </p>
             </div>
           </div>
         </Card>
@@ -310,7 +359,9 @@ function BdcDetailPage() {
           {pdfUrl ? (
             <iframe src={pdfUrl} title="PDF BDC" className="w-full h-full border-0" />
           ) : (
-            <div className="h-full grid place-content-center text-muted-foreground text-sm">PDF indisponible</div>
+            <div className="h-full grid place-content-center text-muted-foreground text-sm">
+              PDF indisponible
+            </div>
           )}
         </Card>
 
@@ -367,7 +418,12 @@ function BdcDetailPage() {
                   step="0.01"
                   value={bdc.montant_ht_total ?? ""}
                   disabled={isReadOnly}
-                  onChange={(e) => setBdc({ ...bdc, montant_ht_total: e.target.value === "" ? null : Number(e.target.value) })}
+                  onChange={(e) =>
+                    setBdc({
+                      ...bdc,
+                      montant_ht_total: e.target.value === "" ? null : Number(e.target.value),
+                    })
+                  }
                   onBlur={() => handleHeaderUpdate({ montant_ht_total: bdc.montant_ht_total })}
                 />
               </div>
@@ -379,7 +435,9 @@ function BdcDetailPage() {
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-semibold">Lignes ({lignes.length})</h2>
               {!isReadOnly && (
-                <Button size="sm" variant="outline" onClick={addLigneVide}>+ Ajouter une ligne</Button>
+                <Button size="sm" variant="outline" onClick={addLigneVide}>
+                  + Ajouter une ligne
+                </Button>
               )}
             </div>
 
@@ -409,7 +467,10 @@ function BdcDetailPage() {
                       const valeur = Number(l.quantite) * Number(l.prix_unitaire_ht);
                       return (
                         <tr key={l.id} className="border-b border-border last:border-0 align-top">
-                          <td className="px-3 py-3 text-xs text-muted-foreground max-w-[180px] truncate" title={l.matiere_libelle_brut ?? ""}>
+                          <td
+                            className="px-3 py-3 text-xs text-muted-foreground max-w-[180px] truncate"
+                            title={l.matiere_libelle_brut ?? ""}
+                          >
                             {l.matiere_libelle_brut ?? "—"}
                           </td>
                           <td className="px-3 py-2 min-w-[220px]">
@@ -417,7 +478,10 @@ function BdcDetailPage() {
                               panneaux={panneaux}
                               value={l.panneau_id}
                               disabled={isReadOnly}
-                              onChange={(v) => { updateLigne(l.id, { panneau_id: v }); void handleSaveLigne({ ...l, panneau_id: v }); }}
+                              onChange={(v) => {
+                                updateLigne(l.id, { panneau_id: v });
+                                void handleSaveLigne({ ...l, panneau_id: v });
+                              }}
                             />
                           </td>
                           <td className="px-3 py-2 w-20">
@@ -427,7 +491,9 @@ function BdcDetailPage() {
                               className="h-8 text-right"
                               value={l.quantite}
                               disabled={isReadOnly}
-                              onChange={(e) => updateLigne(l.id, { quantite: Number(e.target.value) })}
+                              onChange={(e) =>
+                                updateLigne(l.id, { quantite: Number(e.target.value) })
+                              }
                               onBlur={() => handleSaveLigne(l)}
                             />
                           </td>
@@ -438,13 +504,20 @@ function BdcDetailPage() {
                               className="h-8 text-right"
                               value={l.prix_unitaire_ht}
                               disabled={isReadOnly}
-                              onChange={(e) => updateLigne(l.id, { prix_unitaire_ht: Number(e.target.value) })}
+                              onChange={(e) =>
+                                updateLigne(l.id, { prix_unitaire_ht: Number(e.target.value) })
+                              }
                               onBlur={() => handleSaveLigne(l)}
                             />
                           </td>
-                          <td className="px-3 py-3 text-right font-mono text-xs">{formatEuro(valeur)}</td>
+                          <td className="px-3 py-3 text-right font-mono text-xs">
+                            {formatEuro(valeur)}
+                          </td>
                           <td className="px-3 py-3 text-center">
-                            <span className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium" style={{ color: cm.color, backgroundColor: cm.bg }}>
+                            <span
+                              className="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium"
+                              style={{ color: cm.color, backgroundColor: cm.bg }}
+                            >
                               {cm.label}
                             </span>
                           </td>
@@ -452,12 +525,19 @@ function BdcDetailPage() {
                             <Checkbox
                               checked={l.ligne_validee}
                               disabled={isReadOnly || !l.panneau_id}
-                              onCheckedChange={(v) => { updateLigne(l.id, { ligne_validee: !!v }); void handleSaveLigne({ ...l, ligne_validee: !!v }); }}
+                              onCheckedChange={(v) => {
+                                updateLigne(l.id, { ligne_validee: !!v });
+                                void handleSaveLigne({ ...l, ligne_validee: !!v });
+                              }}
                             />
                           </td>
                           <td className="px-3 py-2 text-right">
                             {!isReadOnly && (
-                              <Button variant="ghost" size="sm" onClick={() => deleteLigneInDb(l.id)}>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => deleteLigneInDb(l.id)}
+                              >
                                 <Trash2 className="h-3.5 w-3.5" />
                               </Button>
                             )}
@@ -468,11 +548,19 @@ function BdcDetailPage() {
                   </tbody>
                   <tfoot>
                     <tr className="border-t-2 border-border">
-                      <td colSpan={4} className="px-3 py-3 text-right text-xs text-muted-foreground">Total des lignes cochées</td>
-                      <td className="px-3 py-3 text-right font-semibold">{formatEuro(totalCalcule)}</td>
+                      <td
+                        colSpan={4}
+                        className="px-3 py-3 text-right text-xs text-muted-foreground"
+                      >
+                        Total des lignes cochées
+                      </td>
+                      <td className="px-3 py-3 text-right font-semibold">
+                        {formatEuro(totalCalcule)}
+                      </td>
                       <td colSpan={3} className="px-3 py-3">
-                        {bdc.montant_ht_total !== null && totalCalcule > 0 && (
-                          ecartTotal > 0.05 ? (
+                        {bdc.montant_ht_total !== null &&
+                          totalCalcule > 0 &&
+                          (ecartTotal > 0.05 ? (
                             <span className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium bg-destructive/10 text-destructive">
                               <AlertTriangle className="h-3 w-3" />
                               Écart {(ecartTotal * 100).toFixed(1)}%
@@ -486,8 +574,7 @@ function BdcDetailPage() {
                             <span className="inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-medium bg-success/10 text-success">
                               <CheckIcon className="h-3 w-3" /> OK
                             </span>
-                          )
-                        )}
+                          ))}
                       </td>
                     </tr>
                   </tfoot>
@@ -500,7 +587,11 @@ function BdcDetailPage() {
           {!isReadOnly && (
             <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
               <Button variant="outline" onClick={handleRelaunchOcr} disabled={reocrLoading}>
-                {reocrLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+                {reocrLoading ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                )}
                 Relancer l'OCR
               </Button>
               <Button variant="outline" onClick={() => setConfirmCancel(true)}>
@@ -520,7 +611,8 @@ function BdcDetailPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Annuler ce BDC ?</AlertDialogTitle>
             <AlertDialogDescription>
-              Le statut passera à « Annulé » et aucune entrée de stock ne sera créée. Action réversible manuellement.
+              Le statut passera à « Annulé » et aucune entrée de stock ne sera créée. Action
+              réversible manuellement.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -536,14 +628,27 @@ function BdcDetailPage() {
 // --- Pickers ---
 
 function FournisseurPicker({
-  fournisseurs, value, disabled, onChange,
-}: { fournisseurs: Fournisseur[]; value: string; disabled?: boolean; onChange: (v: string) => void }) {
+  fournisseurs,
+  value,
+  disabled,
+  onChange,
+}: {
+  fournisseurs: Fournisseur[];
+  value: string;
+  disabled?: boolean;
+  onChange: (v: string) => void;
+}) {
   const [open, setOpen] = useState(false);
   const sel = fournisseurs.find((f) => f.id === value) ?? null;
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button type="button" variant="outline" className="w-full justify-between font-normal" disabled={disabled}>
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full justify-between font-normal"
+          disabled={disabled}
+        >
           <span className={cn("truncate", !sel && "text-muted-foreground")}>{sel?.nom ?? "—"}</span>
           <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
         </Button>
@@ -555,8 +660,17 @@ function FournisseurPicker({
             <CommandEmpty>Aucun</CommandEmpty>
             <CommandGroup>
               {fournisseurs.map((f) => (
-                <CommandItem key={f.id} value={f.nom} onSelect={() => { onChange(f.id); setOpen(false); }}>
-                  <Check className={cn("mr-2 h-4 w-4", value === f.id ? "opacity-100" : "opacity-0")} />
+                <CommandItem
+                  key={f.id}
+                  value={f.nom}
+                  onSelect={() => {
+                    onChange(f.id);
+                    setOpen(false);
+                  }}
+                >
+                  <Check
+                    className={cn("mr-2 h-4 w-4", value === f.id ? "opacity-100" : "opacity-0")}
+                  />
                   {f.nom}
                 </CommandItem>
               ))}
@@ -569,16 +683,36 @@ function FournisseurPicker({
 }
 
 function AffairePicker({
-  affaires, value, disabled, onChange,
-}: { affaires: Affaire[]; value: string | null; disabled?: boolean; onChange: (v: string | null) => void }) {
+  affaires,
+  value,
+  disabled,
+  onChange,
+}: {
+  affaires: Affaire[];
+  value: string | null;
+  disabled?: boolean;
+  onChange: (v: string | null) => void;
+}) {
   const [open, setOpen] = useState(false);
   const sel = affaires.find((a) => a.id === value) ?? null;
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button type="button" variant="outline" className="w-full justify-between font-normal" disabled={disabled}>
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full justify-between font-normal"
+          disabled={disabled}
+        >
           <span className={cn("truncate", !sel && "text-muted-foreground")}>
-            {sel ? <><span className="font-mono text-xs mr-2">{sel.code_chantier}</span>{sel.nom}</> : "— Aucune"}
+            {sel ? (
+              <>
+                <span className="font-mono text-xs mr-2">{sel.code_chantier}</span>
+                {sel.nom}
+              </>
+            ) : (
+              "— Aucune"
+            )}
           </span>
           <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
         </Button>
@@ -589,13 +723,28 @@ function AffairePicker({
           <CommandList>
             <CommandEmpty>Aucune</CommandEmpty>
             <CommandGroup>
-              <CommandItem value="__none__" onSelect={() => { onChange(null); setOpen(false); }}>
+              <CommandItem
+                value="__none__"
+                onSelect={() => {
+                  onChange(null);
+                  setOpen(false);
+                }}
+              >
                 <Check className={cn("mr-2 h-4 w-4", !value ? "opacity-100" : "opacity-0")} />
                 <span className="text-muted-foreground">— Aucune</span>
               </CommandItem>
               {affaires.map((a) => (
-                <CommandItem key={a.id} value={`${a.code_chantier} ${a.nom}`} onSelect={() => { onChange(a.id); setOpen(false); }}>
-                  <Check className={cn("mr-2 h-4 w-4", value === a.id ? "opacity-100" : "opacity-0")} />
+                <CommandItem
+                  key={a.id}
+                  value={`${a.code_chantier} ${a.nom}`}
+                  onSelect={() => {
+                    onChange(a.id);
+                    setOpen(false);
+                  }}
+                >
+                  <Check
+                    className={cn("mr-2 h-4 w-4", value === a.id ? "opacity-100" : "opacity-0")}
+                  />
                   <span className="font-mono text-xs mr-2">{a.code_chantier}</span>
                   <span className="truncate">{a.nom}</span>
                 </CommandItem>
@@ -609,22 +758,40 @@ function AffairePicker({
 }
 
 function PanneauPicker({
-  panneaux, value, disabled, onChange,
-}: { panneaux: PanneauOption[]; value: string | null; disabled?: boolean; onChange: (v: string | null) => void }) {
+  panneaux,
+  value,
+  disabled,
+  onChange,
+}: {
+  panneaux: PanneauOption[];
+  value: string | null;
+  disabled?: boolean;
+  onChange: (v: string | null) => void;
+}) {
   const [open, setOpen] = useState(false);
   const sel = panneaux.find((p) => p.id === value) ?? null;
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button type="button" variant="outline" size="sm" className="w-full h-8 justify-between font-normal text-xs" disabled={disabled}>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="w-full h-8 justify-between font-normal text-xs"
+          disabled={disabled}
+        >
           <span className={cn("truncate", !sel && "text-muted-foreground")}>
             {sel ? (
               <>
                 <span className="font-mono mr-1">{sel.matiere_code}</span>
                 <span>{sel.matiere_libelle}</span>
-                <span className="text-muted-foreground ml-1">({sel.longueur_mm}×{sel.largeur_mm})</span>
+                <span className="text-muted-foreground ml-1">
+                  ({sel.longueur_mm}×{sel.largeur_mm})
+                </span>
               </>
-            ) : "— À sélectionner"}
+            ) : (
+              "— À sélectionner"
+            )}
           </span>
           <ChevronsUpDown className="ml-2 h-3.5 w-3.5 opacity-50" />
         </Button>
@@ -635,7 +802,13 @@ function PanneauPicker({
           <CommandList>
             <CommandEmpty>Aucun panneau</CommandEmpty>
             <CommandGroup>
-              <CommandItem value="__none__" onSelect={() => { onChange(null); setOpen(false); }}>
+              <CommandItem
+                value="__none__"
+                onSelect={() => {
+                  onChange(null);
+                  setOpen(false);
+                }}
+              >
                 <Check className={cn("mr-2 h-4 w-4", !value ? "opacity-100" : "opacity-0")} />
                 <span className="text-muted-foreground">— Aucun</span>
               </CommandItem>
@@ -643,12 +816,19 @@ function PanneauPicker({
                 <CommandItem
                   key={p.id}
                   value={`${p.matiere_code} ${p.matiere_libelle} ${p.longueur_mm}x${p.largeur_mm}`}
-                  onSelect={() => { onChange(p.id); setOpen(false); }}
+                  onSelect={() => {
+                    onChange(p.id);
+                    setOpen(false);
+                  }}
                 >
-                  <Check className={cn("mr-2 h-4 w-4", value === p.id ? "opacity-100" : "opacity-0")} />
+                  <Check
+                    className={cn("mr-2 h-4 w-4", value === p.id ? "opacity-100" : "opacity-0")}
+                  />
                   <span className="font-mono text-xs mr-2">{p.matiere_code}</span>
                   <span className="flex-1 truncate">{p.matiere_libelle}</span>
-                  <span className="text-xs text-muted-foreground ml-2">{p.longueur_mm}×{p.largeur_mm}</span>
+                  <span className="text-xs text-muted-foreground ml-2">
+                    {p.longueur_mm}×{p.largeur_mm}
+                  </span>
                 </CommandItem>
               ))}
             </CommandGroup>

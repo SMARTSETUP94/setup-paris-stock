@@ -111,6 +111,9 @@ function MouvementsPage() {
     if (ready) void loadAffairesOpts();
   }, [ready]);
 
+  // Stock temps réel : recharge la liste à chaque nouveau mouvement
+  useStockRealtime(() => { void load(); }, ready);
+
   const filtered = useMemo(() => {
     const ql = dq.trim().toLowerCase();
     if (!ql) return rows;

@@ -8,6 +8,7 @@ import { useStockRealtime } from "@/hooks/useStockRealtime";
 import { formatEuro, formatNumber } from "@/lib/familles";
 import { formatDateTimeFr } from "@/lib/affaires";
 import { TypeMouvementBadge } from "@/components/TypeMouvementBadge";
+import { DashboardConsoChart } from "@/components/dashboard/DashboardConsoChart";
 
 export const Route = createFileRoute("/_app/")({
   head: () => ({

@@ -246,16 +246,50 @@ function ScanSortiePage() {
                 </Button>
               ) : null}
             </div>
-            <Input
-              id="qte"
-              type="number"
-              inputMode="decimal"
-              step="0.01"
-              min="0"
-              value={quantite}
-              onChange={(e) => setQuantite(e.target.value)}
-              className="mt-1.5 text-lg"
-            />
+            <div className="mt-1.5 flex items-stretch gap-2">
+              {panneau.matiere?.unite_stock === "m2" && panneau.longueur_mm && panneau.largeur_mm ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-12 w-12 shrink-0 p-0"
+                  aria-label="Retirer 1 panneau"
+                  onClick={() => {
+                    const surface = (panneau.longueur_mm * panneau.largeur_mm) / 1_000_000;
+                    const current = Number(quantite.replace(",", ".")) || 0;
+                    const next = Math.max(0, current - surface);
+                    setQuantite(next === 0 ? "0" : next.toFixed(2).replace(/\.?0+$/, ""));
+                  }}
+                >
+                  <Minus className="h-4 w-4" />
+                </Button>
+              ) : null}
+              <Input
+                id="qte"
+                type="number"
+                inputMode="decimal"
+                step="0.01"
+                min="0"
+                value={quantite}
+                onChange={(e) => setQuantite(e.target.value)}
+                className="text-lg flex-1"
+              />
+              {panneau.matiere?.unite_stock === "m2" && panneau.longueur_mm && panneau.largeur_mm ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-12 w-12 shrink-0 p-0"
+                  aria-label="Ajouter 1 panneau"
+                  onClick={() => {
+                    const surface = (panneau.longueur_mm * panneau.largeur_mm) / 1_000_000;
+                    const current = Number(quantite.replace(",", ".")) || 0;
+                    const next = current + surface;
+                    setQuantite(next.toFixed(2).replace(/\.?0+$/, ""));
+                  }}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              ) : null}
+            </div>
             {panneau.matiere?.unite_stock === "m2" && panneau.longueur_mm && panneau.largeur_mm ? (
               <p className="text-[11px] text-muted-foreground mt-1">
                 1 panneau ={" "}

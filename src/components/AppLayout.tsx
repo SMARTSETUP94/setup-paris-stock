@@ -128,6 +128,10 @@ export function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const isAdmin = profile?.role === "admin";
+  const mainItems = isAdmin ? adminMainItems : tiersMainItems;
+  const mobileItems = isAdmin ? adminMobileItems : tiersMobileItems;
+
   const catalogueIsActive = location.pathname.startsWith("/catalogue");
   const [catalogueOpen, setCatalogueOpen] = useState(catalogueIsActive);
 

@@ -32,54 +32,6 @@ export type Database = {
         }
         Relationships: []
       }
-      affaire_acces: {
-        Row: {
-          affaire_id: string
-          created_at: string
-          email_invite: string
-          expire_le: string
-          id: string
-          permissions: Database["public"]["Enums"]["permission_acces"]
-          tiers_profile_id: string | null
-          token: string
-        }
-        Insert: {
-          affaire_id: string
-          created_at?: string
-          email_invite: string
-          expire_le: string
-          id?: string
-          permissions?: Database["public"]["Enums"]["permission_acces"]
-          tiers_profile_id?: string | null
-          token: string
-        }
-        Update: {
-          affaire_id?: string
-          created_at?: string
-          email_invite?: string
-          expire_le?: string
-          id?: string
-          permissions?: Database["public"]["Enums"]["permission_acces"]
-          tiers_profile_id?: string | null
-          token?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "affaire_acces_affaire_id_fkey"
-            columns: ["affaire_id"]
-            isOneToOne: false
-            referencedRelation: "affaires"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "affaire_acces_tiers_profile_id_fkey"
-            columns: ["tiers_profile_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       affaires: {
         Row: {
           adresse: string | null
@@ -715,10 +667,6 @@ export type Database = {
       }
     }
     Functions: {
-      affaires_autorisees_tiers: {
-        Args: { _user_id: string }
-        Returns: string[]
-      }
       ensure_current_profile: {
         Args: never
         Returns: {
@@ -744,6 +692,9 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_admin_or_magasinier: { Args: { _user_id: string }; Returns: boolean }
+      is_magasinier: { Args: { _user_id: string }; Returns: boolean }
+      is_mobile: { Args: { _user_id: string }; Returns: boolean }
       match_fournisseur_par_nom: {
         Args: { _nom: string; _seuil?: number }
         Returns: {
@@ -762,14 +713,6 @@ export type Database = {
           panneau_id: string
           similarity: number
         }[]
-      }
-      tiers_a_acces_affaire: {
-        Args: { _affaire_id: string; _user_id: string }
-        Returns: boolean
-      }
-      tiers_peut_ecrire_mvt: {
-        Args: { _affaire_id: string; _user_id: string }
-        Returns: boolean
       }
     }
     Enums: {

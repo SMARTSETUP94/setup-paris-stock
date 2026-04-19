@@ -170,7 +170,7 @@ function BdcDetailPage() {
     ? Math.abs((totalCalcule - Number(bdc.montant_ht_total)) / Number(bdc.montant_ht_total))
     : 0;
 
-  async function handleHeaderUpdate(patch: Partial<BdcDetail>) {
+  async function handleHeaderUpdate(patch: Partial<Pick<BdcDetail, "fournisseur_id" | "numero_bdc" | "date_bdc" | "affaire_id" | "montant_ht_total">>) {
     if (!bdc) return;
     setBdc({ ...bdc, ...patch });
     const { error } = await supabase.from("bons_de_commande").update(patch).eq("id", id);

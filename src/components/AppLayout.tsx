@@ -121,12 +121,16 @@ function SidebarSubLink({ item, active }: { item: NavItem; active: boolean }) {
 
 export function AppLayout() {
   const { profile, signOut } = useAuth();
+  const { effectiveRole } = useEffectiveRole();
   const location = useLocation();
   const navigate = useNavigate();
 
-  const role = profile?.role;
-  const isMobile = role === "mobile";
-  const showCatalogue = catalogueChildren.some((c) => canSee(c, role));
+  // Le rendu de l'UI suit le rôle EFFECTIF (preview admin), pas le rôle réel.
+  const role = (effectiveRole ?? profile?.role) as AppRole | "mobile_atelier" | undefined;
+  const isMobile = isAtelierRole(role); // mobile DB OU vue mobile_atelier
+  const navRole: AppRole | undefined =
+    role === "mobile_atelier" ? "mobile" : (role as AppRole | undefined);
+  const showCatalogue = catalogueChildren.some((c) => canSee(c, navRole));
 
   const catalogueIsActive = location.pathname.startsWith("/catalogue");
   const [catalogueOpen, setCatalogueOpen] = useState(catalogueIsActive);
@@ -161,7 +165,7 @@ export function AppLayout() {
     navigate({ to: "/login" });
   };
 
-  // Bottom-nav mobile : adapté selon le rôle.
+  // Bottom-nav mobile : adapté selon le rôle effectif.
   const mobileNav = isMobile
     ? [{ to: "/scan", label: "Scanner", icon: QrCode } as const]
     : ([

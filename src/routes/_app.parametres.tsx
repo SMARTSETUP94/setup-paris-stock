@@ -419,7 +419,7 @@ function InviteDialog({
     try {
       const redirectTo =
         typeof window !== "undefined" ? `${window.location.origin}/reset-password` : undefined;
-      await inviteUser({ data: { email, nom_complet: nomComplet, role, redirectTo } });
+      await inviteUserFn({ data: { email, nom_complet: nomComplet, role, redirectTo } });
       toast.success("Invitation envoyée", {
         description: `${email} va recevoir un email pour créer son mot de passe.`,
       });

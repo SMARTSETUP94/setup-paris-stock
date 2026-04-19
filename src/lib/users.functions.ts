@@ -25,7 +25,7 @@ async function assertAdmin(
 export const listUsers = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertAdmin((context as any).supabase, (context as any).userId);
+    await assertAdmin((context as AuthedContext).supabase, (context as AuthedContext).userId);
 
     const { data: profiles, error } = await supabaseAdmin
       .from("profiles")
@@ -80,7 +80,7 @@ export const inviteUser = createServerFn({ method: "POST" })
     };
   })
   .handler(async ({ data, context }) => {
-    await assertAdmin((context as any).supabase, (context as any).userId);
+    await assertAdmin((context as AuthedContext).supabase, (context as AuthedContext).userId);
 
     const redirectTo =
       data.redirectTo ?? `${process.env.SITE_URL ?? ""}/reset-password`;
@@ -117,7 +117,7 @@ export const resendInvitation = createServerFn({ method: "POST" })
     return { email, redirectTo: input.redirectTo?.trim() || null };
   })
   .handler(async ({ data, context }) => {
-    await assertAdmin((context as any).supabase, (context as any).userId);
+    await assertAdmin((context as AuthedContext).supabase, (context as AuthedContext).userId);
 
     const redirectTo =
       data.redirectTo ?? `${process.env.SITE_URL ?? ""}/reset-password`;
@@ -139,8 +139,8 @@ export const setUserActive = createServerFn({ method: "POST" })
     return { user_id: input.user_id, actif: !!input.actif };
   })
   .handler(async ({ data, context }) => {
-    await assertAdmin((context as any).supabase, (context as any).userId);
-    if (data.user_id === (context as any).userId && !data.actif) {
+    await assertAdmin((context as AuthedContext).supabase, (context as AuthedContext).userId);
+    if (data.user_id === (context as AuthedContext).userId && !data.actif) {
       throw new Error("Vous ne pouvez pas vous désactiver vous-même");
     }
 
@@ -167,8 +167,8 @@ export const setUserRole = createServerFn({ method: "POST" })
     return { user_id: input.user_id, role: input.role };
   })
   .handler(async ({ data, context }) => {
-    await assertAdmin((context as any).supabase, (context as any).userId);
-    if (data.user_id === (context as any).userId && data.role !== "admin") {
+    await assertAdmin((context as AuthedContext).supabase, (context as AuthedContext).userId);
+    if (data.user_id === (context as AuthedContext).userId && data.role !== "admin") {
       throw new Error("Vous ne pouvez pas vous retirer le rôle admin vous-même");
     }
 
@@ -187,8 +187,8 @@ export const deleteUser = createServerFn({ method: "POST" })
     return { user_id: input.user_id };
   })
   .handler(async ({ data, context }) => {
-    await assertAdmin((context as any).supabase, (context as any).userId);
-    if (data.user_id === (context as any).userId) {
+    await assertAdmin((context as AuthedContext).supabase, (context as AuthedContext).userId);
+    if (data.user_id === (context as AuthedContext).userId) {
       throw new Error("Vous ne pouvez pas supprimer votre propre compte");
     }
 

@@ -186,7 +186,7 @@ function PanneauxPage() {
       matiere_libelle: p.matiere_libelle,
       typologie: p.typo_nom,
       variante: p.matiere_variante,
-      epaisseur_mm: p.matiere_epaisseur,
+      epaisseur_mm: p.epaisseur_mm,
       famille: p.famille,
       longueur_mm: p.longueur_mm,
       largeur_mm: p.largeur_mm,
@@ -387,7 +387,7 @@ function PanneauxPage() {
           onClose={() => { setImporting(false); void fetchData(); }}
           title="Importer des panneaux"
           description="CSV/XLSX. La matière doit déjà exister (par code)."
-          expectedColumns={["matiere_code", "longueur_mm", "largeur_mm"]}
+          expectedColumns={["matiere_code", "longueur_mm", "largeur_mm", "epaisseur_mm"]}
           validateRow={async (raw) => {
             const errors: string[] = [];
             const matCode = String(raw.matiere_code ?? "").trim();
@@ -398,15 +398,23 @@ function PanneauxPage() {
             if (!Number.isFinite(lon) || lon <= 0) errors.push("Longueur invalide");
             const lar = Number(String(raw.largeur_mm ?? "").replace(",", "."));
             if (!Number.isFinite(lar) || lar <= 0) errors.push("Largeur invalide");
+            const ep = Number(String(raw.epaisseur_mm ?? "").replace(",", "."));
+            if (!Number.isFinite(ep) || ep <= 0) errors.push("Épaisseur invalide");
             const prixRaw = String(raw.prix_achat_ht ?? "").replace(",", ".");
             const prix = prixRaw ? Number(prixRaw) : null;
             const refF = String(raw.reference_fournisseur ?? "").trim() || null;
-            const isDuplicate = matiere ? items.some((p) => p.matiere_id === matiere.id && p.longueur_mm === Math.round(lon) && p.largeur_mm === Math.round(lar)) : false;
+            const isDuplicate = matiere ? items.some((p) =>
+              p.matiere_id === matiere.id
+              && p.longueur_mm === Math.round(lon)
+              && p.largeur_mm === Math.round(lar)
+              && p.epaisseur_mm === Math.round(ep),
+            ) : false;
             return {
               data: errors.length || !matiere ? null : {
                 matiere_id: matiere.id,
                 longueur_mm: Math.round(lon),
                 largeur_mm: Math.round(lar),
+                epaisseur_mm: Math.round(ep),
                 prix_achat_ht: prix,
                 reference_fournisseur: refF,
                 _matiere_code: matCode,
@@ -419,6 +427,7 @@ function PanneauxPage() {
             { key: "matiere_code", label: "Matière" },
             { key: "longueur_mm", label: "Longueur" },
             { key: "largeur_mm", label: "Largeur" },
+            { key: "epaisseur_mm", label: "Ép. (mm)" },
             { key: "prix_achat_ht", label: "Prix HT" },
             { key: "reference_fournisseur", label: "Réf. fournisseur" },
           ]}
@@ -431,7 +440,8 @@ function PanneauxPage() {
                 const { error } = await supabase.from("panneaux").update(payload)
                   .eq("matiere_id", payload.matiere_id)
                   .eq("longueur_mm", payload.longueur_mm)
-                  .eq("largeur_mm", payload.largeur_mm);
+                  .eq("largeur_mm", payload.largeur_mm)
+                  .eq("epaisseur_mm", payload.epaisseur_mm);
                 if (error) errors++; else updated++;
               } else if (r.action === "create") {
                 const { error } = await supabase.from("panneaux").insert(payload);
@@ -466,6 +476,7 @@ function PanneauDialog({
     matiere_id: panneau?.matiere_id ?? "",
     longueur_mm: panneau?.longueur_mm ?? 0,
     largeur_mm: panneau?.largeur_mm ?? 0,
+    epaisseur_mm: panneau?.epaisseur_mm ?? 0,
     prix_achat_ht: panneau?.prix_achat_ht ?? null,
     reference_fournisseur: panneau?.reference_fournisseur ?? "",
     actif: panneau?.actif ?? true,
@@ -488,8 +499,8 @@ function PanneauDialog({
   }, [matieres, familleFilter, typoFilter]);
 
   async function handleSave() {
-    if (!form.matiere_id || !form.longueur_mm || !form.largeur_mm) {
-      toast.error("Matière et dimensions sont requis");
+    if (!form.matiere_id || !form.longueur_mm || !form.largeur_mm || !form.epaisseur_mm) {
+      toast.error("Matière, dimensions et épaisseur sont requis");
       return;
     }
     setSaving(true);
@@ -544,7 +555,7 @@ function PanneauDialog({
             </Select>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <div className="space-y-2">
               <Label>Longueur (mm) *</Label>
               <Input type="number" value={form.longueur_mm || ""} onChange={(e) => setForm({ ...form, longueur_mm: Number(e.target.value) })} />
@@ -552,6 +563,10 @@ function PanneauDialog({
             <div className="space-y-2">
               <Label>Largeur (mm) *</Label>
               <Input type="number" value={form.largeur_mm || ""} onChange={(e) => setForm({ ...form, largeur_mm: Number(e.target.value) })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Épaisseur (mm) *</Label>
+              <Input type="number" value={form.epaisseur_mm || ""} onChange={(e) => setForm({ ...form, epaisseur_mm: Number(e.target.value) })} />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">

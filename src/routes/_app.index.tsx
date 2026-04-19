@@ -75,11 +75,7 @@ function DashboardPage() {
   const { profile, loading: authLoading } = useAuth();
   const isStaff = profile?.role === "admin" || profile?.role === "magasinier";
   const isAdmin = profile?.role === "admin";
-
-  // Les utilisateurs mobile sont redirigés vers le scanner — synchrone, avant tout rendu.
-  if (!authLoading && profile?.role === "mobile") {
-    return <Navigate to="/scan" replace />;
-  }
+  const isMobile = !authLoading && profile?.role === "mobile";
 
   const [kpis, setKpis] = useState<{
     affaires_en_cours: number | null;

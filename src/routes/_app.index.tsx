@@ -195,7 +195,6 @@ function DashboardPage() {
   useEffect(() => {
     if (authLoading || !isStaff) return;
     void loadDashboard();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, isStaff]);
 
   // Mise à jour temps réel : recharge sur nouveau mouvement

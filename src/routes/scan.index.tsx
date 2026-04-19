@@ -163,13 +163,17 @@ function ScanPage() {
       <main className="flex-1 flex flex-col items-center p-4 gap-4">
         <Tabs
           value={tab}
-          onValueChange={(v) => setTab(v as "scan" | "search")}
+          onValueChange={(v) => setTab(v as "scan" | "cascade" | "search")}
           className="w-full max-w-md"
         >
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="scan">
               <QrCode className="h-3.5 w-3.5 mr-1.5" />
               Scanner
+            </TabsTrigger>
+            <TabsTrigger value="cascade">
+              <Layers className="h-3.5 w-3.5 mr-1.5" />
+              Choisir
             </TabsTrigger>
             <TabsTrigger value="search">
               <Search className="h-3.5 w-3.5 mr-1.5" />

@@ -241,6 +241,10 @@ function ScanPage() {
             </p>
           </TabsContent>
 
+          <TabsContent value="cascade" className="mt-4">
+            <CascadeSelector />
+          </TabsContent>
+
           <TabsContent value="search" className="mt-4 space-y-3">
             <Card className="p-4 space-y-3">
               <div className="flex items-center gap-2 text-sm font-medium">

@@ -372,18 +372,88 @@ function AffaireDetail() {
           </Card>
 
           <Card className="p-6">
-            <p className="eyebrow mb-3">Activité récente</p>
-            <p className="text-sm text-muted-foreground">
-              Les activités apparaîtront ici une fois la passe Mouvements livrée.
-            </p>
+            <div className="flex items-center justify-between mb-3">
+              <p className="eyebrow">Activité récente</p>
+              <Link to="/mouvements" className="link-arrow text-xs">Voir tous →</Link>
+            </div>
+            {mvtRecent.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Aucun mouvement sur cette affaire.</p>
+            ) : (
+              <ul className="divide-y divide-border">
+                {mvtRecent.map((m) => (
+                  <li key={m.id} className="py-2 flex items-center justify-between gap-3 text-sm">
+                    <div className="min-w-0 flex items-center gap-3">
+                      <TypeMouvementBadge value={m.type} />
+                      <span className="truncate">
+                        <span className="font-mono text-xs px-1.5 py-0.5 rounded bg-muted mr-1.5">{m.panneau?.matiere?.code}</span>
+                        <span className="text-muted-foreground">{m.panneau?.matiere?.libelle} · {m.panneau?.longueur_mm}×{m.panneau?.largeur_mm}</span>
+                      </span>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <div className={Number(m.quantite) < 0 ? "text-rose-700 font-medium" : "text-emerald-700 font-medium"}>
+                        {Number(m.quantite) > 0 ? "+" : ""}{formatNumber(Number(m.quantite), 2)}
+                      </div>
+                      <div className="text-xs text-muted-foreground">{formatDateTimeFr(m.created_at)}</div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </Card>
         </TabsContent>
 
         {/* Onglet Stock alloué */}
-        <TabsContent value="stock" className="mt-8">
-          <Card className="p-12 text-center text-sm text-muted-foreground">
-            Les panneaux mouvementés sur cette affaire apparaîtront ici dès que la passe Mouvements sera livrée.
-            <br />Colonnes prévues : Référence panneau, Quantité entrée, Quantité sortie, Reliquat, Valeur consommée au CUMP.
+        <TabsContent value="stock" className="mt-8 space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">{stockLignes.length} référence(s) mouvementée(s)</p>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => setMvtMode("entree")}>
+                <ArrowDownToLine className="h-4 w-4" /> Entrée
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setMvtMode("sortie")}>
+                <ArrowUpFromLine className="h-4 w-4" /> Sortie
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setMvtMode("correction")}>
+                <Wrench className="h-4 w-4" /> Correction
+              </Button>
+            </div>
+          </div>
+          <Card className="overflow-hidden p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Matière</TableHead>
+                  <TableHead>Dimensions</TableHead>
+                  <TableHead className="text-right">Qté entrée</TableHead>
+                  <TableHead className="text-right">Qté sortie</TableHead>
+                  <TableHead className="text-right">Reliquat</TableHead>
+                  <TableHead className="text-right">CUMP courant</TableHead>
+                  <TableHead className="text-right">Valeur consommée HT</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {stockLignes.length === 0 ? (
+                  <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Aucun panneau mouvementé sur cette affaire</TableCell></TableRow>
+                ) : (
+                  stockLignes.map((l, idx) => (
+                    <TableRow key={l.panneau_id ?? idx} className={idx % 2 === 1 ? "bg-[#FAFAFA]" : ""}>
+                      <TableCell>
+                        <span className="font-mono text-xs px-2 py-0.5 rounded bg-muted mr-2">{l.panneau?.matiere?.code ?? "—"}</span>
+                        <span className="text-muted-foreground">{l.panneau?.matiere?.libelle ?? "—"}</span>
+                      </TableCell>
+                      <TableCell className="font-mono text-xs whitespace-nowrap">
+                        {l.panneau ? `${l.panneau.longueur_mm}×${l.panneau.largeur_mm}` : "—"}
+                      </TableCell>
+                      <TableCell className="text-right text-emerald-700">{formatNumber(Number(l.qte_entree ?? 0), 2)}</TableCell>
+                      <TableCell className="text-right text-rose-700">{formatNumber(Number(l.qte_sortie ?? 0), 2)}</TableCell>
+                      <TableCell className="text-right font-medium">{formatNumber(Number(l.reliquat ?? 0), 2)}</TableCell>
+                      <TableCell className="text-right text-muted-foreground">{l.panneau?.cump_ht !== null && l.panneau?.cump_ht !== undefined ? formatEuro(Number(l.panneau.cump_ht)) : "—"}</TableCell>
+                      <TableCell className="text-right font-medium">{formatEuro(Number(l.valeur_consommee_ht ?? 0))}</TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
           </Card>
         </TabsContent>
 

@@ -334,15 +334,23 @@ function DashboardPage() {
 
         {/* Top 5 affaires par consommation */}
         <Card className="p-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
             <div className="flex items-center gap-2">
               <span className="section-marker">— 05</span>
               <TrendingUp className="h-4 w-4 text-primary" />
               <h2 className="font-display text-lg font-semibold tracking-tight">Top affaires</h2>
             </div>
-            <Link to="/affaires" className="link-arrow text-xs">
-              Voir toutes les affaires →
-            </Link>
+            <div className="flex items-center gap-3">
+              {isAdmin && (
+                <Button size="sm" variant="outline" onClick={() => setOpenNewAffaire(true)}>
+                  <Plus className="h-3.5 w-3.5 mr-1" />
+                  Nouvelle affaire
+                </Button>
+              )}
+              <Link to="/affaires" className="link-arrow text-xs">
+                Voir toutes les affaires →
+              </Link>
+            </div>
           </div>
           {loadingData ? (
             <p className="text-sm text-muted-foreground">Chargement…</p>

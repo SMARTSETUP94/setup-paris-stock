@@ -357,18 +357,25 @@ function MouvementsPage() {
                 <TableHead className="text-right">Valeur HT</TableHead>
                 <TableHead>Opérateur</TableHead>
                 <TableHead>Commentaire</TableHead>
+                {isAdmin && <TableHead className="text-right">Actions</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={11} className="text-center py-10 text-muted-foreground">
+                  <TableCell
+                    colSpan={isAdmin ? 12 : 11}
+                    className="text-center py-10 text-muted-foreground"
+                  >
                     Chargement…
                   </TableCell>
                 </TableRow>
               ) : filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={11} className="text-center py-10 text-muted-foreground">
+                  <TableCell
+                    colSpan={isAdmin ? 12 : 11}
+                    className="text-center py-10 text-muted-foreground"
+                  >
                     Aucun mouvement
                   </TableCell>
                 </TableRow>
@@ -421,6 +428,22 @@ function MouvementsPage() {
                     <TableCell className="text-xs text-muted-foreground truncate max-w-[200px]">
                       {r.commentaire ?? ""}
                     </TableCell>
+                    {isAdmin && (
+                      <TableCell className="text-right">
+                        {r.type !== "correction" && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 px-2 text-xs"
+                            onClick={() => openCorrection(r)}
+                            title="Créer un mouvement de correction inverse"
+                          >
+                            <Wrench className="h-3.5 w-3.5 mr-1" />
+                            Corriger
+                          </Button>
+                        )}
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))
               )}
@@ -436,9 +459,13 @@ function MouvementsPage() {
       <MouvementDialog
         open={openMode !== null}
         onOpenChange={(v) => {
-          if (!v) setOpenMode(null);
+          if (!v) {
+            setOpenMode(null);
+            setPrefill(null);
+          }
         }}
         mode={openMode ?? "entree"}
+        prefill={prefill}
         isAdmin={isAdmin}
         userId={user?.id ?? null}
         onCreated={() => void load()}

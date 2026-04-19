@@ -155,6 +155,13 @@ export type Database = {
             foreignKeyName: "bdc_lignes_panneau_id_fkey"
             columns: ["panneau_id"]
             isOneToOne: false
+            referencedRelation: "catalogue_visible"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bdc_lignes_panneau_id_fkey"
+            columns: ["panneau_id"]
+            isOneToOne: false
             referencedRelation: "panneaux"
             referencedColumns: ["id"]
           },
@@ -365,6 +372,13 @@ export type Database = {
             foreignKeyName: "mouvements_stock_panneau_id_fkey"
             columns: ["panneau_id"]
             isOneToOne: false
+            referencedRelation: "catalogue_visible"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mouvements_stock_panneau_id_fkey"
+            columns: ["panneau_id"]
+            isOneToOne: false
             referencedRelation: "panneaux"
             referencedColumns: ["id"]
           },
@@ -372,6 +386,8 @@ export type Database = {
       }
       panneaux: {
         Row: {
+          actif: boolean
+          auto_masque_si_zero: boolean
           created_at: string
           id: string
           largeur_mm: number
@@ -382,6 +398,8 @@ export type Database = {
           surface_m2: number | null
         }
         Insert: {
+          actif?: boolean
+          auto_masque_si_zero?: boolean
           created_at?: string
           id?: string
           largeur_mm: number
@@ -392,6 +410,8 @@ export type Database = {
           surface_m2?: number | null
         }
         Update: {
+          actif?: boolean
+          auto_masque_si_zero?: boolean
           created_at?: string
           id?: string
           largeur_mm?: number
@@ -440,6 +460,35 @@ export type Database = {
       }
     }
     Views: {
+      catalogue_visible: {
+        Row: {
+          actif: boolean | null
+          auto_masque_si_zero: boolean | null
+          created_at: string | null
+          famille: Database["public"]["Enums"]["famille_matiere"] | null
+          id: string | null
+          largeur_mm: number | null
+          longueur_mm: number | null
+          matiere_code: string | null
+          matiere_id: string | null
+          matiere_libelle: string | null
+          prix_achat_ht: number | null
+          reference_fournisseur: string | null
+          seuil_alerte: number | null
+          stock_actuel: number | null
+          surface_m2: number | null
+          unite_stock: Database["public"]["Enums"]["unite_stock"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "panneaux_matiere_id_fkey"
+            columns: ["matiere_id"]
+            isOneToOne: false
+            referencedRelation: "matieres"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       consommation_par_affaire: {
         Row: {
           affaire_id: string | null
@@ -471,6 +520,13 @@ export type Database = {
           quantite_actuelle: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "mouvements_stock_panneau_id_fkey"
+            columns: ["panneau_id"]
+            isOneToOne: false
+            referencedRelation: "catalogue_visible"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "mouvements_stock_panneau_id_fkey"
             columns: ["panneau_id"]
@@ -507,13 +563,11 @@ export type Database = {
       app_role: "admin" | "tiers"
       famille_matiere:
         | "bois"
-        | "metal"
-        | "mousse"
-        | "carton"
-        | "dibond"
         | "pvc"
-        | "forex"
-        | "plexi"
+        | "carton"
+        | "dibond_tole"
+        | "pmma"
+        | "mousse"
         | "autre"
       permission_acces: "lecture" | "sortie" | "entree_sortie"
       statut_affaire: "devis" | "en_cours" | "termine" | "archive"
@@ -524,7 +578,16 @@ export type Database = {
         | "recu"
         | "annule"
       type_mouvement: "entree" | "sortie" | "correction" | "chute_reintegration"
-      unite_stock: "panneau" | "m2" | "ml" | "piece"
+      unite_stock:
+        | "panneau"
+        | "m2"
+        | "ml"
+        | "piece"
+        | "kg"
+        | "m3"
+        | "boite"
+        | "cartouche"
+        | "autre"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -655,20 +718,28 @@ export const Constants = {
       app_role: ["admin", "tiers"],
       famille_matiere: [
         "bois",
-        "metal",
-        "mousse",
-        "carton",
-        "dibond",
         "pvc",
-        "forex",
-        "plexi",
+        "carton",
+        "dibond_tole",
+        "pmma",
+        "mousse",
         "autre",
       ],
       permission_acces: ["lecture", "sortie", "entree_sortie"],
       statut_affaire: ["devis", "en_cours", "termine", "archive"],
       statut_bdc: ["en_attente_ocr", "ocr_termine", "valide", "recu", "annule"],
       type_mouvement: ["entree", "sortie", "correction", "chute_reintegration"],
-      unite_stock: ["panneau", "m2", "ml", "piece"],
+      unite_stock: [
+        "panneau",
+        "m2",
+        "ml",
+        "piece",
+        "kg",
+        "m3",
+        "boite",
+        "cartouche",
+        "autre",
+      ],
     },
   },
 } as const

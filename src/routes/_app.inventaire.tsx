@@ -40,7 +40,8 @@ import {
   Check,
 } from "lucide-react";
 import { toast } from "sonner";
-import { FAMILLES, formatNumber, uniteLabel, type Famille } from "@/lib/familles";
+import { formatNumber, uniteLabel, type Famille } from "@/lib/familles";
+import { useFamilles } from "@/hooks/useFamilles";
 import { useStockRealtime } from "@/hooks/useStockRealtime";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -88,6 +89,7 @@ function saveSession(c: Counts) {
 function InventairePage() {
   const { ready } = useAdminGuard();
   const { user } = useAuth();
+  const { familles } = useFamilles();
   const [items, setItems] = useState<CatRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
@@ -284,7 +286,7 @@ function InventairePage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Toutes familles</SelectItem>
-                  {FAMILLES.map((f) => (
+                  {familles.map((f) => (
                     <SelectItem key={f.value} value={f.value}>
                       {f.label}
                     </SelectItem>

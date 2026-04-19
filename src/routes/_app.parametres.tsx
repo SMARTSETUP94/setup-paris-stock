@@ -154,7 +154,7 @@ function UsersTab() {
 
   async function handleToggleActive(u: UserRow) {
     try {
-      await setUserActive({ data: { user_id: u.id, actif: !u.actif } });
+      await setUserActiveFn({ data: { user_id: u.id, actif: !u.actif } });
       toast.success(u.actif ? "Compte désactivé" : "Compte réactivé");
       void refresh();
     } catch (e) {

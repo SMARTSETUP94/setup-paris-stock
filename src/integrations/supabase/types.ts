@@ -334,7 +334,6 @@ export type Database = {
           code: string
           created_at: string
           densite_kg_m3: number | null
-          epaisseur_mm: number
           famille: Database["public"]["Enums"]["famille_matiere"]
           id: string
           libelle: string
@@ -349,7 +348,6 @@ export type Database = {
           code: string
           created_at?: string
           densite_kg_m3?: number | null
-          epaisseur_mm: number
           famille?: Database["public"]["Enums"]["famille_matiere"]
           id?: string
           libelle: string
@@ -364,7 +362,6 @@ export type Database = {
           code?: string
           created_at?: string
           densite_kg_m3?: number | null
-          epaisseur_mm?: number
           famille?: Database["public"]["Enums"]["famille_matiere"]
           id?: string
           libelle?: string
@@ -498,6 +495,7 @@ export type Database = {
           auto_masque_si_zero: boolean
           created_at: string
           cump_ht: number | null
+          epaisseur_mm: number
           id: string
           largeur_mm: number
           longueur_mm: number
@@ -511,6 +509,7 @@ export type Database = {
           auto_masque_si_zero?: boolean
           created_at?: string
           cump_ht?: number | null
+          epaisseur_mm: number
           id?: string
           largeur_mm: number
           longueur_mm: number
@@ -524,6 +523,7 @@ export type Database = {
           auto_masque_si_zero?: boolean
           created_at?: string
           cump_ht?: number | null
+          epaisseur_mm?: number
           id?: string
           largeur_mm?: number
           longueur_mm?: number
@@ -607,6 +607,7 @@ export type Database = {
           auto_masque_si_zero: boolean | null
           created_at: string | null
           cump_ht: number | null
+          epaisseur_mm: number | null
           famille: Database["public"]["Enums"]["famille_matiere"] | null
           id: string | null
           largeur_mm: number | null

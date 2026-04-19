@@ -16,8 +16,8 @@ export const getPanneauPublic = createServerFn({ method: "POST" })
     const { data: panneau, error } = await supabaseAdmin
       .from("panneaux")
       .select(
-        `id, longueur_mm, largeur_mm, reference_fournisseur, actif,
-         matieres ( id, code, libelle, famille, epaisseur_mm, unite_stock ),
+        `id, longueur_mm, largeur_mm, epaisseur_mm, reference_fournisseur, actif,
+         matieres ( id, code, libelle, famille, unite_stock ),
          stock_actuel ( quantite_actuelle )`,
       )
       .eq("id", data.panneauId)
@@ -30,6 +30,7 @@ export const getPanneauPublic = createServerFn({ method: "POST" })
       id: panneau.id,
       longueur_mm: panneau.longueur_mm,
       largeur_mm: panneau.largeur_mm,
+      epaisseur_mm: panneau.epaisseur_mm,
       reference_fournisseur: panneau.reference_fournisseur,
       actif: panneau.actif,
       matiere: panneau.matieres,

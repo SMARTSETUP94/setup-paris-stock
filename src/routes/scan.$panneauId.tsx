@@ -189,7 +189,7 @@ function ScanSortiePage() {
           <h2 className="text-lg font-semibold leading-tight">{m?.libelle ?? "—"}</h2>
           <p className="text-sm text-muted-foreground mt-1">
             {panneau.longueur_mm} × {panneau.largeur_mm} mm
-            {m?.epaisseur_mm ? ` · ${m.epaisseur_mm} mm` : ""}
+            {panneau.epaisseur_mm ? ` · ${panneau.epaisseur_mm} mm` : ""}
           </p>
           <div className="mt-3 flex items-center gap-2 text-sm">
             <span className="text-muted-foreground">Stock actuel :</span>

@@ -10,19 +10,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-async function ensureAdmin(supabase: ReturnType<typeof Object>) {
-  // requireSupabaseAuth fournit déjà userId. On vérifie le rôle côté DB.
-  // @ts-expect-error -- supabase client typé via middleware
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", (supabase as { auth: { _user_id?: string } }).auth?._user_id)
-    .maybeSingle();
-  if (error) throw new Error(error.message);
-  if (!data || data.role !== "admin") {
-    throw new Error("Accès refusé : action réservée aux administrateurs");
-  }
-}
+// (helper supprimé : la vérif admin est faite inline dans chaque handler)
+
 
 /**
  * Exporte la totalité de la table mouvements_stock pour sauvegarde avant reset.

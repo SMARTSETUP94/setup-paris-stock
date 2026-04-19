@@ -422,6 +422,15 @@ function DashboardPage() {
           </div>
         </section>
       )}
+
+      <AffaireFormDialog
+        open={openNewAffaire}
+        onOpenChange={setOpenNewAffaire}
+        onSaved={() => {
+          setOpenNewAffaire(false);
+          void loadDashboard();
+        }}
+      />
     </div>
   );
 }

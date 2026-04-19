@@ -19,11 +19,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Loader2, Camera, AlertCircle, Search, QrCode, Package } from "lucide-react";
+import { Loader2, Camera, AlertCircle, Search, QrCode, Package, Layers } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { listPanneauxPublic, type PanneauSearchResult } from "@/lib/scan.functions";
 import { BrandingLogo } from "@/components/BrandingLogo";
 import { useBranding } from "@/hooks/useBranding";
+import { CascadeSelector } from "@/components/scan/CascadeSelector";
 
 export const Route = createFileRoute("/scan/")({
   head: () => ({
@@ -35,7 +36,7 @@ export const Route = createFileRoute("/scan/")({
 function ScanPage() {
   const navigate = useNavigate();
   const searchFn = useServerFn(listPanneauxPublic);
-  const [tab, setTab] = useState<"scan" | "search">("scan");
+  const [tab, setTab] = useState<"scan" | "cascade" | "search">("scan");
   const [error, setError] = useState<string | null>(null);
   const [starting, setStarting] = useState(true);
   const [timedOut, setTimedOut] = useState(false);
@@ -162,13 +163,17 @@ function ScanPage() {
       <main className="flex-1 flex flex-col items-center p-4 gap-4">
         <Tabs
           value={tab}
-          onValueChange={(v) => setTab(v as "scan" | "search")}
+          onValueChange={(v) => setTab(v as "scan" | "cascade" | "search")}
           className="w-full max-w-md"
         >
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="scan">
               <QrCode className="h-3.5 w-3.5 mr-1.5" />
               Scanner
+            </TabsTrigger>
+            <TabsTrigger value="cascade">
+              <Layers className="h-3.5 w-3.5 mr-1.5" />
+              Choisir
             </TabsTrigger>
             <TabsTrigger value="search">
               <Search className="h-3.5 w-3.5 mr-1.5" />
@@ -234,6 +239,10 @@ function ScanPage() {
             <p className="text-xs text-muted-foreground text-center">
               Pointe la caméra vers le QR code collé sur le panneau.
             </p>
+          </TabsContent>
+
+          <TabsContent value="cascade" className="mt-4">
+            <CascadeSelector />
           </TabsContent>
 
           <TabsContent value="search" className="mt-4 space-y-3">

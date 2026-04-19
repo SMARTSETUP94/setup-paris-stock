@@ -75,8 +75,8 @@ function ScanSortiePage() {
         if (lastAffaire && a.some((x) => x.id === lastAffaire)) {
           setAffaireId(lastAffaire);
         }
-      } catch (e: any) {
-        setLoadError(e?.message ?? "Erreur de chargement");
+      } catch (e) {
+        setLoadError((e instanceof Error ? e.message : null) ?? "Erreur de chargement");
       } finally {
         if (mounted) setLoading(false);
       }
@@ -113,8 +113,8 @@ function ScanSortiePage() {
         },
       });
       setSuccess({ affaire: res.affaire });
-    } catch (e: any) {
-      toast.error(e?.message ?? "Erreur");
+    } catch (e) {
+      toast.error((e instanceof Error ? e.message : null) ?? "Erreur");
     } finally {
       setSubmitting(false);
     }

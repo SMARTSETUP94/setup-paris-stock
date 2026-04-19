@@ -13,7 +13,8 @@
 
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { Html5Qrcode } from "html5-qrcode";
+// html5-qrcode (~250 kB) chargé à la demande pour alléger le bundle initial /scan.
+import type { Html5Qrcode } from "html5-qrcode";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -60,6 +61,7 @@ function ScanPage() {
       if (!elRef.current) return;
       const id = "qr-reader";
       elRef.current.id = id;
+      const { Html5Qrcode } = await import("html5-qrcode");
       const scanner = new Html5Qrcode(id);
       scannerRef.current = scanner;
 

@@ -1,14 +1,15 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { BrandingLogo } from "@/components/BrandingLogo";
+import { requestPasswordReset } from "@/lib/users.functions";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -23,6 +24,7 @@ export const Route = createFileRoute("/login")({
 function LoginPage() {
   const { session, loading } = useAuth();
   const navigate = useNavigate();
+  const requestResetFn = useServerFn(requestPasswordReset);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -54,33 +56,17 @@ function LoginPage() {
       return;
     }
     setSubmitting(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-    setSubmitting(false);
-    if (error) {
-      toast.error("Envoi impossible", { description: error.message });
-    } else {
+    try {
+      await requestResetFn({ data: { email } });
       toast.success("Email envoyé", {
-        description: "Vérifiez votre boîte mail pour réinitialiser votre mot de passe.",
+        description: "Si un compte existe pour cet email, un lien vous a été envoyé.",
       });
-    }
-  }
-
-  async function handleMagicLink(e: React.FormEvent) {
-    e.preventDefault();
-    setSubmitting(true);
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: window.location.origin },
-    });
-    setSubmitting(false);
-    if (error) {
-      toast.error("Échec d'envoi", { description: error.message });
-    } else {
-      toast.success("Lien magique envoyé", {
-        description: "Vérifiez votre boîte mail pour vous connecter.",
+    } catch (err) {
+      toast.error("Envoi impossible", {
+        description: err instanceof Error ? err.message : String(err),
       });
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -97,85 +83,42 @@ function LoginPage() {
           Gestion de stock — Setup Paris
         </p>
 
-        <Tabs defaultValue="password" className="w-full">
-          <TabsList className="grid grid-cols-2 w-full mb-6 bg-transparent border border-border rounded-lg p-1">
-            <TabsTrigger
-              value="password"
-              className="rounded-md data-[state=active]:bg-foreground data-[state=active]:text-background"
-            >
-              Connexion
-            </TabsTrigger>
-            <TabsTrigger
-              value="magic"
-              className="rounded-md data-[state=active]:bg-foreground data-[state=active]:text-background"
-            >
-              Lien magique
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="password">
-            <form onSubmit={handlePassword} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email-pwd">Email</Label>
-                <Input
-                  id="email-pwd"
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="prenom@setupparis.fr"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Mot de passe</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-              <Button type="submit" size="lg" className="w-full" disabled={submitting}>
-                {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Se connecter
-              </Button>
-              <Button
-                type="button"
-                variant="link"
-                onClick={handleForgotPassword}
-                className="block w-full text-center text-sm text-muted-foreground"
-                disabled={submitting}
-              >
-                Mot de passe oublié ?
-              </Button>
-            </form>
-          </TabsContent>
-
-          <TabsContent value="magic">
-            <form onSubmit={handleMagicLink} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email-magic">Email</Label>
-                <Input
-                  id="email-magic"
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="prenom@setupparis.fr"
-                />
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Vous recevrez un lien à usage unique par email pour vous connecter sans mot de
-                passe.
-              </p>
-              <Button type="submit" size="lg" className="w-full" disabled={submitting}>
-                {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Envoyer le lien
-              </Button>
-            </form>
-          </TabsContent>
-        </Tabs>
+        <form onSubmit={handlePassword} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email-pwd">Email</Label>
+            <Input
+              id="email-pwd"
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="prenom@setupparis.fr"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="password">Mot de passe</Label>
+            <Input
+              id="password"
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+          <Button type="submit" size="lg" className="w-full" disabled={submitting}>
+            {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+            Se connecter
+          </Button>
+          <Button
+            type="button"
+            variant="link"
+            onClick={handleForgotPassword}
+            className="block w-full text-center text-sm text-muted-foreground"
+            disabled={submitting}
+          >
+            Mot de passe oublié ?
+          </Button>
+        </form>
       </div>
     </div>
   );

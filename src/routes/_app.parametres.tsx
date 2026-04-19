@@ -196,9 +196,7 @@ function UsersTab() {
 
   async function handleResend(u: UserRow) {
     try {
-      const redirectTo =
-        typeof window !== "undefined" ? `${window.location.origin}/reset-password` : undefined;
-      await resendInvitationFn({ data: { email: u.email, redirectTo } });
+      await resendInvitationFn({ data: { email: u.email } });
       toast.success("Email envoyé", {
         description: "Un lien de réinitialisation a été envoyé.",
       });
@@ -427,9 +425,7 @@ function InviteDialog({
     e.preventDefault();
     setSubmitting(true);
     try {
-      const redirectTo =
-        typeof window !== "undefined" ? `${window.location.origin}/reset-password` : undefined;
-      await inviteUserFn({ data: { email, nom_complet: nomComplet, role, redirectTo } });
+      await inviteUserFn({ data: { email, nom_complet: nomComplet, role } });
       toast.success("Invitation envoyée", {
         description: `${email} va recevoir un email pour créer son mot de passe.`,
       });

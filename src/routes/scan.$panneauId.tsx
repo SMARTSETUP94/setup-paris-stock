@@ -65,8 +65,13 @@ function ScanSortiePage() {
         setPanneau(p);
         setAffaires(a);
         // Pré-remplir le nom depuis le localStorage si déjà saisi
-        const saved = localStorage.getItem("setup-scan-nom");
-        if (saved) setNom(saved);
+        const savedNom = localStorage.getItem("setup-scan-nom");
+        if (savedNom) setNom(savedNom);
+        // Pré-remplir l'affaire avec la dernière utilisée si elle est encore active
+        const lastAffaire = localStorage.getItem("setup-scan-last-affaire");
+        if (lastAffaire && a.some((x) => x.id === lastAffaire)) {
+          setAffaireId(lastAffaire);
+        }
       } catch (e: any) {
         setLoadError(e?.message ?? "Erreur de chargement");
       } finally {
@@ -94,6 +99,7 @@ function ScanSortiePage() {
     setSubmitting(true);
     try {
       localStorage.setItem("setup-scan-nom", nom.trim());
+      localStorage.setItem("setup-scan-last-affaire", affaireId);
       const res = await declarerFn({
         data: {
           panneauId,
@@ -156,13 +162,11 @@ function ScanSortiePage() {
             <span className="font-medium">{nom}</span>
           </p>
         </Card>
-        <div className="flex gap-2">
-          <Link to="/scan">
-            <Button>
-              <ScanLine className="h-4 w-4 mr-2" /> Scanner un autre
-            </Button>
-          </Link>
-        </div>
+        <Link to="/scan" className="w-full max-w-md">
+          <Button className="w-full h-14 text-base">
+            <ScanLine className="h-5 w-5 mr-2" /> Scanner un autre panneau
+          </Button>
+        </Link>
       </div>
     );
   }

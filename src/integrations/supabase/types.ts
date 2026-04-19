@@ -82,50 +82,65 @@ export type Database = {
       }
       affaires: {
         Row: {
+          adresse: string | null
           budget_panneaux_ht: number | null
-          client_id: string
+          charge_affaires_id: string | null
+          charge_affaires_libre: string | null
+          client: string
+          code_chantier: string
+          code_interne: string | null
           created_at: string
           date_debut: string | null
           date_fin_prevue: string | null
           id: string
           nom: string
           notes: string | null
-          numero: string
+          numero: string | null
           responsable_id: string | null
           statut: Database["public"]["Enums"]["statut_affaire"]
         }
         Insert: {
+          adresse?: string | null
           budget_panneaux_ht?: number | null
-          client_id: string
+          charge_affaires_id?: string | null
+          charge_affaires_libre?: string | null
+          client: string
+          code_chantier: string
+          code_interne?: string | null
           created_at?: string
           date_debut?: string | null
           date_fin_prevue?: string | null
           id?: string
           nom: string
           notes?: string | null
-          numero: string
+          numero?: string | null
           responsable_id?: string | null
           statut?: Database["public"]["Enums"]["statut_affaire"]
         }
         Update: {
+          adresse?: string | null
           budget_panneaux_ht?: number | null
-          client_id?: string
+          charge_affaires_id?: string | null
+          charge_affaires_libre?: string | null
+          client?: string
+          code_chantier?: string
+          code_interne?: string | null
           created_at?: string
           date_debut?: string | null
           date_fin_prevue?: string | null
           id?: string
           nom?: string
           notes?: string | null
-          numero?: string
+          numero?: string | null
           responsable_id?: string | null
           statut?: Database["public"]["Enums"]["statut_affaire"]
         }
         Relationships: [
           {
-            foreignKeyName: "affaires_client_id_fkey"
-            columns: ["client_id"]
+            foreignKeyName: "affaires_charge_affaires_id_fkey"
+            columns: ["charge_affaires_id"]
             isOneToOne: false
-            referencedRelation: "clients"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -279,45 +294,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      clients: {
-        Row: {
-          actif: boolean
-          adresse: string | null
-          contact_principal: string | null
-          created_at: string
-          email: string | null
-          id: string
-          nom: string
-          notes: string | null
-          siret: string | null
-          telephone: string | null
-        }
-        Insert: {
-          actif?: boolean
-          adresse?: string | null
-          contact_principal?: string | null
-          created_at?: string
-          email?: string | null
-          id?: string
-          nom: string
-          notes?: string | null
-          siret?: string | null
-          telephone?: string | null
-        }
-        Update: {
-          actif?: boolean
-          adresse?: string | null
-          contact_principal?: string | null
-          created_at?: string
-          email?: string | null
-          id?: string
-          nom?: string
-          notes?: string | null
-          siret?: string | null
-          telephone?: string | null
-        }
-        Relationships: []
       }
       fournisseurs: {
         Row: {

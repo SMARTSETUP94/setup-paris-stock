@@ -738,6 +738,7 @@ export type Database = {
       }
     }
     Functions: {
+      admin_reset_donnees_metier: { Args: never; Returns: Json }
       ensure_current_profile: {
         Args: never
         Returns: {

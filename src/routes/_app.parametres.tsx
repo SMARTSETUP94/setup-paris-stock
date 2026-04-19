@@ -54,6 +54,7 @@ import {
 } from "@/lib/users.functions";
 import { BrandingTab } from "@/components/parametres/BrandingTab";
 import { FamillesTab } from "@/components/parametres/FamillesTab";
+import { DangerZoneTab } from "@/components/parametres/DangerZoneTab";
 
 type AppRole = "admin" | "magasinier" | "mobile";
 
@@ -102,6 +103,9 @@ function ParametresPage() {
           <TabsTrigger value="utilisateurs">Utilisateurs</TabsTrigger>
           <TabsTrigger value="familles">Familles</TabsTrigger>
           <TabsTrigger value="branding">Branding</TabsTrigger>
+          <TabsTrigger value="danger" className="data-[state=active]:text-destructive">
+            Danger zone
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="utilisateurs">
           <UsersTab />
@@ -111,6 +115,9 @@ function ParametresPage() {
         </TabsContent>
         <TabsContent value="branding">
           <BrandingTab />
+        </TabsContent>
+        <TabsContent value="danger">
+          <DangerZoneTab />
         </TabsContent>
       </Tabs>
     </div>

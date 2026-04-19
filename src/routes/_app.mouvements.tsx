@@ -39,7 +39,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { TypeMouvementBadge } from "@/components/TypeMouvementBadge";
 import { NumeroAffairePill } from "@/components/NumeroAffairePill";
-import { MouvementDialog } from "@/components/MouvementDialog";
+import { MouvementDialog, type MouvementPrefill } from "@/components/MouvementDialog";
 import { TYPES_MVT } from "@/lib/mouvements";
 import { formatEuro, formatNumber } from "@/lib/familles";
 import { formatDateTimeFr } from "@/lib/affaires";
@@ -91,6 +91,7 @@ function MouvementsPage() {
   const [dateDebut, setDateDebut] = useState<string>("");
   const [dateFin, setDateFin] = useState<string>("");
   const [openMode, setOpenMode] = useState<"entree" | "sortie" | "correction" | null>(null);
+  const [prefill, setPrefill] = useState<MouvementPrefill | null>(null);
   const [affairesOpts, setAffairesOpts] = useState<
     { id: string; numero: string | null; nom: string; code_chantier: string }[]
   >([]);
@@ -199,6 +200,19 @@ function MouvementsPage() {
 
   const isAdmin = profile?.role === "admin";
 
+  function openCorrection(r: Row) {
+    const qte = Number(r.quantite);
+    // On crée un mouvement inverse : si l'origine était négative, on remet du stock (+), et vice versa.
+    setPrefill({
+      panneauId: r.panneau_id,
+      affaireId: r.affaire_id,
+      quantite: Math.abs(qte),
+      signe: qte < 0 ? "plus" : "moins",
+      commentaire: `Correction du mouvement ${r.id.slice(0, 8)} du ${formatDateTimeFr(r.created_at)} — `,
+    });
+    setOpenMode("correction");
+  }
+
   return (
     <div>
       <PageHeader
@@ -244,13 +258,28 @@ function MouvementsPage() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setOpenMode("entree")}>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setPrefill(null);
+                    setOpenMode("entree");
+                  }}
+                >
                   <ArrowDownToLine className="h-4 w-4 mr-2" /> Entrée
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setOpenMode("sortie")}>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setPrefill(null);
+                    setOpenMode("sortie");
+                  }}
+                >
                   <ArrowUpFromLine className="h-4 w-4 mr-2" /> Sortie
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setOpenMode("correction")}>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setPrefill(null);
+                    setOpenMode("correction");
+                  }}
+                >
                   <Wrench className="h-4 w-4 mr-2" /> Correction
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -328,18 +357,25 @@ function MouvementsPage() {
                 <TableHead className="text-right">Valeur HT</TableHead>
                 <TableHead>Opérateur</TableHead>
                 <TableHead>Commentaire</TableHead>
+                {isAdmin && <TableHead className="text-right">Actions</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={11} className="text-center py-10 text-muted-foreground">
+                  <TableCell
+                    colSpan={isAdmin ? 12 : 11}
+                    className="text-center py-10 text-muted-foreground"
+                  >
                     Chargement…
                   </TableCell>
                 </TableRow>
               ) : filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={11} className="text-center py-10 text-muted-foreground">
+                  <TableCell
+                    colSpan={isAdmin ? 12 : 11}
+                    className="text-center py-10 text-muted-foreground"
+                  >
                     Aucun mouvement
                   </TableCell>
                 </TableRow>
@@ -392,6 +428,22 @@ function MouvementsPage() {
                     <TableCell className="text-xs text-muted-foreground truncate max-w-[200px]">
                       {r.commentaire ?? ""}
                     </TableCell>
+                    {isAdmin && (
+                      <TableCell className="text-right">
+                        {r.type !== "correction" && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 px-2 text-xs"
+                            onClick={() => openCorrection(r)}
+                            title="Créer un mouvement de correction inverse"
+                          >
+                            <Wrench className="h-3.5 w-3.5 mr-1" />
+                            Corriger
+                          </Button>
+                        )}
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))
               )}
@@ -407,9 +459,13 @@ function MouvementsPage() {
       <MouvementDialog
         open={openMode !== null}
         onOpenChange={(v) => {
-          if (!v) setOpenMode(null);
+          if (!v) {
+            setOpenMode(null);
+            setPrefill(null);
+          }
         }}
         mode={openMode ?? "entree"}
+        prefill={prefill}
         isAdmin={isAdmin}
         userId={user?.id ?? null}
         onCreated={() => void load()}

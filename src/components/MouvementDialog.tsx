@@ -51,12 +51,23 @@ type CatalogueRow = {
 
 type AffaireOption = { id: string; numero: string; nom: string };
 
+/** Pré-remplissage utilisé pour corriger un mouvement existant. */
+export type MouvementPrefill = {
+  panneauId: string;
+  affaireId?: string | null;
+  quantite: number; // valeur absolue
+  signe: "plus" | "moins";
+  commentaire?: string;
+};
+
 interface Props {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   mode: Mode;
   /** Pré-sélectionne une affaire (utilisé depuis la fiche affaire) */
   presetAffaireId?: string | null;
+  /** Pré-remplit le formulaire (utilisé pour corriger un mouvement existant) */
+  prefill?: MouvementPrefill | null;
   isAdmin: boolean;
   userId: string | null;
   onCreated?: () => void;
@@ -67,6 +78,7 @@ export function MouvementDialog({
   onOpenChange,
   mode,
   presetAffaireId,
+  prefill,
   isAdmin,
   userId,
   onCreated,
@@ -90,14 +102,14 @@ export function MouvementDialog({
   useEffect(() => {
     if (!open) return;
     setLoading(true);
-    setPanneauId("");
-    setQuantite("");
+    setPanneauId(prefill?.panneauId ?? "");
+    setQuantite(prefill ? String(prefill.quantite) : "");
     setPrixUnitaire("");
-    setAffaireId(presetAffaireId ?? "");
-    setCommentaire("");
+    setAffaireId(prefill?.affaireId ?? presetAffaireId ?? "");
+    setCommentaire(prefill?.commentaire ?? "");
     setForceOverstock(false);
     setCorrectionCump(false);
-    setSigne("plus");
+    setSigne(prefill?.signe ?? "plus");
 
     void (async () => {
       const [pRes, aRes] = await Promise.all([
@@ -112,7 +124,7 @@ export function MouvementDialog({
       setAffaires((aRes.data as AffaireOption[]) ?? []);
       setLoading(false);
     })();
-  }, [open, presetAffaireId]);
+  }, [open, presetAffaireId, prefill]);
 
   const selectedPanneau = useMemo(
     () => panneaux.find((p) => p.id === panneauId) ?? null,

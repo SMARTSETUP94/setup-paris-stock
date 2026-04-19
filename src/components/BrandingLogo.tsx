@@ -68,7 +68,9 @@ export function BrandingLogo({
         style={{ backgroundColor: accent }}
       />
       <div className="flex flex-col leading-none">
-        <span className={cn("font-display font-semibold tracking-tight uppercase", s.word, wordColor)}>
+        <span
+          className={cn("font-display font-semibold tracking-tight uppercase", s.word, wordColor)}
+        >
           {firstWord.toUpperCase()}
           {rest ? (
             <>
@@ -78,14 +80,8 @@ export function BrandingLogo({
           ) : null}
         </span>
         {showTagline && (
-          <span
-            className={cn(
-              "mt-1 font-mono tracking-[0.18em] uppercase",
-              s.sub,
-              subColor,
-            )}
-          >
-          BY {orgRaw.toUpperCase().replace(/\s+/g, ".")} ↗
+          <span className={cn("mt-1 font-mono tracking-[0.18em] uppercase", s.sub, subColor)}>
+            BY {orgRaw.toUpperCase().replace(/\s+/g, ".")} ↗
           </span>
         )}
       </div>

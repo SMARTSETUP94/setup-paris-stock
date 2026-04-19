@@ -49,10 +49,7 @@ import { AffaireFormDialog } from "@/components/AffaireFormDialog";
 import { BudgetProgressCard } from "@/components/BudgetProgressCard";
 import { MouvementDialog } from "@/components/MouvementDialog";
 import { TypeMouvementBadge } from "@/components/TypeMouvementBadge";
-import {
-  formatDateFr,
-  formatDateTimeFr,
-} from "@/lib/affaires";
+import { formatDateFr, formatDateTimeFr } from "@/lib/affaires";
 import { formatEuro, formatNumber } from "@/lib/familles";
 import type { Database } from "@/integrations/supabase/types";
 

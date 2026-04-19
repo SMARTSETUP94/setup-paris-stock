@@ -76,7 +76,9 @@ export function inviteAdminTemplate(input: {
   roleLabel?: string;
 }): { subject: string; html: string; text: string } {
   const inviter = escapeHtml(input.inviterName || "Un administrateur");
-  const role = input.roleLabel ? ` en tant que <strong>${escapeHtml(input.roleLabel)}</strong>` : "";
+  const role = input.roleLabel
+    ? ` en tant que <strong>${escapeHtml(input.roleLabel)}</strong>`
+    : "";
 
   const subject = `[Setup Stock] ${input.inviterName} vous invite à rejoindre l'app`;
 
@@ -113,9 +115,11 @@ Cette invitation expire dans 7 jours.`;
 // 2. Réinitialisation de mot de passe
 // ---------------------------------------------------------------------------
 
-export function passwordResetTemplate(input: {
-  resetUrl: string;
-}): { subject: string; html: string; text: string } {
+export function passwordResetTemplate(input: { resetUrl: string }): {
+  subject: string;
+  html: string;
+  text: string;
+} {
   const subject = "[Setup Stock] Réinitialisation de votre mot de passe";
 
   const html = shell(`

@@ -64,13 +64,9 @@ export function FamillesProvider({ children }: { children: ReactNode }) {
     void load();
     const channel = supabase
       .channel("familles_overrides_changes")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "familles_overrides" },
-        () => {
-          void load();
-        },
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "familles_overrides" }, () => {
+        void load();
+      })
       .subscribe();
     return () => {
       void supabase.removeChannel(channel);

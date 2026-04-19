@@ -8,7 +8,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { useStockRealtime } from "@/hooks/useStockRealtime";
 import { formatEuro, formatNumber } from "@/lib/familles";
 import { DashboardConsoChart } from "@/components/dashboard/DashboardConsoChart";
-import { RecentMouvementsCard, type MouvementRecent } from "@/components/dashboard/RecentMouvementsCard";
+import {
+  RecentMouvementsCard,
+  type MouvementRecent,
+} from "@/components/dashboard/RecentMouvementsCard";
 import { AffaireFormDialog } from "@/components/AffaireFormDialog";
 
 export const Route = createFileRoute("/_app/")({
@@ -67,9 +70,6 @@ type TopAffaire = {
   client: string;
   valeur: number;
 };
-
-
-
 
 function DashboardPage() {
   const { profile, loading: authLoading } = useAuth();
@@ -249,8 +249,7 @@ function DashboardPage() {
           <span className="text-muted-foreground truncate">Setup Paris · Stock atelier</span>
         </p>
         <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-[88px] leading-[1.05] tracking-tight max-w-4xl">
-          Pilotage du{" "}
-          <span className="text-muted-foreground/60">stock panneaux</span>
+          Pilotage du <span className="text-muted-foreground/60">stock panneaux</span>
           <br />
           en temps réel.
         </h1>
@@ -291,7 +290,9 @@ function DashboardPage() {
             <div className="flex items-center gap-2">
               <span className="section-marker">— 04</span>
               <AlertTriangle className="h-4 w-4 text-warning" />
-              <h2 className="font-display text-lg font-semibold tracking-tight">Alertes seuil bas</h2>
+              <h2 className="font-display text-lg font-semibold tracking-tight">
+                Alertes seuil bas
+              </h2>
             </div>
             <div className="flex items-center gap-3">
               {isAdmin && (

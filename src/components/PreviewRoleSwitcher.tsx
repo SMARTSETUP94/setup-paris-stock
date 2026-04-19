@@ -7,11 +7,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import {
-  useEffectiveRole,
-  PREVIEW_ROLE_LABELS,
-  type PreviewRole,
-} from "@/hooks/useEffectiveRole";
+import { useEffectiveRole, PREVIEW_ROLE_LABELS, type PreviewRole } from "@/hooks/useEffectiveRole";
 import { cn } from "@/lib/utils";
 
 const OPTIONS: { value: PreviewRole | null; label: string; hint: string }[] = [

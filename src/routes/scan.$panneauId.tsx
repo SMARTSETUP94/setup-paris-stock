@@ -1,3 +1,12 @@
+/**
+ * ============================================================
+ * ROUTE PUBLIQUE — /scan/$panneauId
+ * ============================================================
+ * Page de déclaration de sortie SANS AUTHENTIFICATION.
+ * Accessible uniquement après avoir scanné un QR physique en atelier
+ * (ou via la recherche texte fallback sur /scan).
+ * Mitigations : voir src/lib/scan.functions.ts (entête).
+ */
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";

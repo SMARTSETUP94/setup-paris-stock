@@ -293,12 +293,12 @@ function BdcDetailPage() {
       />
 
       {bdc.statut === "en_attente_ocr" && (
-        <Card className="p-6 mb-6 bg-blue-50 border-blue-200">
+        <Card className="p-6 mb-6 bg-primary/5 border-primary/20">
           <div className="flex items-center gap-3">
-            <Loader2 className="h-5 w-5 animate-spin text-blue-700" />
+            <Loader2 className="h-5 w-5 animate-spin text-primary" />
             <div>
-              <p className="font-medium text-blue-900">OCR en cours…</p>
-              <p className="text-sm text-blue-700">L'analyse Mindee prend 10 à 30 secondes. Cette page se met à jour automatiquement.</p>
+              <p className="font-medium text-foreground">OCR en cours…</p>
+              <p className="text-sm text-muted-foreground">L'analyse Mindee prend 10 à 30 secondes. Cette page se met à jour automatiquement.</p>
             </div>
           </div>
         </Card>

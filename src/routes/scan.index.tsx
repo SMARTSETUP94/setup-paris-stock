@@ -36,7 +36,7 @@ export const Route = createFileRoute("/scan/")({
 function ScanPage() {
   const navigate = useNavigate();
   const searchFn = useServerFn(listPanneauxPublic);
-  const [tab, setTab] = useState<"scan" | "search">("scan");
+  const [tab, setTab] = useState<"scan" | "cascade" | "search">("scan");
   const [error, setError] = useState<string | null>(null);
   const [starting, setStarting] = useState(true);
   const [timedOut, setTimedOut] = useState(false);

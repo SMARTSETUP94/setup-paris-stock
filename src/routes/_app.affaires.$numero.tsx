@@ -25,6 +25,7 @@ import type { Database } from "@/integrations/supabase/types";
 
 type Affaire = Database["public"]["Tables"]["affaires"]["Row"] & {
   responsable?: { nom_complet: string | null; email: string } | null;
+  client?: { nom: string; actif: boolean } | null;
 };
 type Acces = Database["public"]["Tables"]["affaire_acces"]["Row"];
 
@@ -49,7 +50,7 @@ function AffaireDetail() {
     setLoading(true);
     const { data } = await supabase
       .from("affaires")
-      .select("*, responsable:profiles!affaires_responsable_id_fkey(nom_complet, email)")
+      .select("*, responsable:profiles!affaires_responsable_id_fkey(nom_complet, email), client:clients!affaires_client_id_fkey(nom, actif)")
       .eq("numero", numero)
       .maybeSingle();
     if (!data) {
@@ -130,12 +131,17 @@ function AffaireDetail() {
 
   async function dupliquerAffaire() {
     if (!affaire) return;
-    const baseNumero = affaire.numero;
-    const newNumero = `${baseNumero}-COPIE`;
+    // Trouve le prochain numéro 4 chiffres disponible
+    const { data: rows } = await supabase.from("affaires").select("numero");
+    const nums = ((rows ?? []) as { numero: string }[])
+      .map((r) => r.numero)
+      .filter((n) => /^\d{4}$/.test(n))
+      .map((n) => parseInt(n, 10));
+    const nextNum = String((nums.length ? Math.max(...nums) : 0) + 1).padStart(4, "0");
     const { data, error } = await supabase.from("affaires").insert({
-      numero: newNumero,
+      numero: nextNum,
       nom: `${affaire.nom} (copie)`,
-      client: affaire.client,
+      client_id: affaire.client_id,
       statut: "devis",
       responsable_id: affaire.responsable_id,
       budget_panneaux_ht: affaire.budget_panneaux_ht,
@@ -189,7 +195,7 @@ function AffaireDetail() {
           <p className="eyebrow mb-3">Affaire n° {affaire.numero}</p>
           <h1 className="text-3xl md:text-4xl truncate">{affaire.nom}</h1>
           <p className="mt-3 text-sm text-muted-foreground">
-            {affaire.client ?? "Client non renseigné"}
+            {affaire.client?.nom ?? "Client non renseigné"}
             {" • "}
             {affaire.responsable?.nom_complet ?? affaire.responsable?.email ?? "Sans responsable"}
             {" • "}

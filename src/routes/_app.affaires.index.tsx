@@ -17,6 +17,7 @@ import type { Database } from "@/integrations/supabase/types";
 
 type Affaire = Database["public"]["Tables"]["affaires"]["Row"] & {
   responsable?: { nom_complet: string | null; email: string } | null;
+  client?: { nom: string; actif: boolean } | null;
 };
 
 export const Route = createFileRoute("/_app/affaires/")({
@@ -37,7 +38,7 @@ function AffairesIndex() {
     setLoading(true);
     const { data } = await supabase
       .from("affaires")
-      .select("*, responsable:profiles!affaires_responsable_id_fkey(nom_complet, email)")
+      .select("*, responsable:profiles!affaires_responsable_id_fkey(nom_complet, email), client:clients!affaires_client_id_fkey(nom, actif)")
       .order("date_debut", { ascending: false, nullsFirst: false });
     setRows((data as Affaire[]) ?? []);
     setLoading(false);
@@ -55,7 +56,7 @@ function AffairesIndex() {
       return (
         r.numero.toLowerCase().includes(q) ||
         r.nom.toLowerCase().includes(q) ||
-        (r.client ?? "").toLowerCase().includes(q)
+        (r.client?.nom ?? "").toLowerCase().includes(q)
       );
     });
   }, [rows, dq, statut]);
@@ -135,7 +136,12 @@ function AffairesIndex() {
                       {r.nom}
                     </Link>
                   </TableCell>
-                  <TableCell className="text-muted-foreground">{r.client ?? "—"}</TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {r.client?.nom ?? "—"}
+                    {r.client && !r.client.actif && (
+                      <span className="ml-2 inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium" style={{ color: "#6B7280", backgroundColor: "rgba(107,114,128,0.10)" }}>Inactif</span>
+                    )}
+                  </TableCell>
                   <TableCell className="text-muted-foreground">
                     {r.responsable?.nom_complet ?? r.responsable?.email ?? "—"}
                   </TableCell>

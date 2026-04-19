@@ -200,7 +200,7 @@ function UsersTab() {
   async function handleDelete() {
     if (!confirmDelete) return;
     try {
-      await deleteUser({ data: { user_id: confirmDelete.id } });
+      await deleteUserFn({ data: { user_id: confirmDelete.id } });
       toast.success("Compte supprimé");
       setConfirmDelete(null);
       void refresh();

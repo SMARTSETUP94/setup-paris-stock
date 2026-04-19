@@ -524,7 +524,7 @@ function ScanInventaire({
       );
     } catch (e) {
       setError(
-        (e instanceof Error ? e.message : '')?.includes("Permission")
+        (e instanceof Error ? e.message : "")?.includes("Permission")
           ? "Accès caméra refusé"
           : "Impossible de démarrer la caméra",
       );

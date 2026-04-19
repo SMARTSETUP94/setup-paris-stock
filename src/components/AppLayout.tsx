@@ -185,64 +185,68 @@ export function AppLayout() {
               />
             ))}
 
-          {/* Catalogue accordion */}
-          <div>
-            <button
-              type="button"
-              onClick={toggleCatalogue}
-              aria-expanded={catalogueOpen}
-              className={cn(
-                "group relative flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm transition-colors",
-                catalogueIsActive
-                  ? "font-semibold text-foreground"
-                  : "font-medium text-foreground/80 hover:bg-muted",
-              )}
-            >
-              {catalogueIsActive && (
-                <span
-                  aria-hidden
-                  className="absolute left-0 top-1/2 h-1.5 w-1.5 -translate-x-2 -translate-y-1/2 rounded-full bg-primary"
-                />
-              )}
-              <Package className="h-4 w-4" />
-              <span className="flex-1 text-left">Catalogue</span>
-              <ChevronDown
-                className={cn(
-                  "h-4 w-4 transition-transform",
-                  catalogueOpen ? "rotate-0" : "-rotate-90",
-                )}
-              />
-            </button>
-            {catalogueOpen && (
-              <div className="mt-0.5 space-y-0.5">
-                {catalogueChildren.map((child) => (
-                  <SidebarSubLink
-                    key={child.to}
-                    item={child}
-                    active={
-                      location.pathname === child.to || location.pathname.startsWith(child.to + "/")
-                    }
+          {/* Sections admin uniquement : catalogue, fournisseurs, BDC, mouvements, paramètres */}
+          {isAdmin && (
+            <>
+              {/* Catalogue accordion */}
+              <div>
+                <button
+                  type="button"
+                  onClick={toggleCatalogue}
+                  aria-expanded={catalogueOpen}
+                  className={cn(
+                    "group relative flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm transition-colors",
+                    catalogueIsActive
+                      ? "font-semibold text-foreground"
+                      : "font-medium text-foreground/80 hover:bg-muted",
+                  )}
+                >
+                  {catalogueIsActive && (
+                    <span
+                      aria-hidden
+                      className="absolute left-0 top-1/2 h-1.5 w-1.5 -translate-x-2 -translate-y-1/2 rounded-full bg-primary"
+                    />
+                  )}
+                  <Package className="h-4 w-4" />
+                  <span className="flex-1 text-left">Catalogue</span>
+                  <ChevronDown
+                    className={cn(
+                      "h-4 w-4 transition-transform",
+                      catalogueOpen ? "rotate-0" : "-rotate-90",
+                    )}
                   />
-                ))}
+                </button>
+                {catalogueOpen && (
+                  <div className="mt-0.5 space-y-0.5">
+                    {catalogueChildren.map((child) => (
+                      <SidebarSubLink
+                        key={child.to}
+                        item={child}
+                        active={
+                          location.pathname === child.to ||
+                          location.pathname.startsWith(child.to + "/")
+                        }
+                      />
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
-          {afterCatalogueItems
-            .filter((i) => !i.adminOnly || profile?.role === "admin")
-            .map((item) => (
-              <SidebarLink
-                key={item.to}
-                item={item}
-                active={isPathActive(location.pathname, item.to)}
-              />
-            ))}
+              {afterCatalogueItems.map((item) => (
+                <SidebarLink
+                  key={item.to}
+                  item={item}
+                  active={isPathActive(location.pathname, item.to)}
+                />
+              ))}
+            </>
+          )}
 
-          {/* Atelier section */}
+          {/* Atelier section — visible pour admin et tiers (Scanner) */}
           <div className="pt-4 mt-2 border-t border-border">
             <p className="eyebrow px-3 pb-1.5">Atelier</p>
             {atelierItems
-              .filter((i) => !i.adminOnly || profile?.role === "admin")
+              .filter((i) => !i.adminOnly || isAdmin)
               .map((item) => (
                 <SidebarLink
                   key={item.to}

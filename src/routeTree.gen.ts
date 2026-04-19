@@ -18,8 +18,10 @@ import { Route as AppFournisseursRouteImport } from './routes/_app.fournisseurs'
 import { Route as AppBdcRouteImport } from './routes/_app.bdc'
 import { Route as AppAffairesRouteImport } from './routes/_app.affaires'
 import { Route as AppCatalogueIndexRouteImport } from './routes/_app.catalogue.index'
+import { Route as AppAffairesIndexRouteImport } from './routes/_app.affaires.index'
 import { Route as AppCataloguePanneauxRouteImport } from './routes/_app.catalogue.panneaux'
 import { Route as AppCatalogueMatieresRouteImport } from './routes/_app.catalogue.matieres'
+import { Route as AppAffairesNumeroRouteImport } from './routes/_app.affaires.$numero'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -65,6 +67,11 @@ const AppCatalogueIndexRoute = AppCatalogueIndexRouteImport.update({
   path: '/catalogue/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAffairesIndexRoute = AppAffairesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppAffairesRoute,
+} as any)
 const AppCataloguePanneauxRoute = AppCataloguePanneauxRouteImport.update({
   id: '/catalogue/panneaux',
   path: '/catalogue/panneaux',
@@ -75,43 +82,53 @@ const AppCatalogueMatieresRoute = AppCatalogueMatieresRouteImport.update({
   path: '/catalogue/matieres',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAffairesNumeroRoute = AppAffairesNumeroRouteImport.update({
+  id: '/$numero',
+  path: '/$numero',
+  getParentRoute: () => AppAffairesRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/login': typeof LoginRoute
-  '/affaires': typeof AppAffairesRoute
+  '/affaires': typeof AppAffairesRouteWithChildren
   '/bdc': typeof AppBdcRoute
   '/fournisseurs': typeof AppFournisseursRoute
   '/mouvements': typeof AppMouvementsRoute
   '/parametres': typeof AppParametresRoute
+  '/affaires/$numero': typeof AppAffairesNumeroRoute
   '/catalogue/matieres': typeof AppCatalogueMatieresRoute
   '/catalogue/panneaux': typeof AppCataloguePanneauxRoute
+  '/affaires/': typeof AppAffairesIndexRoute
   '/catalogue/': typeof AppCatalogueIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
-  '/affaires': typeof AppAffairesRoute
   '/bdc': typeof AppBdcRoute
   '/fournisseurs': typeof AppFournisseursRoute
   '/mouvements': typeof AppMouvementsRoute
   '/parametres': typeof AppParametresRoute
   '/': typeof AppIndexRoute
+  '/affaires/$numero': typeof AppAffairesNumeroRoute
   '/catalogue/matieres': typeof AppCatalogueMatieresRoute
   '/catalogue/panneaux': typeof AppCataloguePanneauxRoute
+  '/affaires': typeof AppAffairesIndexRoute
   '/catalogue': typeof AppCatalogueIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
-  '/_app/affaires': typeof AppAffairesRoute
+  '/_app/affaires': typeof AppAffairesRouteWithChildren
   '/_app/bdc': typeof AppBdcRoute
   '/_app/fournisseurs': typeof AppFournisseursRoute
   '/_app/mouvements': typeof AppMouvementsRoute
   '/_app/parametres': typeof AppParametresRoute
   '/_app/': typeof AppIndexRoute
+  '/_app/affaires/$numero': typeof AppAffairesNumeroRoute
   '/_app/catalogue/matieres': typeof AppCatalogueMatieresRoute
   '/_app/catalogue/panneaux': typeof AppCataloguePanneauxRoute
+  '/_app/affaires/': typeof AppAffairesIndexRoute
   '/_app/catalogue/': typeof AppCatalogueIndexRoute
 }
 export interface FileRouteTypes {
@@ -124,20 +141,23 @@ export interface FileRouteTypes {
     | '/fournisseurs'
     | '/mouvements'
     | '/parametres'
+    | '/affaires/$numero'
     | '/catalogue/matieres'
     | '/catalogue/panneaux'
+    | '/affaires/'
     | '/catalogue/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
-    | '/affaires'
     | '/bdc'
     | '/fournisseurs'
     | '/mouvements'
     | '/parametres'
     | '/'
+    | '/affaires/$numero'
     | '/catalogue/matieres'
     | '/catalogue/panneaux'
+    | '/affaires'
     | '/catalogue'
   id:
     | '__root__'
@@ -149,8 +169,10 @@ export interface FileRouteTypes {
     | '/_app/mouvements'
     | '/_app/parametres'
     | '/_app/'
+    | '/_app/affaires/$numero'
     | '/_app/catalogue/matieres'
     | '/_app/catalogue/panneaux'
+    | '/_app/affaires/'
     | '/_app/catalogue/'
   fileRoutesById: FileRoutesById
 }
@@ -224,6 +246,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCatalogueIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/affaires/': {
+      id: '/_app/affaires/'
+      path: '/'
+      fullPath: '/affaires/'
+      preLoaderRoute: typeof AppAffairesIndexRouteImport
+      parentRoute: typeof AppAffairesRoute
+    }
     '/_app/catalogue/panneaux': {
       id: '/_app/catalogue/panneaux'
       path: '/catalogue/panneaux'
@@ -238,11 +267,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCatalogueMatieresRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/affaires/$numero': {
+      id: '/_app/affaires/$numero'
+      path: '/$numero'
+      fullPath: '/affaires/$numero'
+      preLoaderRoute: typeof AppAffairesNumeroRouteImport
+      parentRoute: typeof AppAffairesRoute
+    }
   }
 }
 
+interface AppAffairesRouteChildren {
+  AppAffairesNumeroRoute: typeof AppAffairesNumeroRoute
+  AppAffairesIndexRoute: typeof AppAffairesIndexRoute
+}
+
+const AppAffairesRouteChildren: AppAffairesRouteChildren = {
+  AppAffairesNumeroRoute: AppAffairesNumeroRoute,
+  AppAffairesIndexRoute: AppAffairesIndexRoute,
+}
+
+const AppAffairesRouteWithChildren = AppAffairesRoute._addFileChildren(
+  AppAffairesRouteChildren,
+)
+
 interface AppRouteChildren {
-  AppAffairesRoute: typeof AppAffairesRoute
+  AppAffairesRoute: typeof AppAffairesRouteWithChildren
   AppBdcRoute: typeof AppBdcRoute
   AppFournisseursRoute: typeof AppFournisseursRoute
   AppMouvementsRoute: typeof AppMouvementsRoute
@@ -254,7 +304,7 @@ interface AppRouteChildren {
 }
 
 const AppRouteChildren: AppRouteChildren = {
-  AppAffairesRoute: AppAffairesRoute,
+  AppAffairesRoute: AppAffairesRouteWithChildren,
   AppBdcRoute: AppBdcRoute,
   AppFournisseursRoute: AppFournisseursRoute,
   AppMouvementsRoute: AppMouvementsRoute,

@@ -24,21 +24,41 @@ export function permissionLabel(value: PermissionAcces | string | null | undefin
   return PERMISSIONS.find((p) => p.value === value)?.label ?? String(value ?? "");
 }
 
+/**
+ * Suggère le prochain numéro disponible au format strict 4 chiffres (ex. 0001, 0042, 0150).
+ * S'il existe 0001, 0002, 0042, propose 0043.
+ */
 export function suggestNumero(existingNumeros: string[]): string {
-  const year = new Date().getFullYear();
-  const prefix = `${year}-`;
   const seq = existingNumeros
-    .filter((n) => n.startsWith(prefix))
-    .map((n) => parseInt(n.slice(prefix.length), 10))
+    .filter((n) => /^\d{4}$/.test(n))
+    .map((n) => parseInt(n, 10))
     .filter((n) => Number.isFinite(n));
   const next = (seq.length ? Math.max(...seq) : 0) + 1;
-  return `${prefix}${String(next).padStart(3, "0")}`;
+  return String(next).padStart(4, "0");
+}
+
+/** Force la saisie à exactement 4 chiffres (rejette tout caractère non numérique, tronque à 4). */
+export function sanitizeNumeroInput(raw: string): string {
+  return raw.replace(/\D/g, "").slice(0, 4);
+}
+
+export function isValidNumero(value: string): boolean {
+  return /^\d{4}$/.test(value);
 }
 
 export function formatDateFr(value: string | null | undefined) {
   if (!value) return "—";
   try {
     return new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium" }).format(new Date(value));
+  } catch {
+    return "—";
+  }
+}
+
+export function formatDateTimeFr(value: string | null | undefined) {
+  if (!value) return "—";
+  try {
+    return new Intl.DateTimeFormat("fr-FR", { dateStyle: "short", timeStyle: "short" }).format(new Date(value));
   } catch {
     return "—";
   }

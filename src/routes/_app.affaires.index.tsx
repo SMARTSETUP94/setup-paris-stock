@@ -275,7 +275,7 @@ function AffairesIndex() {
                         </span>
                       ) : r.charge_affaires_libre ? (
                         <span
-                          className="inline-flex items-center gap-1 text-xs text-amber-700"
+                          className="inline-flex items-center gap-1 text-xs text-warning"
                           title="Non matché à un profil"
                         >
                           <AlertTriangle className="h-3 w-3" /> {r.charge_affaires_libre}

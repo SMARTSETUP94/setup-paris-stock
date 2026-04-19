@@ -340,7 +340,9 @@ export type Database = {
           libelle: string
           photo_url: string | null
           seuil_alerte: number
+          typologie_id: string
           unite_stock: Database["public"]["Enums"]["unite_stock"]
+          variante: string | null
         }
         Insert: {
           actif?: boolean
@@ -353,7 +355,9 @@ export type Database = {
           libelle: string
           photo_url?: string | null
           seuil_alerte?: number
+          typologie_id: string
           unite_stock?: Database["public"]["Enums"]["unite_stock"]
+          variante?: string | null
         }
         Update: {
           actif?: boolean
@@ -366,9 +370,19 @@ export type Database = {
           libelle?: string
           photo_url?: string | null
           seuil_alerte?: number
+          typologie_id?: string
           unite_stock?: Database["public"]["Enums"]["unite_stock"]
+          variante?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "matieres_typologie_id_fkey"
+            columns: ["typologie_id"]
+            isOneToOne: false
+            referencedRelation: "typologies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       mouvements_stock: {
         Row: {
@@ -552,6 +566,36 @@ export type Database = {
           id?: string
           nom_complet?: string | null
           role?: Database["public"]["Enums"]["app_role"]
+        }
+        Relationships: []
+      }
+      typologies: {
+        Row: {
+          actif: boolean
+          code: string
+          created_at: string
+          description: string | null
+          famille: Database["public"]["Enums"]["famille_matiere"]
+          id: string
+          nom: string
+        }
+        Insert: {
+          actif?: boolean
+          code: string
+          created_at?: string
+          description?: string | null
+          famille: Database["public"]["Enums"]["famille_matiere"]
+          id?: string
+          nom: string
+        }
+        Update: {
+          actif?: boolean
+          code?: string
+          created_at?: string
+          description?: string | null
+          famille?: Database["public"]["Enums"]["famille_matiere"]
+          id?: string
+          nom?: string
         }
         Relationships: []
       }

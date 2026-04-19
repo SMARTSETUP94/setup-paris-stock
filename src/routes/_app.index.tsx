@@ -289,7 +289,7 @@ function DashboardPage() {
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-amber-600" />
+              <AlertTriangle className="h-4 w-4 text-warning" />
               <h2 className="text-base font-semibold">Alertes seuil bas</h2>
             </div>
             <Link to="/inventaire" className="link-arrow text-xs">
@@ -315,7 +315,7 @@ function DashboardPage() {
                     </span>
                   </div>
                   <div className="shrink-0 text-right">
-                    <div className="text-amber-700 font-medium">
+                    <div className="text-warning font-medium">
                       {formatNumber(Number(a.stock_actuel ?? 0), 2)}
                     </div>
                     <div className="text-xs text-muted-foreground">

@@ -39,7 +39,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { TypeMouvementBadge } from "@/components/TypeMouvementBadge";
 import { NumeroAffairePill } from "@/components/NumeroAffairePill";
-import { MouvementDialog } from "@/components/MouvementDialog";
+import { MouvementDialog, type MouvementPrefill } from "@/components/MouvementDialog";
 import { TYPES_MVT } from "@/lib/mouvements";
 import { formatEuro, formatNumber } from "@/lib/familles";
 import { formatDateTimeFr } from "@/lib/affaires";
@@ -91,6 +91,7 @@ function MouvementsPage() {
   const [dateDebut, setDateDebut] = useState<string>("");
   const [dateFin, setDateFin] = useState<string>("");
   const [openMode, setOpenMode] = useState<"entree" | "sortie" | "correction" | null>(null);
+  const [prefill, setPrefill] = useState<MouvementPrefill | null>(null);
   const [affairesOpts, setAffairesOpts] = useState<
     { id: string; numero: string | null; nom: string; code_chantier: string }[]
   >([]);
@@ -244,13 +245,28 @@ function MouvementsPage() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setOpenMode("entree")}>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setPrefill(null);
+                    setOpenMode("entree");
+                  }}
+                >
                   <ArrowDownToLine className="h-4 w-4 mr-2" /> Entrée
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setOpenMode("sortie")}>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setPrefill(null);
+                    setOpenMode("sortie");
+                  }}
+                >
                   <ArrowUpFromLine className="h-4 w-4 mr-2" /> Sortie
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setOpenMode("correction")}>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setPrefill(null);
+                    setOpenMode("correction");
+                  }}
+                >
                   <Wrench className="h-4 w-4 mr-2" /> Correction
                 </DropdownMenuItem>
               </DropdownMenuContent>

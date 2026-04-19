@@ -153,7 +153,9 @@ export const ocrBdc = createServerFn({ method: "POST" })
     // 7. Effacer les anciennes lignes (cas d'un re-OCR) puis insérer les nouvelles
     await supabaseAdmin.from("bdc_lignes").delete().eq("bdc_id", bdcId);
 
-    const updates: Record<string, unknown> = {
+    type BdcUpdate =
+      Database["public"]["Tables"]["bons_de_commande"]["Update"];
+    const updates: BdcUpdate = {
       statut: "ocr_termine",
       extraction_brute_json: mindeeJson as never,
       validated_at: null,

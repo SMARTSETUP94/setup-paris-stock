@@ -549,7 +549,6 @@ function ScanInventaire({
     return () => {
       stopScan();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function validate() {

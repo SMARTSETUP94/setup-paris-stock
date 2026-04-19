@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { Plus, Search, Download, FileSpreadsheet, FileText, ArrowDownToLine, ArrowUpFromLine, Wrench, Recycle } from "lucide-react";
+import { createFileRoute } from "@tanstack/react-router";
+import { Plus, Search, Download, FileSpreadsheet, FileText, ArrowDownToLine, ArrowUpFromLine, Wrench } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminGuard, AdminLoader, useDebounced } from "@/hooks/useAdminGuard";
 import { PageHeader } from "@/components/PageHeader";
@@ -84,7 +84,7 @@ function MouvementsPage() {
 
     if (dateDebut) q = q.gte("created_at", `${dateDebut}T00:00:00Z`);
     if (dateFin) q = q.lte("created_at", `${dateFin}T23:59:59Z`);
-    if (typeFilter !== "all") q = q.eq("type", typeFilter as Row["type"]);
+    if (typeFilter !== "all") q = q.eq("type", typeFilter as "entree" | "sortie" | "correction" | "chute_reintegration");
     if (affaireFilter !== "all") q = q.eq("affaire_id", affaireFilter);
 
     const { data, error } = await q;

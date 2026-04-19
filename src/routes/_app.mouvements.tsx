@@ -19,6 +19,7 @@ import { TYPES_MVT } from "@/lib/mouvements";
 import { formatEuro, formatNumber } from "@/lib/familles";
 import { formatDateTimeFr } from "@/lib/affaires";
 import { useAuth } from "@/hooks/useAuth";
+import { useStockRealtime } from "@/hooks/useStockRealtime";
 import {
   exportMouvementsXLSX, exportMouvementsCSV, exportMouvementsPDF,
   type MouvementExport,

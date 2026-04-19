@@ -91,6 +91,7 @@ function DashboardPage() {
   const [mouvements, setMouvements] = useState<MouvementRecent[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [hasData, setHasData] = useState<boolean | null>(null);
+  const [openNewAffaire, setOpenNewAffaire] = useState(false);
 
   async function loadDashboard() {
     const [aff, bdc, cat, mvtData] = await Promise.all([

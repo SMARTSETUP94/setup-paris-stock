@@ -71,6 +71,9 @@ function PanneauxPage() {
   const [creating, setCreating] = useState(false);
   const [importing, setImporting] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [viewMode, setViewMode] = useState<"list" | "tree">("list");
+  const [expandedMat, setExpandedMat] = useState<Set<string>>(new Set());
+  const [expandedFmt, setExpandedFmt] = useState<Set<string>>(new Set());
 
   async function fetchData() {
     setLoading(true);

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { AlertTriangle, ArrowRight, Plus, SlidersHorizontal, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -73,17 +73,9 @@ type TopAffaire = {
 
 function DashboardPage() {
   const { profile, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
   const isStaff = profile?.role === "admin" || profile?.role === "magasinier";
   const isAdmin = profile?.role === "admin";
-
-  // Les utilisateurs mobile sont redirigés vers le scanner.
-  useEffect(() => {
-    if (authLoading) return;
-    if (profile?.role === "mobile") {
-      navigate({ to: "/scan", replace: true });
-    }
-  }, [authLoading, profile?.role, navigate]);
+  const isMobile = !authLoading && profile?.role === "mobile";
 
   const [kpis, setKpis] = useState<{
     affaires_en_cours: number | null;
@@ -241,6 +233,11 @@ function DashboardPage() {
       format: (v: number) => formatEuro(v),
     },
   ];
+
+  // Les utilisateurs mobile sont redirigés vers le scanner — après tous les hooks.
+  if (isMobile) {
+    return <Navigate to="/scan" replace />;
+  }
 
   return (
     <div className="max-w-6xl space-y-16 md:space-y-24">

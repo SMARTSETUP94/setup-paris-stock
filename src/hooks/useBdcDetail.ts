@@ -174,6 +174,31 @@ export function useBdcDetail(id: string, ready: boolean, userId: string | undefi
     }
   }
 
+  /**
+   * Bascule un BDC dont l'OCR a échoué vers la saisie manuelle :
+   * efface le champ error de extraction_brute_json et autorise l'édition.
+   */
+  async function switchToManual() {
+    if (!bdc) return;
+    const current = (bdc.extraction_brute_json as Record<string, unknown> | null) ?? {};
+    const next = { ...current, mode: "manuel", saisie_manuelle: true };
+    delete (next as Record<string, unknown>).error;
+
+    const { error } = await supabase
+      .from("bons_de_commande")
+      .update({
+        extraction_brute_json: next,
+        statut: bdc.statut === "en_attente_ocr" ? "ocr_termine" : bdc.statut,
+      })
+      .eq("id", id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success("Mode saisie manuelle activé. Vous pouvez ajouter vos lignes.");
+    await load();
+  }
+
   async function handleValider(onSuccess: () => void) {
     if (!bdc) return;
     const lignesAValider = lignes.filter((l) => l.ligne_validee && l.panneau_id);

@@ -102,14 +102,14 @@ export function MouvementDialog({
   useEffect(() => {
     if (!open) return;
     setLoading(true);
-    setPanneauId("");
-    setQuantite("");
+    setPanneauId(prefill?.panneauId ?? "");
+    setQuantite(prefill ? String(prefill.quantite) : "");
     setPrixUnitaire("");
-    setAffaireId(presetAffaireId ?? "");
-    setCommentaire("");
+    setAffaireId(prefill?.affaireId ?? presetAffaireId ?? "");
+    setCommentaire(prefill?.commentaire ?? "");
     setForceOverstock(false);
     setCorrectionCump(false);
-    setSigne("plus");
+    setSigne(prefill?.signe ?? "plus");
 
     void (async () => {
       const [pRes, aRes] = await Promise.all([
@@ -124,7 +124,7 @@ export function MouvementDialog({
       setAffaires((aRes.data as AffaireOption[]) ?? []);
       setLoading(false);
     })();
-  }, [open, presetAffaireId]);
+  }, [open, presetAffaireId, prefill]);
 
   const selectedPanneau = useMemo(
     () => panneaux.find((p) => p.id === panneauId) ?? null,

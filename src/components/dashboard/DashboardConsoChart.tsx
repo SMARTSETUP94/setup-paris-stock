@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { FAMILLES, type Famille, formatNumber } from "@/lib/familles";
+import { useFamilles } from "@/hooks/useFamilles";
 import { Loader2 } from "lucide-react";
 
 type Periode = 7 | 30 | 90;
@@ -28,6 +29,7 @@ const PERIODES: { value: Periode; label: string }[] = [
 ];
 
 export function DashboardConsoChart() {
+  const { byValue: famillesByValue } = useFamilles();
   const [periode, setPeriode] = useState<Periode>(30);
   const [data, setData] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
@@ -181,15 +183,20 @@ export function DashboardConsoChart() {
                 }}
                 formatter={(value: number, name: string) => [
                   `${formatNumber(value, 2)} m²`,
-                  FAMILLES.find((f) => f.value === name)?.label ?? name,
+                  famillesByValue[name as Famille]?.label ?? name,
                 ]}
               />
               <Legend
                 wrapperStyle={{ fontSize: 11 }}
-                formatter={(value) => FAMILLES.find((f) => f.value === value)?.label ?? value}
+                formatter={(value) => famillesByValue[value as Famille]?.label ?? value}
               />
               {famillesAffichees.map((f) => (
-                <Bar key={f.value} dataKey={f.value} stackId="a" fill={f.color} />
+                <Bar
+                  key={f.value}
+                  dataKey={f.value}
+                  stackId="a"
+                  fill={famillesByValue[f.value]?.color ?? f.color}
+                />
               ))}
             </BarChart>
           </ResponsiveContainer>

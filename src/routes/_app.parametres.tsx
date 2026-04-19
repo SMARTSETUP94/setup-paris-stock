@@ -53,6 +53,7 @@ import {
   deleteUser,
 } from "@/lib/users.functions";
 import { BrandingTab } from "@/components/parametres/BrandingTab";
+import { FamillesTab } from "@/components/parametres/FamillesTab";
 
 type AppRole = "admin" | "magasinier" | "mobile";
 
@@ -98,10 +99,14 @@ function ParametresPage() {
       <Tabs defaultValue="utilisateurs" className="w-full">
         <TabsList className="mb-6">
           <TabsTrigger value="utilisateurs">Utilisateurs</TabsTrigger>
+          <TabsTrigger value="familles">Familles</TabsTrigger>
           <TabsTrigger value="branding">Branding</TabsTrigger>
         </TabsList>
         <TabsContent value="utilisateurs">
           <UsersTab />
+        </TabsContent>
+        <TabsContent value="familles">
+          <FamillesTab />
         </TabsContent>
         <TabsContent value="branding">
           <BrandingTab />

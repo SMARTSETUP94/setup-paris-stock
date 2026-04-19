@@ -283,6 +283,30 @@ export type Database = {
           },
         ]
       }
+      familles_overrides: {
+        Row: {
+          couleur: string | null
+          famille: Database["public"]["Enums"]["famille_matiere"]
+          label: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          couleur?: string | null
+          famille: Database["public"]["Enums"]["famille_matiere"]
+          label?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          couleur?: string | null
+          famille?: Database["public"]["Enums"]["famille_matiere"]
+          label?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       fournisseurs: {
         Row: {
           adresse: string | null

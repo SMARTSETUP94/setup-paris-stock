@@ -29,6 +29,7 @@ import {
 import { Plus, Pencil, Search, Loader2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { FAMILLES, type Famille } from "@/lib/familles";
+import { useFamilles } from "@/hooks/useFamilles";
 import type { Typologie } from "@/lib/typologies";
 
 export const Route = createFileRoute("/_app/catalogue/typologies")({
@@ -40,6 +41,7 @@ type Counts = { matieres: number; panneaux: number };
 
 function TypologiesPage() {
   const { ready } = useAdminGuard();
+  const { familles } = useFamilles();
   const [items, setItems] = useState<Typologie[]>([]);
   const [counts, setCounts] = useState<Map<string, Counts>>(new Map());
   const [loading, setLoading] = useState(true);
@@ -153,7 +155,7 @@ function TypologiesPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Toutes familles</SelectItem>
-            {FAMILLES.map((f) => (
+            {familles.map((f) => (
               <SelectItem key={f.value} value={f.value}>
                 {f.label}
               </SelectItem>
@@ -327,6 +329,7 @@ function TypologieDialog({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const { familles } = useFamilles();
   const [form, setForm] = useState<TablesInsert<"typologies">>({
     code: typologie?.code ?? "",
     nom: typologie?.nom ?? "",
@@ -424,7 +427,7 @@ function TypologieDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {FAMILLES.map((f) => (
+                  {familles.map((f) => (
                     <SelectItem key={f.value} value={f.value}>
                       {f.label}
                     </SelectItem>

@@ -58,7 +58,7 @@ type MvtRecent = {
   panneau?: { longueur_mm: number; largeur_mm: number; matiere?: { code: string; libelle: string } | null } | null;
 };
 
-export const Route = createFileRoute("/_app/affaires/$numero")({
+export const Route = createFileRoute("/_app/affaires/$code")({
   head: () => ({ meta: [{ title: "Affaire — Setup Stock" }] }),
   component: AffaireDetail,
 });

@@ -122,7 +122,7 @@ function DashboardPage() {
           "id, type, quantite, created_at, panneau:panneaux(longueur_mm, largeur_mm, matiere:matieres(code, libelle)), affaire:affaires(code_chantier)",
         )
         .order("created_at", { ascending: false })
-        .limit(10),
+        .limit(5),
     ]);
 
     let stockBas = 0;

@@ -378,7 +378,7 @@ function DashboardPage() {
               <h2 className="font-display text-lg font-semibold tracking-tight">Mouvements récents</h2>
             </div>
             <Link to="/mouvements" className="link-arrow text-xs">
-              Tout l'historique →
+              Voir tous les mouvements →
             </Link>
           </div>
           {loadingData ? (

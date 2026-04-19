@@ -148,12 +148,11 @@ export const resendInvitation = createServerFn({ method: "POST" })
     await assertAdmin((context as AuthedContext).supabase, (context as AuthedContext).userId);
 
     const redirectTo = data.redirectTo ?? `${process.env.SITE_URL ?? ""}/reset-password`;
-    const { error } = await supabaseAdmin.auth.admin.generateLink({
-      type: "recovery",
-      email: data.email,
-      options: {
-        redirectTo: redirectTo && redirectTo.startsWith("http") ? redirectTo : undefined,
-      },
+    const finalRedirect = redirectTo && redirectTo.startsWith("http") ? redirectTo : undefined;
+    // resetPasswordForEmail déclenche l'envoi via le hook email Lovable,
+    // contrairement à generateLink qui se contente de créer un lien sans email.
+    const { error } = await supabaseAdmin.auth.resetPasswordForEmail(data.email, {
+      redirectTo: finalRedirect,
     });
     if (error) throw new Error(error.message);
     return { success: true };

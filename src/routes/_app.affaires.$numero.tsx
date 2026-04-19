@@ -114,17 +114,26 @@ function AffaireDetail() {
   }, [affaire?.id]);
 
   async function loadStock(id: string) {
-    const { data } = await supabase
+    const { data: cons } = await supabase
       .from("consommation_par_affaire")
-      .select(`
-        panneau_id, matiere_id, qte_entree, qte_sortie, reliquat, surface_m2_totale, valeur_consommee_ht,
-        panneau:panneaux!consommation_par_affaire_panneau_id_fkey(
-          longueur_mm, largeur_mm, cump_ht,
-          matiere:matieres!panneaux_matiere_id_fkey(code, libelle, unite_stock)
-        )
-      `)
+      .select("panneau_id, matiere_id, qte_entree, qte_sortie, reliquat, surface_m2_totale, valeur_consommee_ht")
       .eq("affaire_id", id);
-    setStockLignes(((data ?? []) as unknown) as StockLigne[]);
+    const lignes = (cons ?? []) as Omit<StockLigne, "panneau">[];
+    const panneauIds = lignes.map((l) => l.panneau_id).filter((x): x is string => !!x);
+    if (panneauIds.length === 0) {
+      setStockLignes([]);
+      return;
+    }
+    const { data: pan } = await supabase
+      .from("panneaux")
+      .select("id, longueur_mm, largeur_mm, cump_ht, matiere:matieres!panneaux_matiere_id_fkey(code, libelle, unite_stock)")
+      .in("id", panneauIds);
+    const panMap = new Map(((pan ?? []) as { id: string; longueur_mm: number; largeur_mm: number; cump_ht: number | null; matiere: { code: string; libelle: string; unite_stock: string } | null }[]).map((p) => [p.id, p]));
+    const merged: StockLigne[] = lignes.map((l) => ({
+      ...l,
+      panneau: l.panneau_id ? panMap.get(l.panneau_id) ?? null : null,
+    }));
+    setStockLignes(merged);
   }
 
   async function loadMvtRecent(id: string) {

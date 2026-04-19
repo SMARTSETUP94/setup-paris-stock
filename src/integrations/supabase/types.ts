@@ -1,0 +1,674 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
+  }
+  public: {
+    Tables: {
+      affaire_acces: {
+        Row: {
+          affaire_id: string
+          created_at: string
+          email_invite: string
+          expire_le: string
+          id: string
+          permissions: Database["public"]["Enums"]["permission_acces"]
+          tiers_profile_id: string | null
+          token: string
+        }
+        Insert: {
+          affaire_id: string
+          created_at?: string
+          email_invite: string
+          expire_le: string
+          id?: string
+          permissions?: Database["public"]["Enums"]["permission_acces"]
+          tiers_profile_id?: string | null
+          token: string
+        }
+        Update: {
+          affaire_id?: string
+          created_at?: string
+          email_invite?: string
+          expire_le?: string
+          id?: string
+          permissions?: Database["public"]["Enums"]["permission_acces"]
+          tiers_profile_id?: string | null
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affaire_acces_affaire_id_fkey"
+            columns: ["affaire_id"]
+            isOneToOne: false
+            referencedRelation: "affaires"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affaire_acces_tiers_profile_id_fkey"
+            columns: ["tiers_profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affaires: {
+        Row: {
+          budget_panneaux_ht: number | null
+          client: string | null
+          created_at: string
+          date_debut: string | null
+          date_fin_prevue: string | null
+          id: string
+          nom: string
+          notes: string | null
+          numero: string
+          responsable_id: string | null
+          statut: Database["public"]["Enums"]["statut_affaire"]
+        }
+        Insert: {
+          budget_panneaux_ht?: number | null
+          client?: string | null
+          created_at?: string
+          date_debut?: string | null
+          date_fin_prevue?: string | null
+          id?: string
+          nom: string
+          notes?: string | null
+          numero: string
+          responsable_id?: string | null
+          statut?: Database["public"]["Enums"]["statut_affaire"]
+        }
+        Update: {
+          budget_panneaux_ht?: number | null
+          client?: string | null
+          created_at?: string
+          date_debut?: string | null
+          date_fin_prevue?: string | null
+          id?: string
+          nom?: string
+          notes?: string | null
+          numero?: string
+          responsable_id?: string | null
+          statut?: Database["public"]["Enums"]["statut_affaire"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affaires_responsable_id_fkey"
+            columns: ["responsable_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bdc_lignes: {
+        Row: {
+          bdc_id: string
+          dimensions_brut: string | null
+          id: string
+          ligne_validee: boolean
+          matiere_libelle_brut: string | null
+          panneau_id: string | null
+          prix_unitaire_ht: number
+          quantite: number
+        }
+        Insert: {
+          bdc_id: string
+          dimensions_brut?: string | null
+          id?: string
+          ligne_validee?: boolean
+          matiere_libelle_brut?: string | null
+          panneau_id?: string | null
+          prix_unitaire_ht?: number
+          quantite?: number
+        }
+        Update: {
+          bdc_id?: string
+          dimensions_brut?: string | null
+          id?: string
+          ligne_validee?: boolean
+          matiere_libelle_brut?: string | null
+          panneau_id?: string | null
+          prix_unitaire_ht?: number
+          quantite?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bdc_lignes_bdc_id_fkey"
+            columns: ["bdc_id"]
+            isOneToOne: false
+            referencedRelation: "bons_de_commande"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bdc_lignes_panneau_id_fkey"
+            columns: ["panneau_id"]
+            isOneToOne: false
+            referencedRelation: "panneaux"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bons_de_commande: {
+        Row: {
+          affaire_id: string | null
+          created_at: string
+          cree_par: string | null
+          date_bdc: string | null
+          extraction_brute_json: Json | null
+          fichier_pdf_url: string | null
+          fournisseur_id: string
+          id: string
+          montant_ht_total: number | null
+          numero_bdc: string | null
+          statut: Database["public"]["Enums"]["statut_bdc"]
+          validated_at: string | null
+        }
+        Insert: {
+          affaire_id?: string | null
+          created_at?: string
+          cree_par?: string | null
+          date_bdc?: string | null
+          extraction_brute_json?: Json | null
+          fichier_pdf_url?: string | null
+          fournisseur_id: string
+          id?: string
+          montant_ht_total?: number | null
+          numero_bdc?: string | null
+          statut?: Database["public"]["Enums"]["statut_bdc"]
+          validated_at?: string | null
+        }
+        Update: {
+          affaire_id?: string | null
+          created_at?: string
+          cree_par?: string | null
+          date_bdc?: string | null
+          extraction_brute_json?: Json | null
+          fichier_pdf_url?: string | null
+          fournisseur_id?: string
+          id?: string
+          montant_ht_total?: number | null
+          numero_bdc?: string | null
+          statut?: Database["public"]["Enums"]["statut_bdc"]
+          validated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bons_de_commande_affaire_id_fkey"
+            columns: ["affaire_id"]
+            isOneToOne: false
+            referencedRelation: "affaires"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bons_de_commande_cree_par_fkey"
+            columns: ["cree_par"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bons_de_commande_fournisseur_id_fkey"
+            columns: ["fournisseur_id"]
+            isOneToOne: false
+            referencedRelation: "fournisseurs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fournisseurs: {
+        Row: {
+          adresse: string | null
+          created_at: string
+          email: string | null
+          id: string
+          nom: string
+          notes: string | null
+          siret: string | null
+          telephone: string | null
+        }
+        Insert: {
+          adresse?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          nom: string
+          notes?: string | null
+          siret?: string | null
+          telephone?: string | null
+        }
+        Update: {
+          adresse?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          nom?: string
+          notes?: string | null
+          siret?: string | null
+          telephone?: string | null
+        }
+        Relationships: []
+      }
+      matieres: {
+        Row: {
+          actif: boolean
+          code: string
+          created_at: string
+          densite_kg_m3: number | null
+          epaisseur_mm: number
+          famille: Database["public"]["Enums"]["famille_matiere"]
+          id: string
+          libelle: string
+          photo_url: string | null
+          seuil_alerte: number
+          unite_stock: Database["public"]["Enums"]["unite_stock"]
+        }
+        Insert: {
+          actif?: boolean
+          code: string
+          created_at?: string
+          densite_kg_m3?: number | null
+          epaisseur_mm: number
+          famille?: Database["public"]["Enums"]["famille_matiere"]
+          id?: string
+          libelle: string
+          photo_url?: string | null
+          seuil_alerte?: number
+          unite_stock?: Database["public"]["Enums"]["unite_stock"]
+        }
+        Update: {
+          actif?: boolean
+          code?: string
+          created_at?: string
+          densite_kg_m3?: number | null
+          epaisseur_mm?: number
+          famille?: Database["public"]["Enums"]["famille_matiere"]
+          id?: string
+          libelle?: string
+          photo_url?: string | null
+          seuil_alerte?: number
+          unite_stock?: Database["public"]["Enums"]["unite_stock"]
+        }
+        Relationships: []
+      }
+      mouvements_stock: {
+        Row: {
+          affaire_id: string | null
+          bdc_id: string | null
+          commentaire: string | null
+          created_at: string
+          effectue_par: string | null
+          id: string
+          panneau_id: string
+          photo_url: string | null
+          quantite: number
+          type: Database["public"]["Enums"]["type_mouvement"]
+        }
+        Insert: {
+          affaire_id?: string | null
+          bdc_id?: string | null
+          commentaire?: string | null
+          created_at?: string
+          effectue_par?: string | null
+          id?: string
+          panneau_id: string
+          photo_url?: string | null
+          quantite: number
+          type: Database["public"]["Enums"]["type_mouvement"]
+        }
+        Update: {
+          affaire_id?: string | null
+          bdc_id?: string | null
+          commentaire?: string | null
+          created_at?: string
+          effectue_par?: string | null
+          id?: string
+          panneau_id?: string
+          photo_url?: string | null
+          quantite?: number
+          type?: Database["public"]["Enums"]["type_mouvement"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mouvements_stock_affaire_id_fkey"
+            columns: ["affaire_id"]
+            isOneToOne: false
+            referencedRelation: "affaires"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mouvements_stock_bdc_id_fkey"
+            columns: ["bdc_id"]
+            isOneToOne: false
+            referencedRelation: "bons_de_commande"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mouvements_stock_effectue_par_fkey"
+            columns: ["effectue_par"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mouvements_stock_panneau_id_fkey"
+            columns: ["panneau_id"]
+            isOneToOne: false
+            referencedRelation: "panneaux"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      panneaux: {
+        Row: {
+          created_at: string
+          id: string
+          largeur_mm: number
+          longueur_mm: number
+          matiere_id: string
+          prix_achat_ht: number | null
+          reference_fournisseur: string | null
+          surface_m2: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          largeur_mm: number
+          longueur_mm: number
+          matiere_id: string
+          prix_achat_ht?: number | null
+          reference_fournisseur?: string | null
+          surface_m2?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          largeur_mm?: number
+          longueur_mm?: number
+          matiere_id?: string
+          prix_achat_ht?: number | null
+          reference_fournisseur?: string | null
+          surface_m2?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "panneaux_matiere_id_fkey"
+            columns: ["matiere_id"]
+            isOneToOne: false
+            referencedRelation: "matieres"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          actif: boolean
+          created_at: string
+          email: string
+          id: string
+          nom_complet: string | null
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Insert: {
+          actif?: boolean
+          created_at?: string
+          email: string
+          id: string
+          nom_complet?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Update: {
+          actif?: boolean
+          created_at?: string
+          email?: string
+          id?: string
+          nom_complet?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      consommation_par_affaire: {
+        Row: {
+          affaire_id: string | null
+          matiere_id: string | null
+          quantite_sortie: number | null
+          surface_m2_totale: number | null
+          valeur_estimee_ht: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mouvements_stock_affaire_id_fkey"
+            columns: ["affaire_id"]
+            isOneToOne: false
+            referencedRelation: "affaires"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "panneaux_matiere_id_fkey"
+            columns: ["matiere_id"]
+            isOneToOne: false
+            referencedRelation: "matieres"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_actuel: {
+        Row: {
+          panneau_id: string | null
+          quantite_actuelle: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mouvements_stock_panneau_id_fkey"
+            columns: ["panneau_id"]
+            isOneToOne: false
+            referencedRelation: "panneaux"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
+    Functions: {
+      affaires_autorisees_tiers: {
+        Args: { _user_id: string }
+        Returns: string[]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_admin: { Args: { _user_id: string }; Returns: boolean }
+      tiers_a_acces_affaire: {
+        Args: { _affaire_id: string; _user_id: string }
+        Returns: boolean
+      }
+      tiers_peut_ecrire_mvt: {
+        Args: { _affaire_id: string; _user_id: string }
+        Returns: boolean
+      }
+    }
+    Enums: {
+      app_role: "admin" | "tiers"
+      famille_matiere:
+        | "bois"
+        | "metal"
+        | "mousse"
+        | "carton"
+        | "dibond"
+        | "pvc"
+        | "forex"
+        | "plexi"
+        | "autre"
+      permission_acces: "lecture" | "sortie" | "entree_sortie"
+      statut_affaire: "devis" | "en_cours" | "termine" | "archive"
+      statut_bdc:
+        | "en_attente_ocr"
+        | "ocr_termine"
+        | "valide"
+        | "recu"
+        | "annule"
+      type_mouvement: "entree" | "sortie" | "correction" | "chute_reintegration"
+      unite_stock: "panneau" | "m2" | "ml" | "piece"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      app_role: ["admin", "tiers"],
+      famille_matiere: [
+        "bois",
+        "metal",
+        "mousse",
+        "carton",
+        "dibond",
+        "pvc",
+        "forex",
+        "plexi",
+        "autre",
+      ],
+      permission_acces: ["lecture", "sortie", "entree_sortie"],
+      statut_affaire: ["devis", "en_cours", "termine", "archive"],
+      statut_bdc: ["en_attente_ocr", "ocr_termine", "valide", "recu", "annule"],
+      type_mouvement: ["entree", "sortie", "correction", "chute_reintegration"],
+      unite_stock: ["panneau", "m2", "ml", "piece"],
+    },
+  },
+} as const

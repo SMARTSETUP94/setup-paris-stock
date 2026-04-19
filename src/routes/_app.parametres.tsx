@@ -276,15 +276,16 @@ function UsersTab() {
 
                   <Select
                     value={u.role}
-                    onValueChange={(v) => handleChangeRole(u, v as "admin" | "tiers")}
+                    onValueChange={(v) => requestRoleChange(u, v as AppRole)}
                     disabled={isMe}
                   >
-                    <SelectTrigger className="w-28 h-8 text-xs">
+                    <SelectTrigger className="w-32 h-8 text-xs">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="admin">Admin</SelectItem>
-                      <SelectItem value="tiers">Tiers</SelectItem>
+                      <SelectItem value="magasinier">Magasinier</SelectItem>
+                      <SelectItem value="mobile">Mobile</SelectItem>
                     </SelectContent>
                   </Select>
 

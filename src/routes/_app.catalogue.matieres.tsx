@@ -36,7 +36,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
-import { FAMILLES, UNITES, type Famille, type UniteStock } from "@/lib/familles";
+import { UNITES, type Famille, type UniteStock } from "@/lib/familles";
 import { useFamilles } from "@/hooks/useFamilles";
 import { autoMatiereCode, autoMatiereLibelle, type Typologie } from "@/lib/typologies";
 import { CatalogueSubnav } from "./_app.catalogue.typologies";

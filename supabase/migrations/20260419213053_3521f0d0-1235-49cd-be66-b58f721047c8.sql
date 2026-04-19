@@ -1,0 +1,1 @@
+UPDATE public.app_settings SET nom_application = 'StockLog' WHERE singleton = true;

@@ -53,9 +53,11 @@ export function BrandingLogo({
     );
   }
 
-  // Découpage "SETUP PARIS" → premier mot bold, reste regular
+  // Wordmark = nom de l'application (ex: "StockLog")
+  // Tagline  = "BY <nom_organisation>" (ex: "BY SETUP.PARIS")
+  const appRaw = (branding.nom_application || "StockLog").trim();
   const orgRaw = (branding.nom_organisation || "Setup Paris").trim();
-  const [firstWord, ...restWords] = orgRaw.split(/\s+/);
+  const [firstWord, ...restWords] = appRaw.split(/\s+/);
   const rest = restWords.join(" ");
 
   return (
@@ -83,7 +85,7 @@ export function BrandingLogo({
               subColor,
             )}
           >
-            BY {orgRaw.toUpperCase().replace(/\s+/g, ".")} ↗
+          BY {orgRaw.toUpperCase().replace(/\s+/g, ".")} ↗
           </span>
         )}
       </div>

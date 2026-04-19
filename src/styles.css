@@ -108,6 +108,15 @@
   --accent-foreground: oklch(0.18 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(1 0 0);
+  /* Success #166534 vert profond */
+  --success: oklch(0.5 0.13 150);
+  --success-foreground: oklch(1 0 0);
+  /* Warning #B45309 ambre */
+  --warning: oklch(0.62 0.15 60);
+  --warning-foreground: oklch(1 0 0);
+  /* Info = primary bleu Setup Paris */
+  --info: oklch(0.55 0.25 268);
+  --info-foreground: oklch(1 0 0);
   /* Bordures #E5E5E4 */
   --border: oklch(0.91 0.002 80);
   --input: oklch(0.91 0.002 80);

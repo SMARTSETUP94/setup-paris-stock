@@ -228,10 +228,14 @@ export function exportMouvementsCSV(
 // ============================================================
 // PDF (jsPDF + autoTable, paysage)
 // ============================================================
-export function exportMouvementsPDF(
+export async function exportMouvementsPDF(
   rows: MouvementExport[],
   opts: { dateDebut?: string; dateFin?: string; filtersSummary?: string },
 ) {
+  const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+    import("jspdf"),
+    import("jspdf-autotable"),
+  ]);
   const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
 
   // En-tête

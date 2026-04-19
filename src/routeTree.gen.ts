@@ -17,6 +17,7 @@ import { Route as AppIndexRouteImport } from './routes/_app.index'
 import { Route as ScanPanneauIdRouteImport } from './routes/scan.$panneauId'
 import { Route as AppParametresRouteImport } from './routes/_app.parametres'
 import { Route as AppMouvementsRouteImport } from './routes/_app.mouvements'
+import { Route as AppInventaireRouteImport } from './routes/_app.inventaire'
 import { Route as AppFournisseursRouteImport } from './routes/_app.fournisseurs'
 import { Route as AppBdcRouteImport } from './routes/_app.bdc'
 import { Route as AppAffairesRouteImport } from './routes/_app.affaires'
@@ -65,6 +66,11 @@ const AppParametresRoute = AppParametresRouteImport.update({
 const AppMouvementsRoute = AppMouvementsRouteImport.update({
   id: '/mouvements',
   path: '/mouvements',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppInventaireRoute = AppInventaireRouteImport.update({
+  id: '/inventaire',
+  path: '/inventaire',
   getParentRoute: () => AppRoute,
 } as any)
 const AppFournisseursRoute = AppFournisseursRouteImport.update({
@@ -125,6 +131,7 @@ export interface FileRoutesByFullPath {
   '/affaires': typeof AppAffairesRouteWithChildren
   '/bdc': typeof AppBdcRouteWithChildren
   '/fournisseurs': typeof AppFournisseursRoute
+  '/inventaire': typeof AppInventaireRoute
   '/mouvements': typeof AppMouvementsRoute
   '/parametres': typeof AppParametresRoute
   '/scan/$panneauId': typeof ScanPanneauIdRoute
@@ -142,6 +149,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/bdc': typeof AppBdcRouteWithChildren
   '/fournisseurs': typeof AppFournisseursRoute
+  '/inventaire': typeof AppInventaireRoute
   '/mouvements': typeof AppMouvementsRoute
   '/parametres': typeof AppParametresRoute
   '/scan/$panneauId': typeof ScanPanneauIdRoute
@@ -163,6 +171,7 @@ export interface FileRoutesById {
   '/_app/affaires': typeof AppAffairesRouteWithChildren
   '/_app/bdc': typeof AppBdcRouteWithChildren
   '/_app/fournisseurs': typeof AppFournisseursRoute
+  '/_app/inventaire': typeof AppInventaireRoute
   '/_app/mouvements': typeof AppMouvementsRoute
   '/_app/parametres': typeof AppParametresRoute
   '/scan/$panneauId': typeof ScanPanneauIdRoute
@@ -185,6 +194,7 @@ export interface FileRouteTypes {
     | '/affaires'
     | '/bdc'
     | '/fournisseurs'
+    | '/inventaire'
     | '/mouvements'
     | '/parametres'
     | '/scan/$panneauId'
@@ -202,6 +212,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/bdc'
     | '/fournisseurs'
+    | '/inventaire'
     | '/mouvements'
     | '/parametres'
     | '/scan/$panneauId'
@@ -222,6 +233,7 @@ export interface FileRouteTypes {
     | '/_app/affaires'
     | '/_app/bdc'
     | '/_app/fournisseurs'
+    | '/_app/inventaire'
     | '/_app/mouvements'
     | '/_app/parametres'
     | '/scan/$panneauId'
@@ -300,6 +312,13 @@ declare module '@tanstack/react-router' {
       path: '/mouvements'
       fullPath: '/mouvements'
       preLoaderRoute: typeof AppMouvementsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/inventaire': {
+      id: '/_app/inventaire'
+      path: '/inventaire'
+      fullPath: '/inventaire'
+      preLoaderRoute: typeof AppInventaireRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/fournisseurs': {
@@ -404,6 +423,7 @@ interface AppRouteChildren {
   AppAffairesRoute: typeof AppAffairesRouteWithChildren
   AppBdcRoute: typeof AppBdcRouteWithChildren
   AppFournisseursRoute: typeof AppFournisseursRoute
+  AppInventaireRoute: typeof AppInventaireRoute
   AppMouvementsRoute: typeof AppMouvementsRoute
   AppParametresRoute: typeof AppParametresRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -417,6 +437,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAffairesRoute: AppAffairesRouteWithChildren,
   AppBdcRoute: AppBdcRouteWithChildren,
   AppFournisseursRoute: AppFournisseursRoute,
+  AppInventaireRoute: AppInventaireRoute,
   AppMouvementsRoute: AppMouvementsRoute,
   AppParametresRoute: AppParametresRoute,
   AppIndexRoute: AppIndexRoute,
@@ -438,3 +459,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}

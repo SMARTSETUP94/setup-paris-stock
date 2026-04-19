@@ -313,17 +313,17 @@ export function AffairesImportDialog({ open, onClose, onImported }: Props) {
                 </Button>
               </div>
               <div className="flex items-center gap-3 text-xs">
-                <span className="inline-flex items-center gap-1 text-emerald-700">
+                <span className="inline-flex items-center gap-1 text-success">
                   <CheckCircle2 className="h-3 w-3" /> {counts.new} nouvelles
                 </span>
-                <span className="inline-flex items-center gap-1 text-amber-700">
+                <span className="inline-flex items-center gap-1 text-warning">
                   {counts.duplicate} doublons
                 </span>
-                <span className="inline-flex items-center gap-1 text-red-700">
+                <span className="inline-flex items-center gap-1 text-destructive">
                   <AlertCircle className="h-3 w-3" /> {counts.error} erreurs
                 </span>
                 {counts.unmatched > 0 && (
-                  <span className="inline-flex items-center gap-1 text-amber-700">
+                  <span className="inline-flex items-center gap-1 text-warning">
                     <AlertTriangle className="h-3 w-3" /> {counts.unmatched} chargés non matchés
                   </span>
                 )}
@@ -350,9 +350,9 @@ export function AffairesImportDialog({ open, onClose, onImported }: Props) {
                       key={r.index}
                       className={cn(
                         "border-t border-border",
-                        r.status === "error" && "bg-red-50",
-                        r.status === "duplicate" && "bg-amber-50",
-                        r.status === "new" && "bg-emerald-50/30"
+                        r.status === "error" && "bg-destructive/5",
+                        r.status === "duplicate" && "bg-warning/5",
+                        r.status === "new" && "bg-success/5"
                       )}
                     >
                       <td className="px-3 py-2 text-muted-foreground">{r.index + 1}</td>
@@ -361,9 +361,9 @@ export function AffairesImportDialog({ open, onClose, onImported }: Props) {
                       <td className="px-3 py-2 truncate max-w-[150px]">{r.data?.client ?? r.raw["client"]}</td>
                       <td className="px-3 py-2 truncate max-w-[180px]">
                         {r.data?.charge_match_label ? (
-                          <span className="text-emerald-700">{r.data.charge_match_label}</span>
+                          <span className="text-success">{r.data.charge_match_label}</span>
                         ) : r.data?.charge_affaires_libre ? (
-                          <span className="inline-flex items-center gap-1 text-amber-700 text-xs">
+                          <span className="inline-flex items-center gap-1 text-warning text-xs">
                             <AlertTriangle className="h-3 w-3" /> {r.data.charge_affaires_libre}
                           </span>
                         ) : (
@@ -373,13 +373,13 @@ export function AffairesImportDialog({ open, onClose, onImported }: Props) {
                       <td className="px-3 py-2 text-xs">{r.data?.statut ?? "—"}</td>
                       <td className="px-3 py-2">
                         {r.status === "error" && (
-                          <span className="text-red-700 text-xs">{r.errors.join(" · ")}</span>
+                          <span className="text-destructive text-xs">{r.errors.join(" · ")}</span>
                         )}
                         {r.status === "duplicate" && (
-                          <span className="text-amber-700 text-xs">Existe déjà</span>
+                          <span className="text-warning text-xs">Existe déjà</span>
                         )}
                         {r.status === "new" && (
-                          <span className="text-emerald-700 text-xs">Nouvelle</span>
+                          <span className="text-success text-xs">Nouvelle</span>
                         )}
                       </td>
                       <td className="px-3 py-2">

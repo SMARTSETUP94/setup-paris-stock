@@ -399,6 +399,7 @@ function InviteDialog({
   onOpenChange: (v: boolean) => void;
   onInvited: () => void;
 }) {
+  const inviteUserFn = useServerFn(inviteUser);
   const [email, setEmail] = useState("");
   const [nomComplet, setNomComplet] = useState("");
   const [role, setRole] = useState<AppRole>("mobile");

@@ -88,11 +88,7 @@ function MatieresPage() {
     const sections = Array.from(map.entries()).map(([typoId, mats]) => ({
       typoId,
       typo: typoById.get(typoId) ?? null,
-      matieres: mats.sort((a, b) => {
-        const va = (a.variante ?? "").localeCompare(b.variante ?? "", "fr");
-        if (va !== 0) return va;
-        return a.epaisseur_mm - b.epaisseur_mm;
-      }),
+      matieres: mats.sort((a, b) => (a.variante ?? "").localeCompare(b.variante ?? "", "fr")),
     }));
     sections.sort((a, b) => {
       if (!a.typo) return 1;
@@ -128,7 +124,7 @@ function MatieresPage() {
       <PageHeader
         eyebrow="Catalogue"
         title="Matières"
-        description="Une matière = typologie + variante + épaisseur. Groupées par typologie."
+        description="Une matière = typologie + variante. L'épaisseur est définie au niveau du panneau."
         actions={
           <>
             <Button variant="outline" onClick={() => setImporting(true)}>
@@ -218,7 +214,6 @@ function MatieresPage() {
                         <tr className="border-b border-border">
                           <th className="text-left px-5 py-3 font-medium text-muted-foreground">Code</th>
                           <th className="text-left px-5 py-3 font-medium text-muted-foreground">Variante</th>
-                          <th className="text-right px-5 py-3 font-medium text-muted-foreground">Épaisseur</th>
                           <th className="text-left px-5 py-3 font-medium text-muted-foreground">Unité</th>
                           <th className="text-right px-5 py-3 font-medium text-muted-foreground">Seuil</th>
                           <th className="text-center px-5 py-3 font-medium text-muted-foreground">Actif</th>
@@ -235,7 +230,6 @@ function MatieresPage() {
                               <span className="inline-block px-2 py-0.5 rounded font-mono text-xs bg-muted">{m.code}</span>
                             </td>
                             <td className="px-5 py-3">{m.variante || <span className="text-muted-foreground text-xs">—</span>}</td>
-                            <td className="px-5 py-3 text-right tabular-nums">{m.epaisseur_mm} mm</td>
                             <td className="px-5 py-3 text-muted-foreground">{UNITES.find((u) => u.value === m.unite_stock)?.label ?? m.unite_stock}</td>
                             <td className="px-5 py-3 text-right tabular-nums">{m.seuil_alerte}</td>
                             <td className="px-5 py-3 text-center">
@@ -282,7 +276,7 @@ function MatieresPage() {
           onClose={() => { setImporting(false); void fetchData(); }}
           title="Importer des matières"
           description="Format CSV ou XLSX. La typologie doit déjà exister (par code)."
-          expectedColumns={["code", "libelle", "typologie_code", "epaisseur_mm"]}
+          expectedColumns={["code", "libelle", "typologie_code"]}
           validateRow={async (raw) => {
             const errors: string[] = [];
             const code = String(raw.code ?? "").trim();
@@ -294,8 +288,6 @@ function MatieresPage() {
             if (!typoCode) errors.push("typologie_code requis");
             else if (!typo) errors.push(`Typologie inconnue : ${typoCode}`);
             const variante = String(raw.variante ?? "").trim() || null;
-            const ep = Number(String(raw.epaisseur_mm ?? "").replace(",", "."));
-            if (!Number.isFinite(ep) || ep <= 0) errors.push("Épaisseur invalide");
             const unite = String(raw.unite_stock ?? "m2").trim() as UniteStock;
             if (!UNITES.find((u) => u.value === unite)) errors.push("Unité invalide");
             const seuil = Number(String(raw.seuil_alerte ?? "0").replace(",", "."));
@@ -305,8 +297,7 @@ function MatieresPage() {
               m.code.toLowerCase() === code.toLowerCase()
               || (typo
                 && m.typologie_id === typo.id
-                && (m.variante ?? "").toLowerCase() === (variante ?? "").toLowerCase()
-                && m.epaisseur_mm === ep),
+                && (m.variante ?? "").toLowerCase() === (variante ?? "").toLowerCase()),
             );
             return {
               data: errors.length || !typo ? null : {
@@ -314,7 +305,6 @@ function MatieresPage() {
                 libelle,
                 typologie_id: typo.id,
                 variante,
-                epaisseur_mm: ep,
                 unite_stock: unite,
                 seuil_alerte: Number.isFinite(seuil) ? seuil : 0,
                 actif,
@@ -328,7 +318,7 @@ function MatieresPage() {
             { key: "libelle", label: "Libellé" },
             { key: "typologie_code", label: "Typologie" },
             { key: "variante", label: "Variante" },
-            { key: "epaisseur_mm", label: "Ép." },
+            { key: "unite_stock", label: "Unité" },
           ]}
           importRows={async (rows: ImportRow<TablesInsert<"matieres">>[]) => {
             let inserted = 0, updated = 0, skipped = 0, errors = 0;

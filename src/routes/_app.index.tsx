@@ -360,7 +360,11 @@ function DashboardPage() {
 
       {/* Mouvements récents */}
       <section>
-        <RecentMouvementsCard mouvements={mouvements} loading={loadingData} />
+        <RecentMouvementsCard
+          mouvements={mouvements}
+          loading={loadingData}
+          onCreated={() => void loadDashboard()}
+        />
       </section>
 
       {hasData === false && (

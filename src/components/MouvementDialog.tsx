@@ -39,10 +39,13 @@ type Mode = "entree" | "sortie" | "correction";
 
 type CatalogueRow = {
   id: string;
+  matiere_id: string | null;
   matiere_code: string | null;
   matiere_libelle: string | null;
   longueur_mm: number | null;
   largeur_mm: number | null;
+  epaisseur_mm: number | null;
+  surface_m2: number | null;
   cump_ht: number | null;
   prix_achat_ht: number | null;
   stock_actuel: number | null;
@@ -73,6 +76,8 @@ interface Props {
   onCreated?: () => void;
 }
 
+type QuantiteUnite = "panneaux" | "m2";
+
 export function MouvementDialog({
   open,
   onOpenChange,
@@ -87,11 +92,15 @@ export function MouvementDialog({
   const [submitting, setSubmitting] = useState(false);
   const [panneaux, setPanneaux] = useState<CatalogueRow[]>([]);
   const [affaires, setAffaires] = useState<AffaireOption[]>([]);
-  const [panneauOpen, setPanneauOpen] = useState(false);
   const [affaireOpen, setAffaireOpen] = useState(false);
 
+  // Cascade Matière → Format → Épaisseur
+  const [matiereId, setMatiereId] = useState<string>("");
+  const [formatKey, setFormatKey] = useState<string>(""); // "longueur×largeur"
   const [panneauId, setPanneauId] = useState<string>("");
+
   const [quantite, setQuantite] = useState<string>("");
+  const [quantiteUnite, setQuantiteUnite] = useState<QuantiteUnite>("panneaux");
   const [prixUnitaire, setPrixUnitaire] = useState<string>("");
   const [affaireId, setAffaireId] = useState<string>("");
   const [commentaire, setCommentaire] = useState("");
@@ -103,7 +112,10 @@ export function MouvementDialog({
     if (!open) return;
     setLoading(true);
     setPanneauId(prefill?.panneauId ?? "");
+    setMatiereId("");
+    setFormatKey("");
     setQuantite(prefill ? String(prefill.quantite) : "");
+    setQuantiteUnite("panneaux");
     setPrixUnitaire("");
     setAffaireId(prefill?.affaireId ?? presetAffaireId ?? "");
     setCommentaire(prefill?.commentaire ?? "");
@@ -116,12 +128,22 @@ export function MouvementDialog({
         supabase
           .from("catalogue_visible")
           .select(
-            "id, matiere_code, matiere_libelle, longueur_mm, largeur_mm, cump_ht, prix_achat_ht, stock_actuel, unite_stock",
+            "id, matiere_id, matiere_code, matiere_libelle, longueur_mm, largeur_mm, epaisseur_mm, surface_m2, cump_ht, prix_achat_ht, stock_actuel, unite_stock",
           ),
         supabase.from("affaires").select("id, numero, nom").order("numero", { ascending: false }),
       ]);
-      setPanneaux((pRes.data as CatalogueRow[]) ?? []);
+      const rows = (pRes.data as CatalogueRow[]) ?? [];
+      setPanneaux(rows);
       setAffaires((aRes.data as AffaireOption[]) ?? []);
+
+      // Si on est en prefill (correction), on initialise la cascade depuis le panneau
+      if (prefill?.panneauId) {
+        const found = rows.find((r) => r.id === prefill.panneauId);
+        if (found) {
+          setMatiereId(found.matiere_id ?? "");
+          setFormatKey(`${found.longueur_mm}x${found.largeur_mm}`);
+        }
+      }
       setLoading(false);
     })();
   }, [open, presetAffaireId, prefill]);
@@ -145,52 +167,158 @@ export function MouvementDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [panneauId, mode]);
 
-  const filteredPanneauxForList = useMemo(() => {
+  // Liste des panneaux filtrés selon le mode (sortie : seulement stock > 0)
+  const filteredPanneaux = useMemo(() => {
     if (mode === "sortie") return panneaux.filter((p) => (p.stock_actuel ?? 0) > 0);
     return panneaux;
   }, [panneaux, mode]);
 
-  const qteNum = Number(quantite.replace(",", "."));
+  // Étape 1 : matières uniques (avec stock total pour info)
+  const matieresUniques = useMemo(() => {
+    const map = new Map<
+      string,
+      {
+        id: string;
+        code: string;
+        libelle: string;
+        nbPanneaux: number;
+        stockTotal: number;
+      }
+    >();
+    for (const p of filteredPanneaux) {
+      if (!p.matiere_id) continue;
+      const cur = map.get(p.matiere_id);
+      if (cur) {
+        cur.nbPanneaux += 1;
+        cur.stockTotal += Number(p.stock_actuel ?? 0);
+      } else {
+        map.set(p.matiere_id, {
+          id: p.matiere_id,
+          code: p.matiere_code ?? "—",
+          libelle: p.matiere_libelle ?? "—",
+          nbPanneaux: 1,
+          stockTotal: Number(p.stock_actuel ?? 0),
+        });
+      }
+    }
+    return Array.from(map.values()).sort((a, b) => a.libelle.localeCompare(b.libelle, "fr"));
+  }, [filteredPanneaux]);
+
+  // Étape 2 : formats disponibles pour la matière sélectionnée
+  const formatsDisponibles = useMemo(() => {
+    if (!matiereId) return [];
+    const map = new Map<
+      string,
+      {
+        key: string;
+        longueur: number;
+        largeur: number;
+        surface: number | null;
+        nbEpaisseurs: number;
+      }
+    >();
+    for (const p of filteredPanneaux) {
+      if (p.matiere_id !== matiereId) continue;
+      const key = `${p.longueur_mm}x${p.largeur_mm}`;
+      const cur = map.get(key);
+      if (cur) {
+        cur.nbEpaisseurs += 1;
+      } else {
+        map.set(key, {
+          key,
+          longueur: Number(p.longueur_mm ?? 0),
+          largeur: Number(p.largeur_mm ?? 0),
+          surface: p.surface_m2,
+          nbEpaisseurs: 1,
+        });
+      }
+    }
+    return Array.from(map.values()).sort((a, b) => b.longueur * b.largeur - a.longueur * a.largeur);
+  }, [filteredPanneaux, matiereId]);
+
+  // Étape 3 : épaisseurs disponibles pour matière + format
+  const epaisseursDisponibles = useMemo(() => {
+    if (!matiereId || !formatKey) return [];
+    return filteredPanneaux
+      .filter((p) => p.matiere_id === matiereId && `${p.longueur_mm}x${p.largeur_mm}` === formatKey)
+      .sort((a, b) => Number(a.epaisseur_mm ?? 0) - Number(b.epaisseur_mm ?? 0));
+  }, [filteredPanneaux, matiereId, formatKey]);
+
+  // Reset cascade quand un parent change
+  function onMatiereChange(id: string) {
+    setMatiereId(id);
+    setFormatKey("");
+    setPanneauId("");
+    if (mode === "entree") setPrixUnitaire("");
+  }
+  function onFormatChange(key: string) {
+    setFormatKey(key);
+    setPanneauId("");
+    if (mode === "entree") setPrixUnitaire("");
+  }
+  function onEpaisseurChange(id: string) {
+    setPanneauId(id);
+    if (mode === "entree") setPrixUnitaire("");
+  }
+
+  // Conversions panneaux ↔ m²
+  const surfaceUnitaire = Number(selectedPanneau?.surface_m2 ?? 0);
+  const qteSaisie = Number(quantite.replace(",", "."));
+  // qteEnM2 = ce qui sera réellement stocké en BDD (l'unité de stock est m²)
+  const qteEnM2 = useMemo(() => {
+    if (!Number.isFinite(qteSaisie) || qteSaisie <= 0) return 0;
+    if (quantiteUnite === "m2") return qteSaisie;
+    if (surfaceUnitaire > 0) return qteSaisie * surfaceUnitaire;
+    return qteSaisie;
+  }, [qteSaisie, quantiteUnite, surfaceUnitaire]);
+  const qteEnPanneaux = useMemo(() => {
+    if (!Number.isFinite(qteSaisie) || qteSaisie <= 0) return 0;
+    if (quantiteUnite === "panneaux") return qteSaisie;
+    if (surfaceUnitaire > 0) return qteSaisie / surfaceUnitaire;
+    return 0;
+  }, [qteSaisie, quantiteUnite, surfaceUnitaire]);
+
   const prixNum = Number(prixUnitaire.replace(",", "."));
   const stockActuel = Number(selectedPanneau?.stock_actuel ?? 0);
+  const stockEnPanneaux = surfaceUnitaire > 0 ? stockActuel / surfaceUnitaire : 0;
   const cumpActuel = selectedPanneau?.cump_ht ?? null;
 
-  // Calculs aperçu
+  // Calculs aperçu (basés sur qteEnM2 et prix €/m²)
   const apercu = useMemo(() => {
-    if (!selectedPanneau || !Number.isFinite(qteNum) || qteNum <= 0) return null;
+    if (!selectedPanneau || qteEnM2 <= 0) return null;
     if (mode === "entree" && Number.isFinite(prixNum) && prixNum >= 0) {
       const cumpAct = cumpActuel ?? 0;
       const newCump =
         stockActuel <= 0 || cumpActuel === null
           ? prixNum
-          : (stockActuel * cumpAct + qteNum * prixNum) / (stockActuel + qteNum);
+          : (stockActuel * cumpAct + qteEnM2 * prixNum) / (stockActuel + qteEnM2);
       return {
         kind: "entree" as const,
-        valeur: qteNum * prixNum,
+        valeur: qteEnM2 * prixNum,
         nouveauCump: newCump,
-        nouveauStock: stockActuel + qteNum,
+        nouveauStock: stockActuel + qteEnM2,
       };
     }
     if (mode === "sortie") {
       const cumpAct = cumpActuel ?? 0;
       return {
         kind: "sortie" as const,
-        valeur: qteNum * cumpAct,
+        valeur: qteEnM2 * cumpAct,
         nouveauCump: cumpAct,
-        nouveauStock: stockActuel - qteNum,
+        nouveauStock: stockActuel - qteEnM2,
       };
     }
     return null;
-  }, [mode, qteNum, prixNum, stockActuel, cumpActuel, selectedPanneau]);
+  }, [mode, qteEnM2, prixNum, stockActuel, cumpActuel, selectedPanneau]);
 
-  const overstock = mode === "sortie" && qteNum > stockActuel;
+  const overstock = mode === "sortie" && qteEnM2 > stockActuel;
 
   async function submit() {
     if (!selectedPanneau) {
-      toast.error("Sélectionnez un panneau");
+      toast.error("Sélectionnez un panneau (matière, format, épaisseur)");
       return;
     }
-    if (!Number.isFinite(qteNum) || qteNum <= 0) {
+    if (!Number.isFinite(qteSaisie) || qteSaisie <= 0 || qteEnM2 <= 0) {
       toast.error("Quantité invalide");
       return;
     }
@@ -208,7 +336,7 @@ export function MouvementDialog({
     }
     if (mode === "sortie" && overstock && isAdmin && !forceOverstock) {
       toast.error(
-        `Stock disponible : ${formatNumber(stockActuel, 2)}. Cochez « Forcer » pour valider.`,
+        `Stock disponible : ${formatNumber(stockActuel, 2)} m². Cochez « Forcer » pour valider.`,
       );
       return;
     }
@@ -220,20 +348,20 @@ export function MouvementDialog({
     setSubmitting(true);
 
     let typeMvt: Database["public"]["Enums"]["type_mouvement"] = "entree";
-    let signedQte = qteNum;
+    let signedQte = qteEnM2;
     let prix: number | null = null;
     let comment = commentaire.trim() || null;
 
     if (mode === "entree") {
       typeMvt = "entree";
-      signedQte = qteNum;
+      signedQte = qteEnM2;
       prix = prixNum;
     } else if (mode === "sortie") {
       typeMvt = "sortie";
-      signedQte = -qteNum;
+      signedQte = -qteEnM2;
     } else {
       typeMvt = "correction";
-      signedQte = signe === "moins" ? -qteNum : qteNum;
+      signedQte = signe === "moins" ? -qteEnM2 : qteEnM2;
       if (correctionCump) {
         comment = `${comment ?? ""} #correction_cump`.trim();
         if (Number.isFinite(prixNum) && prixNum >= 0) prix = prixNum;
@@ -273,9 +401,16 @@ export function MouvementDialog({
     correction: "Correction de stock",
   };
 
+  // Format affichage pour le format (longueur × largeur + surface)
+  function fmtFormat(f: { longueur: number; largeur: number; surface: number | null }) {
+    const dim = `${f.longueur}×${f.largeur} mm`;
+    if (f.surface && f.surface > 0) return `${dim} · ${formatNumber(f.surface, 3)} m²`;
+    return dim;
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl">
+      <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{titles[mode]}</DialogTitle>
           {mode === "correction" && (
@@ -292,74 +427,94 @@ export function MouvementDialog({
           </div>
         ) : (
           <div className="grid gap-4">
-            {/* Panneau */}
-            <div>
-              <Label>Panneau *</Label>
-              <Popover open={panneauOpen} onOpenChange={setPanneauOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full justify-between font-normal"
-                  >
-                    <span className={cn("truncate", !selectedPanneau && "text-muted-foreground")}>
-                      {selectedPanneau ? (
-                        <>
-                          <span className="font-mono text-xs">{selectedPanneau.matiere_code}</span>
-                          {" — "}
-                          {selectedPanneau.matiere_libelle}{" "}
-                          <span className="text-muted-foreground">
-                            ({selectedPanneau.longueur_mm}×{selectedPanneau.largeur_mm})
-                          </span>
-                        </>
-                      ) : (
-                        "Sélectionner…"
-                      )}
-                    </span>
-                    <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                  <Command>
-                    <CommandInput placeholder="Rechercher matière, dimensions…" />
-                    <CommandList>
-                      <CommandEmpty>Aucun panneau trouvé.</CommandEmpty>
-                      <CommandGroup>
-                        {filteredPanneauxForList.map((p) => (
-                          <CommandItem
-                            key={p.id}
-                            value={`${p.matiere_code} ${p.matiere_libelle} ${p.longueur_mm}x${p.largeur_mm}`}
-                            onSelect={() => {
-                              setPanneauId(p.id);
-                              setPanneauOpen(false);
-                              if (mode === "entree") setPrixUnitaire("");
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                panneauId === p.id ? "opacity-100" : "opacity-0",
-                              )}
-                            />
-                            <span className="font-mono text-xs mr-2">{p.matiere_code}</span>
-                            <span className="flex-1 truncate">{p.matiere_libelle}</span>
-                            <span className="text-xs text-muted-foreground ml-2">
-                              {p.longueur_mm}×{p.largeur_mm} · stock{" "}
-                              {formatNumber(Number(p.stock_actuel ?? 0), 2)}
-                            </span>
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+            {/* Cascade Matière → Format → Épaisseur */}
+            <div className="grid gap-3">
+              {/* Matière */}
+              <div>
+                <Label>Matière *</Label>
+                <MatiereCombobox
+                  matieres={matieresUniques}
+                  value={matiereId}
+                  onChange={onMatiereChange}
+                />
+              </div>
+
+              {/* Format */}
+              <div>
+                <Label>
+                  Format *{" "}
+                  <span className="text-xs text-muted-foreground ml-1">(longueur × largeur)</span>
+                </Label>
+                <Select
+                  value={formatKey}
+                  onValueChange={onFormatChange}
+                  disabled={!matiereId || formatsDisponibles.length === 0}
+                >
+                  <SelectTrigger>
+                    <SelectValue
+                      placeholder={
+                        !matiereId
+                          ? "Choisir une matière d'abord"
+                          : formatsDisponibles.length === 0
+                            ? "Aucun format disponible"
+                            : "Sélectionner un format…"
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {formatsDisponibles.map((f) => (
+                      <SelectItem key={f.key} value={f.key}>
+                        {fmtFormat(f)}{" "}
+                        <span className="text-muted-foreground">
+                          · {f.nbEpaisseurs} épaisseur{f.nbEpaisseurs > 1 ? "s" : ""}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Épaisseur */}
+              <div>
+                <Label>Épaisseur *</Label>
+                <Select
+                  value={panneauId}
+                  onValueChange={onEpaisseurChange}
+                  disabled={!formatKey || epaisseursDisponibles.length === 0}
+                >
+                  <SelectTrigger>
+                    <SelectValue
+                      placeholder={
+                        !formatKey
+                          ? "Choisir un format d'abord"
+                          : epaisseursDisponibles.length === 0
+                            ? "Aucune épaisseur disponible"
+                            : "Sélectionner une épaisseur…"
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {epaisseursDisponibles.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {p.epaisseur_mm} mm
+                        <span className="text-muted-foreground">
+                          {" "}
+                          · stock {formatNumber(Number(p.stock_actuel ?? 0), 2)} m²
+                          {p.surface_m2 && p.surface_m2 > 0
+                            ? ` (${formatNumber(Number(p.stock_actuel ?? 0) / Number(p.surface_m2), 1)} pann.)`
+                            : ""}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-            {/* Quantité */}
+            {/* Quantité avec toggle unité */}
             <div className="grid gap-3 sm:grid-cols-2">
               {mode === "correction" && (
-                <div>
+                <div className="sm:col-span-2">
                   <Label>Sens</Label>
                   <Select value={signe} onValueChange={(v) => setSigne(v as "plus" | "moins")}>
                     <SelectTrigger>
@@ -373,26 +528,61 @@ export function MouvementDialog({
                 </div>
               )}
               <div>
-                <Label>
-                  Quantité *{" "}
-                  {selectedPanneau && (
-                    <span className="text-xs text-muted-foreground ml-1">
-                      ({uniteLabel(selectedPanneau.unite_stock)})
-                    </span>
-                  )}
-                </Label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <Label className="mb-0">Quantité *</Label>
+                  <div className="inline-flex rounded-md border border-border overflow-hidden text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setQuantiteUnite("panneaux")}
+                      className={cn(
+                        "px-2.5 py-1 transition-colors",
+                        quantiteUnite === "panneaux"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-card hover:bg-muted text-muted-foreground",
+                      )}
+                    >
+                      Panneaux
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setQuantiteUnite("m2")}
+                      className={cn(
+                        "px-2.5 py-1 transition-colors border-l border-border",
+                        quantiteUnite === "m2"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-card hover:bg-muted text-muted-foreground",
+                      )}
+                    >
+                      m²
+                    </button>
+                  </div>
+                </div>
                 <Input
                   type="number"
-                  step="0.01"
+                  step={quantiteUnite === "panneaux" ? "1" : "0.01"}
                   min="0"
                   value={quantite}
                   onChange={(e) => setQuantite(e.target.value)}
-                  placeholder="0"
+                  placeholder={quantiteUnite === "panneaux" ? "ex : 5" : "ex : 15.25"}
                 />
+                {selectedPanneau && qteSaisie > 0 && surfaceUnitaire > 0 && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {quantiteUnite === "panneaux"
+                      ? `≈ ${formatNumber(qteEnM2, 2)} m²`
+                      : `≈ ${formatNumber(qteEnPanneaux, 2)} panneau${qteEnPanneaux > 1 ? "x" : ""}`}
+                  </p>
+                )}
               </div>
               {(mode === "entree" || (mode === "correction" && correctionCump)) && (
                 <div>
-                  <Label>Prix unitaire HT (€) {mode === "entree" && "*"}</Label>
+                  <Label>
+                    Prix unitaire HT (€/m²) {mode === "entree" && "*"}
+                    {selectedPanneau && surfaceUnitaire > 0 && Number.isFinite(prixNum) && prixNum > 0 && (
+                      <span className="text-xs text-muted-foreground ml-1 font-normal">
+                        ≈ {formatEuro(prixNum * surfaceUnitaire)}/panneau
+                      </span>
+                    )}
+                  </Label>
                   <Input
                     type="number"
                     step="0.0001"
@@ -519,17 +709,29 @@ export function MouvementDialog({
                   <span className="text-muted-foreground">Stock actuel</span>
                   <span className="font-medium">
                     {formatNumber(stockActuel, 2)} {uniteLabel(selectedPanneau.unite_stock)}
+                    {surfaceUnitaire > 0 && (
+                      <span className="text-muted-foreground ml-1">
+                        ({formatNumber(stockEnPanneaux, 1)} pann.)
+                      </span>
+                    )}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">CUMP actuel</span>
                   <span className="font-medium">
-                    {cumpActuel === null ? "—" : formatEuro(cumpActuel)}
+                    {cumpActuel === null ? "—" : `${formatEuro(cumpActuel)}/m²`}
                   </span>
                 </div>
                 {apercu && (
                   <>
                     <div className="border-t border-border my-2" />
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Quantité</span>
+                      <span className="font-medium">
+                        {formatNumber(qteEnPanneaux, 2)} pann. ·{" "}
+                        {formatNumber(qteEnM2, 2)} m²
+                      </span>
+                    </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Valeur ligne HT</span>
                       <span className="font-semibold text-foreground">
@@ -541,7 +743,7 @@ export function MouvementDialog({
                         {apercu.kind === "entree" ? "Nouveau CUMP" : "CUMP après"}
                       </span>
                       <span className="font-semibold text-foreground">
-                        {formatEuro(apercu.nouveauCump)}
+                        {formatEuro(apercu.nouveauCump)}/m²
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -554,6 +756,11 @@ export function MouvementDialog({
                       >
                         {formatNumber(apercu.nouveauStock, 2)}{" "}
                         {uniteLabel(selectedPanneau.unite_stock)}
+                        {surfaceUnitaire > 0 && (
+                          <span className="text-muted-foreground ml-1 font-normal">
+                            ({formatNumber(apercu.nouveauStock / surfaceUnitaire, 1)} pann.)
+                          </span>
+                        )}
                       </span>
                     </div>
                   </>
@@ -564,7 +771,7 @@ export function MouvementDialog({
             {mode === "sortie" && overstock && (
               <div className="rounded-lg border border-warning/30 bg-warning/10 px-4 py-3 text-sm">
                 <p className="font-medium text-warning">
-                  Quantité supérieure au stock disponible ({formatNumber(stockActuel, 2)}).
+                  Quantité supérieure au stock disponible ({formatNumber(stockActuel, 2)} m²).
                 </p>
                 {isAdmin ? (
                   <label className="mt-2 flex items-center gap-2 cursor-pointer text-warning">
@@ -601,5 +808,74 @@ export function MouvementDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+}
+
+/** Combobox dédié à la sélection de matière (recherche libre). */
+function MatiereCombobox({
+  matieres,
+  value,
+  onChange,
+}: {
+  matieres: Array<{
+    id: string;
+    code: string;
+    libelle: string;
+    nbPanneaux: number;
+    stockTotal: number;
+  }>;
+  value: string;
+  onChange: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const selected = matieres.find((m) => m.id === value);
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button type="button" variant="outline" className="w-full justify-between font-normal">
+          <span className={cn("truncate", !selected && "text-muted-foreground")}>
+            {selected ? (
+              <>
+                <span className="font-mono text-xs">{selected.code}</span>
+                {" — "}
+                {selected.libelle}
+              </>
+            ) : (
+              "Rechercher une matière…"
+            )}
+          </span>
+          <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+        <Command>
+          <CommandInput placeholder="Rechercher code ou libellé…" />
+          <CommandList>
+            <CommandEmpty>Aucune matière trouvée.</CommandEmpty>
+            <CommandGroup>
+              {matieres.map((m) => (
+                <CommandItem
+                  key={m.id}
+                  value={`${m.code} ${m.libelle}`}
+                  onSelect={() => {
+                    onChange(m.id);
+                    setOpen(false);
+                  }}
+                >
+                  <Check
+                    className={cn("mr-2 h-4 w-4", value === m.id ? "opacity-100" : "opacity-0")}
+                  />
+                  <span className="font-mono text-xs mr-2">{m.code}</span>
+                  <span className="flex-1 truncate">{m.libelle}</span>
+                  <span className="text-xs text-muted-foreground ml-2">
+                    {m.nbPanneaux} variante{m.nbPanneaux > 1 ? "s" : ""}
+                  </span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 }

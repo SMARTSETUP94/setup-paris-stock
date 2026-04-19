@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { FAMILLES, formatNumber, uniteLabel, type Famille } from "@/lib/familles";
+import { useStockRealtime } from "@/hooks/useStockRealtime";
 import type { Database } from "@/integrations/supabase/types";
 
 export const Route = createFileRoute("/_app/inventaire")({

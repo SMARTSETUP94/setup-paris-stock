@@ -241,32 +241,43 @@ function DashboardPage() {
   ];
 
   return (
-    <div className="max-w-6xl space-y-16 md:space-y-20">
-      <header className="space-y-3">
-        <p className="eyebrow">Tableau de bord</p>
-        <h1 className="text-3xl md:text-5xl">Vue d'ensemble</h1>
-        <p className="max-w-2xl text-sm md:text-base text-muted-foreground">
-          Suivi en temps réel de votre stock, de vos affaires et de vos bons de commande
-          fournisseurs.
+    <div className="max-w-6xl space-y-16 md:space-y-24">
+      {/* Hero éditorial — style Setup Paris */}
+      <header className="relative pt-4 md:pt-8">
+        <p className="section-marker mb-6 flex items-center gap-3">
+          <span>— 01</span>
+          <span className="h-px flex-1 max-w-[120px] bg-primary/40" />
+          <span className="text-muted-foreground">Setup Paris · Stock atelier</span>
+        </p>
+        <h1 className="text-5xl md:text-7xl lg:text-[88px] tracking-tight max-w-4xl">
+          Pilotage du{" "}
+          <span className="text-muted-foreground/60">stock panneaux</span>
+          <br />
+          en temps réel.
+        </h1>
+        <p className="mt-6 max-w-xl text-base md:text-lg text-muted-foreground">
+          Suivi continu des affaires, bons de commande et mouvements — toutes les données de
+          l'atelier en un coup d'œil.
         </p>
       </header>
 
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {cards.map((kpi) => (
-          <Card key={kpi.label}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground tracking-normal normal-case">
-                <span className="font-sans">{kpi.label}</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-1">
-              <div className="font-sans text-3xl md:text-4xl font-semibold text-[color:var(--color-heading)]">
+      {/* KPIs — grid éditorial avec gros chiffres */}
+      <section>
+        <p className="section-marker mb-6">— 02 · Indicateurs</p>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-border rounded-2xl overflow-hidden border border-border">
+          {cards.map((kpi, idx) => (
+            <div key={kpi.label} className="bg-card p-5 md:p-6 relative group">
+              <span className="absolute top-3 right-4 font-mono text-[10px] text-muted-foreground tracking-wider">
+                0{idx + 1}
+              </span>
+              <p className="eyebrow mb-3">{kpi.label}</p>
+              <div className="font-display text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-[color:var(--color-heading)]">
                 {kpi.value === null ? "—" : kpi.format(kpi.value)}
               </div>
-              <p className="text-xs text-muted-foreground">{kpi.hint}</p>
-            </CardContent>
-          </Card>
-        ))}
+              <p className="text-xs text-muted-foreground mt-2">{kpi.hint}</p>
+            </div>
+          ))}
+        </div>
       </section>
 
       <section>

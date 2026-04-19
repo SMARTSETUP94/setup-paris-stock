@@ -24,7 +24,6 @@ function LoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [nomComplet, setNomComplet] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -135,12 +134,9 @@ function LoginPage() {
         </p>
 
         <Tabs defaultValue="password" className="w-full">
-          <TabsList className="grid grid-cols-3 w-full mb-6 bg-transparent border border-border rounded-lg p-1">
+          <TabsList className="grid grid-cols-2 w-full mb-6 bg-transparent border border-border rounded-lg p-1">
             <TabsTrigger value="password" className="rounded-md data-[state=active]:bg-foreground data-[state=active]:text-background">
               Connexion
-            </TabsTrigger>
-            <TabsTrigger value="signup" className="rounded-md data-[state=active]:bg-foreground data-[state=active]:text-background">
-              Inscription
             </TabsTrigger>
             <TabsTrigger value="magic" className="rounded-md data-[state=active]:bg-foreground data-[state=active]:text-background">
               Lien magique

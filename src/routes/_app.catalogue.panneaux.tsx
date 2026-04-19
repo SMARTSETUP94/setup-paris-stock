@@ -15,7 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Pencil, Search, Loader2, Upload, Download } from "lucide-react";
+import { Plus, Pencil, Search, Loader2, Upload, Download, ChevronRight, List, FolderTree } from "lucide-react";
 import { toast } from "sonner";
 import { FAMILLES, formatEuro, formatNumber } from "@/lib/familles";
 import type { Typologie } from "@/lib/typologies";

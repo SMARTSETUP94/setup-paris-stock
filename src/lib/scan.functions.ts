@@ -154,6 +154,45 @@ export type PanneauSearchResult = {
 };
 
 /**
+ * Catalogue public actif pour la sélection cascade Matière → Format → Épaisseur.
+ * Données strictement nécessaires à la sélection (pas de prix, pas de CUMP).
+ */
+export type CascadeMatiere = { id: string; code: string; libelle: string };
+export type CascadePanneau = {
+  id: string;
+  matiere_id: string;
+  longueur_mm: number;
+  largeur_mm: number;
+  epaisseur_mm: number;
+};
+
+export const listCataloguePublic = createServerFn({ method: "POST" }).handler(async () => {
+  const { data: matieres, error: errMat } = await supabaseAdmin
+    .from("matieres")
+    .select("id, code, libelle")
+    .eq("actif", true)
+    .order("libelle", { ascending: true });
+  if (errMat) throw new Error(errMat.message);
+
+  const { data: panneaux, error: errPan } = await supabaseAdmin
+    .from("panneaux")
+    .select("id, matiere_id, longueur_mm, largeur_mm, epaisseur_mm")
+    .eq("actif", true);
+  if (errPan) throw new Error(errPan.message);
+
+  // Filtre les matières qui n'ont aucun panneau actif
+  const matiereIdsAvecPanneaux = new Set((panneaux ?? []).map((p) => p.matiere_id));
+  const matieresFiltrees: CascadeMatiere[] = (matieres ?? []).filter((m) =>
+    matiereIdsAvecPanneaux.has(m.id),
+  );
+
+  return {
+    matieres: matieresFiltrees,
+    panneaux: (panneaux ?? []) as CascadePanneau[],
+  };
+});
+
+/**
  * Déclare une sortie de stock depuis un scan QR public.
  * - Pas d'auth requis (atelier privé)
  * - Type forcé à "sortie", quantité négative

@@ -1,3 +1,22 @@
+/**
+ * ROUTE PUBLIQUE — accessible sans authentification.
+ *
+ * Usage prévu : un ouvrier d'atelier scanne un QR collé physiquement sur un
+ * panneau pour déclarer une sortie de stock.
+ *
+ * Sécurité :
+ * - L'URL contient un UUID v4 impossible à deviner (2^128 possibilités)
+ * - Les QR codes ne sont imprimés que depuis /catalogue/etiquettes (admin)
+ *   et collés dans l'atelier privé Setup Paris
+ * - Le nom de l'opérateur saisi est conservé dans le commentaire du mouvement
+ *   (traçabilité weak, fiable uniquement en bonne foi)
+ * - Pas de rate limiting — à ajouter via Cloudflare Worker rules si besoin
+ *   (ex: 10 sorties/min/IP)
+ *
+ * Ce flow est DIFFÉRENT du lien magique tiers (/tiers/acces?token=...) :
+ * le scan QR est pour usage interne atelier, le lien magique pour des
+ * sous-traitants externes.
+ */
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";

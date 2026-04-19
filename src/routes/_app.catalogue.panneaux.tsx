@@ -340,6 +340,30 @@ function PanneauxPage() {
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-4 text-sm">
+        <div className="inline-flex rounded-lg border border-border overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setViewMode("list")}
+            className={`px-3 py-1.5 inline-flex items-center gap-1.5 text-xs ${viewMode === "list" ? "bg-primary text-primary-foreground" : "bg-background hover:bg-muted"}`}
+            aria-pressed={viewMode === "list"}
+          >
+            <List className="h-3.5 w-3.5" /> Liste
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode("tree")}
+            className={`px-3 py-1.5 inline-flex items-center gap-1.5 text-xs border-l border-border ${viewMode === "tree" ? "bg-primary text-primary-foreground" : "bg-background hover:bg-muted"}`}
+            aria-pressed={viewMode === "tree"}
+          >
+            <FolderTree className="h-3.5 w-3.5" /> Arborescence
+          </button>
+        </div>
+        {viewMode === "tree" && (
+          <div className="flex gap-2">
+            <Button variant="ghost" size="sm" onClick={expandAllTree} className="h-7 text-xs">Tout déplier</Button>
+            <Button variant="ghost" size="sm" onClick={collapseAllTree} className="h-7 text-xs">Tout replier</Button>
+          </div>
+        )}
         <label className="flex items-center gap-2 cursor-pointer">
           <Checkbox checked={hideInactive} onCheckedChange={(v) => setHideInactive(!!v)} />
           Masquer les inactives

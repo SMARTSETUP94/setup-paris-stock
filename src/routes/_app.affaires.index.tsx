@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Plus, Search, Upload, AlertTriangle } from "lucide-react";
+import { Plus, Search, Upload, AlertTriangle, ArrowUpRight } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminGuard, AdminLoader, useDebounced } from "@/hooks/useAdminGuard";
@@ -112,6 +112,8 @@ function AffairesIndex() {
     [rows],
   );
 
+  if (!ready) return <AdminLoader />;
+
   return (
     <div>
       <PageHeader
@@ -159,7 +161,7 @@ function AffairesIndex() {
                   <span className="font-mono text-[11px] px-2 py-0.5 rounded-full bg-muted truncate max-w-[140px]">
                     {a.code_chantier}
                   </span>
-                  <ArrowRightSpot />
+                  <ArrowUpRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
                 </div>
               </Link>
             ))}

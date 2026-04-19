@@ -138,7 +138,7 @@ export function AffairesImportDialog({ open, onClose, onImported }: Props) {
         const rawOriginal = parsed[i];
         const raw: Record<string, string> = {};
         for (const k of Object.keys(rawOriginal)) {
-          raw[k.trim().toLowerCase()] = String(rawOriginal[k] ?? "").trim();
+          raw[canonicalKey(k)] = String(rawOriginal[k] ?? "").trim();
         }
 
         const errors: string[] = [];

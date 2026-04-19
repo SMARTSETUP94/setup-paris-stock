@@ -72,6 +72,9 @@ export function usePanneauxData(ready: boolean, initialMatiere?: string) {
     if (ready) void fetchData();
   }, [ready]);
 
+  // Stock temps réel
+  useStockRealtime(() => { void fetchData(); }, ready);
+
   const typologiesFiltered = useMemo(() => {
     if (familleFilter === "all") return typologies;
     return typologies.filter((t) => t.famille === familleFilter);

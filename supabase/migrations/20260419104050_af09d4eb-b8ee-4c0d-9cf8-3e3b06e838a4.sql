@@ -1,0 +1,1 @@
+ALTER VIEW public.catalogue_visible SET (security_invoker = on);

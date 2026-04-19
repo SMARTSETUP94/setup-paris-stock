@@ -22,6 +22,7 @@ import { Route as AppCatalogueIndexRouteImport } from './routes/_app.catalogue.i
 import { Route as AppAffairesIndexRouteImport } from './routes/_app.affaires.index'
 import { Route as AppCataloguePanneauxRouteImport } from './routes/_app.catalogue.panneaux'
 import { Route as AppCatalogueMatieresRouteImport } from './routes/_app.catalogue.matieres'
+import { Route as AppBdcIdRouteImport } from './routes/_app.bdc.$id'
 import { Route as AppAffairesCodeRouteImport } from './routes/_app.affaires.$code'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -88,6 +89,11 @@ const AppCatalogueMatieresRoute = AppCatalogueMatieresRouteImport.update({
   path: '/catalogue/matieres',
   getParentRoute: () => AppRoute,
 } as any)
+const AppBdcIdRoute = AppBdcIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AppBdcRoute,
+} as any)
 const AppAffairesCodeRoute = AppAffairesCodeRouteImport.update({
   id: '/$code',
   path: '/$code',
@@ -99,11 +105,12 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/affaires': typeof AppAffairesRouteWithChildren
-  '/bdc': typeof AppBdcRoute
+  '/bdc': typeof AppBdcRouteWithChildren
   '/fournisseurs': typeof AppFournisseursRoute
   '/mouvements': typeof AppMouvementsRoute
   '/parametres': typeof AppParametresRoute
   '/affaires/$code': typeof AppAffairesCodeRoute
+  '/bdc/$id': typeof AppBdcIdRoute
   '/catalogue/matieres': typeof AppCatalogueMatieresRoute
   '/catalogue/panneaux': typeof AppCataloguePanneauxRoute
   '/affaires/': typeof AppAffairesIndexRoute
@@ -112,12 +119,13 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
-  '/bdc': typeof AppBdcRoute
+  '/bdc': typeof AppBdcRouteWithChildren
   '/fournisseurs': typeof AppFournisseursRoute
   '/mouvements': typeof AppMouvementsRoute
   '/parametres': typeof AppParametresRoute
   '/': typeof AppIndexRoute
   '/affaires/$code': typeof AppAffairesCodeRoute
+  '/bdc/$id': typeof AppBdcIdRoute
   '/catalogue/matieres': typeof AppCatalogueMatieresRoute
   '/catalogue/panneaux': typeof AppCataloguePanneauxRoute
   '/affaires': typeof AppAffairesIndexRoute
@@ -129,12 +137,13 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_app/affaires': typeof AppAffairesRouteWithChildren
-  '/_app/bdc': typeof AppBdcRoute
+  '/_app/bdc': typeof AppBdcRouteWithChildren
   '/_app/fournisseurs': typeof AppFournisseursRoute
   '/_app/mouvements': typeof AppMouvementsRoute
   '/_app/parametres': typeof AppParametresRoute
   '/_app/': typeof AppIndexRoute
   '/_app/affaires/$code': typeof AppAffairesCodeRoute
+  '/_app/bdc/$id': typeof AppBdcIdRoute
   '/_app/catalogue/matieres': typeof AppCatalogueMatieresRoute
   '/_app/catalogue/panneaux': typeof AppCataloguePanneauxRoute
   '/_app/affaires/': typeof AppAffairesIndexRoute
@@ -152,6 +161,7 @@ export interface FileRouteTypes {
     | '/mouvements'
     | '/parametres'
     | '/affaires/$code'
+    | '/bdc/$id'
     | '/catalogue/matieres'
     | '/catalogue/panneaux'
     | '/affaires/'
@@ -166,6 +176,7 @@ export interface FileRouteTypes {
     | '/parametres'
     | '/'
     | '/affaires/$code'
+    | '/bdc/$id'
     | '/catalogue/matieres'
     | '/catalogue/panneaux'
     | '/affaires'
@@ -182,6 +193,7 @@ export interface FileRouteTypes {
     | '/_app/parametres'
     | '/_app/'
     | '/_app/affaires/$code'
+    | '/_app/bdc/$id'
     | '/_app/catalogue/matieres'
     | '/_app/catalogue/panneaux'
     | '/_app/affaires/'
@@ -287,6 +299,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCatalogueMatieresRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/bdc/$id': {
+      id: '/_app/bdc/$id'
+      path: '/$id'
+      fullPath: '/bdc/$id'
+      preLoaderRoute: typeof AppBdcIdRouteImport
+      parentRoute: typeof AppBdcRoute
+    }
     '/_app/affaires/$code': {
       id: '/_app/affaires/$code'
       path: '/$code'
@@ -311,9 +330,20 @@ const AppAffairesRouteWithChildren = AppAffairesRoute._addFileChildren(
   AppAffairesRouteChildren,
 )
 
+interface AppBdcRouteChildren {
+  AppBdcIdRoute: typeof AppBdcIdRoute
+}
+
+const AppBdcRouteChildren: AppBdcRouteChildren = {
+  AppBdcIdRoute: AppBdcIdRoute,
+}
+
+const AppBdcRouteWithChildren =
+  AppBdcRoute._addFileChildren(AppBdcRouteChildren)
+
 interface AppRouteChildren {
   AppAffairesRoute: typeof AppAffairesRouteWithChildren
-  AppBdcRoute: typeof AppBdcRoute
+  AppBdcRoute: typeof AppBdcRouteWithChildren
   AppFournisseursRoute: typeof AppFournisseursRoute
   AppMouvementsRoute: typeof AppMouvementsRoute
   AppParametresRoute: typeof AppParametresRoute
@@ -325,7 +355,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppAffairesRoute: AppAffairesRouteWithChildren,
-  AppBdcRoute: AppBdcRoute,
+  AppBdcRoute: AppBdcRouteWithChildren,
   AppFournisseursRoute: AppFournisseursRoute,
   AppMouvementsRoute: AppMouvementsRoute,
   AppParametresRoute: AppParametresRoute,

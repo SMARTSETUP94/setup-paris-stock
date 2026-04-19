@@ -82,7 +82,8 @@ type Row = {
 
 function MouvementsPage() {
   const { ready } = useAdminGuard();
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
+  const { effectiveRole } = useEffectiveRole();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");

@@ -167,16 +167,15 @@ export function DangerZoneTab() {
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex-1 min-w-[260px]">
             <h3 className="text-base font-semibold text-foreground">
-              Remettre à zéro les données métier
+              Remettre à zéro les mouvements
             </h3>
             <p className="text-sm text-muted-foreground mt-1">
-              Supprime <strong>tous les mouvements de stock</strong>, <strong>bons de commande</strong>{" "}
-              (en-têtes + lignes) et <strong>affaires</strong>. Le CUMP de chaque panneau est remis à
-              zéro.
+              Supprime <strong>tous les mouvements de stock</strong> et les <strong>bons de commande</strong>{" "}
+              (en-têtes + lignes). Le CUMP de chaque panneau est remis à zéro.
             </p>
             <ul className="text-xs text-muted-foreground mt-2 list-disc pl-5 space-y-0.5">
               <li>
-                Conservés : matières, panneaux, fournisseurs, typologies, utilisateurs et branding.
+                Conservés : <strong>affaires</strong>, matières, panneaux, fournisseurs, typologies, utilisateurs et branding.
               </li>
               <li>Une sauvegarde CSV des mouvements est téléchargée automatiquement avant.</li>
               <li>Action impossible à annuler côté application.</li>

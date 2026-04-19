@@ -152,6 +152,42 @@ export type Database = {
           },
         ]
       }
+      app_settings: {
+        Row: {
+          couleur_accent: string
+          id: string
+          logo_url: string | null
+          nom_application: string
+          nom_organisation: string
+          pied_page_pdf: string | null
+          singleton: boolean
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          couleur_accent?: string
+          id?: string
+          logo_url?: string | null
+          nom_application?: string
+          nom_organisation?: string
+          pied_page_pdf?: string | null
+          singleton?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          couleur_accent?: string
+          id?: string
+          logo_url?: string | null
+          nom_application?: string
+          nom_organisation?: string
+          pied_page_pdf?: string | null
+          singleton?: boolean
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       bdc_lignes: {
         Row: {
           bdc_id: string

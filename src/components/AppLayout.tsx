@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import { BrandingLogo } from "@/components/BrandingLogo";
 import { cn } from "@/lib/utils";
 
 type NavItem = {
@@ -59,19 +60,7 @@ const mobileItems = [
 ] as const;
 
 function SetupLogo() {
-  return (
-    <div className="flex items-center gap-2">
-      <span className="font-display text-base font-semibold tracking-tight text-[color:var(--color-heading)]">
-        SET UP
-      </span>
-      <span
-        aria-hidden
-        className="inline-flex h-5 w-5 items-center justify-center rounded-sm bg-[#FFB700] text-[10px] font-bold text-black"
-      >
-        ⚡
-      </span>
-    </div>
-  );
+  return <BrandingLogo size="sm" />;
 }
 
 const CATALOGUE_KEY = "sidebar-catalogue-open";

@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { BrandingLogo } from "@/components/BrandingLogo";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -87,15 +88,7 @@ function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-background px-4 py-12">
       <div className="w-full max-w-md">
         <div className="mb-10 flex items-center justify-center gap-2">
-          <span className="font-display text-xl font-semibold tracking-tight text-[color:var(--color-heading)]">
-            SET UP
-          </span>
-          <span
-            aria-hidden
-            className="inline-flex h-6 w-6 items-center justify-center rounded-sm bg-[#FFB700] text-[12px] font-bold text-black"
-          >
-            ⚡
-          </span>
+          <BrandingLogo size="md" />
         </div>
 
         <p className="eyebrow text-center mb-3">Espace de connexion</p>

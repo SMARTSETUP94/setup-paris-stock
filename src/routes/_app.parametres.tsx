@@ -129,8 +129,13 @@ function UsersTab() {
     setLoading(true);
     try {
       const res = await listUsersFn();
-      setUsers((res?.users ?? []) as UserRow[]);
+      console.log("[UsersTab] listUsersFn raw response:", res);
+      const list = (res as { users?: UserRow[] } | UserRow[] | null | undefined);
+      const users = Array.isArray(list) ? list : (list?.users ?? []);
+      console.log("[UsersTab] parsed users:", users.length, users);
+      setUsers(users as UserRow[]);
     } catch (e) {
+      console.error("[UsersTab] listUsersFn error:", e);
       toast.error("Chargement impossible", {
         description: e instanceof Error ? e.message : String(e),
       });

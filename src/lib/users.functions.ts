@@ -1,19 +1,35 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth, type AuthedContext } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { sendEmailServer, getAppBaseUrl } from "@/lib/email.functions";
+import { inviteAdminTemplate, passwordResetTemplate } from "@/lib/email-templates";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+
+const ROLE_LABELS: Record<string, string> = {
+  admin: "Admin",
+  magasinier: "Magasinier",
+  mobile: "Mobile",
+};
 
 async function assertAdmin(supabase: SupabaseClient<Database>, userId: string) {
   const { data, error } = await supabase
     .from("profiles")
-    .select("role, actif")
+    .select("role, actif, nom_complet, email")
     .eq("id", userId)
     .maybeSingle();
   if (error) throw new Error(error.message);
   if (!data || data.role !== "admin" || !data.actif) {
     throw new Error("Accès réservé aux administrateurs");
   }
+  return data;
+}
+
+function newToken(): string {
+  // 32 bytes hex = 64 chars, compact et sûr
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
 export const listUsers = createServerFn({ method: "POST" })
@@ -27,7 +43,6 @@ export const listUsers = createServerFn({ method: "POST" })
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
 
-    // Récupère les last_sign_in_at via auth admin
     const { data: authUsers } = await supabaseAdmin.auth.admin.listUsers({
       page: 1,
       perPage: 1000,
@@ -51,6 +66,10 @@ export const listUsers = createServerFn({ method: "POST" })
     };
   });
 
+// ---------------------------------------------------------------------------
+// Invitation : on crée juste un token + on envoie l'email Resend.
+// Le user Supabase Auth sera créé à l'acceptation (acceptInvite).
+// ---------------------------------------------------------------------------
 export const inviteUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
@@ -58,7 +77,6 @@ export const inviteUser = createServerFn({ method: "POST" })
       email: string;
       nom_complet?: string;
       role: "admin" | "magasinier" | "mobile";
-      redirectTo?: string;
     }) => {
       const email = input.email?.trim().toLowerCase();
       if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -71,93 +89,274 @@ export const inviteUser = createServerFn({ method: "POST" })
         email,
         nom_complet: input.nom_complet?.trim() || null,
         role: input.role,
-        redirectTo: input.redirectTo?.trim() || null,
       };
     },
   )
   .handler(async ({ data, context }) => {
-    await assertAdmin((context as AuthedContext).supabase, (context as AuthedContext).userId);
+    const inviter = await assertAdmin(
+      (context as AuthedContext).supabase,
+      (context as AuthedContext).userId,
+    );
 
-    const redirectTo = data.redirectTo ?? `${process.env.SITE_URL ?? ""}/reset-password`;
-    const finalRedirect = redirectTo && redirectTo.startsWith("http") ? redirectTo : undefined;
+    // Si un user existe déjà avec cet email → on lui envoie un reset à la place.
+    const { data: list } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+    const existing = list?.users.find((u) => u.email?.toLowerCase() === data.email);
 
-    // 1. Crée le user avec un mot de passe aléatoire et email auto-confirmé.
-    //    On utilise createUser plutôt que inviteUserByEmail car les emails
-    //    d'invitation Supabase ne sont pas pris en charge par le hook email
-    //    Lovable Cloud (seuls signup/recovery/magic_link le sont).
-    const tempPassword = `Tmp_${crypto.randomUUID()}_${Date.now()}!`;
-    let userId: string | null = null;
+    if (existing) {
+      // Cas existant : on envoie un password reset custom (pas une invitation).
+      const token = newToken();
+      const expireAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(); // 2h
 
-    const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
-      email: data.email,
-      password: tempPassword,
-      email_confirm: true,
-      user_metadata: { nom_complet: data.nom_complet ?? data.email },
-    });
+      const { error: insErr } = await supabaseAdmin.from("invitations").insert({
+        email: data.email,
+        token,
+        kind: "password_reset",
+        role: data.role,
+        nom_complet: data.nom_complet,
+        inviter_id: (context as AuthedContext).userId,
+        expire_at: expireAt,
+      });
+      if (insErr) throw new Error(insErr.message);
 
-    if (createErr) {
-      // Si l'utilisateur existe déjà, on récupère son id pour quand même
-      // mettre à jour son profil et lui renvoyer un lien.
-      const msg = createErr.message?.toLowerCase() ?? "";
-      if (msg.includes("already") || msg.includes("registered") || msg.includes("exists")) {
-        const { data: list } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
-        const existing = list?.users.find((u) => u.email?.toLowerCase() === data.email);
-        if (!existing) throw new Error(createErr.message);
-        userId = existing.id;
-      } else {
-        throw new Error(createErr.message);
-      }
-    } else {
-      userId = created?.user?.id ?? null;
+      const resetUrl = `${getAppBaseUrl()}/reset-password?token=${token}`;
+      const tpl = passwordResetTemplate({ resetUrl });
+      await sendEmailServer({ to: data.email, subject: tpl.subject, html: tpl.html, text: tpl.text });
+
+      return { success: true, mode: "reset_existing" as const };
     }
 
+    // Nouvelle invitation
+    const token = newToken();
+    const expireAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); // 7j
+
+    const { error: insErr } = await supabaseAdmin.from("invitations").insert({
+      email: data.email,
+      token,
+      kind: "invite_admin",
+      role: data.role,
+      nom_complet: data.nom_complet,
+      inviter_id: (context as AuthedContext).userId,
+      expire_at: expireAt,
+    });
+    if (insErr) throw new Error(insErr.message);
+
+    const inviteUrl = `${getAppBaseUrl()}/invite?token=${token}`;
+    const tpl = inviteAdminTemplate({
+      inviterName: inviter.nom_complet || inviter.email || "Un administrateur",
+      inviteUrl,
+      roleLabel: ROLE_LABELS[data.role],
+    });
+    await sendEmailServer({ to: data.email, subject: tpl.subject, html: tpl.html, text: tpl.text });
+
+    return { success: true, mode: "invited" as const };
+  });
+
+// ---------------------------------------------------------------------------
+// Renvoyer un lien (reset password pour un user existant)
+// ---------------------------------------------------------------------------
+export const resendInvitation = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { email: string }) => {
+    const email = input.email?.trim().toLowerCase();
+    if (!email) throw new Error("Email requis");
+    return { email };
+  })
+  .handler(async ({ data, context }) => {
+    await assertAdmin((context as AuthedContext).supabase, (context as AuthedContext).userId);
+
+    const token = newToken();
+    const expireAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
+
+    const { error: insErr } = await supabaseAdmin.from("invitations").insert({
+      email: data.email,
+      token,
+      kind: "password_reset",
+      inviter_id: (context as AuthedContext).userId,
+      expire_at: expireAt,
+    });
+    if (insErr) throw new Error(insErr.message);
+
+    const resetUrl = `${getAppBaseUrl()}/reset-password?token=${token}`;
+    const tpl = passwordResetTemplate({ resetUrl });
+    await sendEmailServer({ to: data.email, subject: tpl.subject, html: tpl.html, text: tpl.text });
+
+    return { success: true };
+  });
+
+// ---------------------------------------------------------------------------
+// Demande de reset depuis /login (publique — pas de middleware auth)
+// ---------------------------------------------------------------------------
+export const requestPasswordReset = createServerFn({ method: "POST" })
+  .inputValidator((input: { email: string }) => {
+    const email = input.email?.trim().toLowerCase();
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      throw new Error("Email invalide");
+    }
+    return { email };
+  })
+  .handler(async ({ data }) => {
+    // On ne révèle pas si l'email existe (anti-énumération).
+    // Mais on n'envoie réellement l'email que si le user existe.
+    const { data: list } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+    const existing = list?.users.find((u) => u.email?.toLowerCase() === data.email);
+
+    if (existing) {
+      const token = newToken();
+      const expireAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
+      const { error: insErr } = await supabaseAdmin.from("invitations").insert({
+        email: data.email,
+        token,
+        kind: "password_reset",
+        expire_at: expireAt,
+      });
+      if (insErr) throw new Error(insErr.message);
+
+      const resetUrl = `${getAppBaseUrl()}/reset-password?token=${token}`;
+      const tpl = passwordResetTemplate({ resetUrl });
+      await sendEmailServer({
+        to: data.email,
+        subject: tpl.subject,
+        html: tpl.html,
+        text: tpl.text,
+      });
+    }
+
+    return { success: true };
+  });
+
+// ---------------------------------------------------------------------------
+// Inspection d'un token (public) — utilisé par /invite et /reset-password
+// ---------------------------------------------------------------------------
+export const inspectToken = createServerFn({ method: "POST" })
+  .inputValidator((input: { token: string }) => {
+    if (!input.token || input.token.length < 8) throw new Error("Token invalide");
+    return { token: input.token };
+  })
+  .handler(async ({ data }) => {
+    const { data: inv, error } = await supabaseAdmin
+      .from("invitations")
+      .select("id, email, kind, role, nom_complet, expire_at, used_at")
+      .eq("token", data.token)
+      .maybeSingle();
+
+    if (error) throw new Error(error.message);
+    if (!inv) return { valid: false as const, reason: "not_found" as const };
+    if (inv.used_at) return { valid: false as const, reason: "used" as const };
+    if (new Date(inv.expire_at).getTime() < Date.now()) {
+      return { valid: false as const, reason: "expired" as const };
+    }
+    return {
+      valid: true as const,
+      email: inv.email,
+      kind: inv.kind as "invite_admin" | "password_reset",
+      nom_complet: inv.nom_complet,
+    };
+  });
+
+// ---------------------------------------------------------------------------
+// Acceptation d'invitation (public) : crée le user + définit son mot de passe
+// ---------------------------------------------------------------------------
+export const acceptInvite = createServerFn({ method: "POST" })
+  .inputValidator((input: { token: string; password: string }) => {
+    if (!input.token) throw new Error("Token requis");
+    if (!input.password || input.password.length < 8) {
+      throw new Error("Mot de passe : 8 caractères minimum");
+    }
+    return { token: input.token, password: input.password };
+  })
+  .handler(async ({ data }) => {
+    const { data: inv, error } = await supabaseAdmin
+      .from("invitations")
+      .select("id, email, kind, role, nom_complet, expire_at, used_at")
+      .eq("token", data.token)
+      .maybeSingle();
+
+    if (error) throw new Error(error.message);
+    if (!inv) throw new Error("Invitation introuvable");
+    if (inv.used_at) throw new Error("Cette invitation a déjà été utilisée");
+    if (new Date(inv.expire_at).getTime() < Date.now()) throw new Error("Invitation expirée");
+    if (inv.kind !== "invite_admin") throw new Error("Type de jeton invalide pour cette action");
+
+    const role = (inv.role ?? "mobile") as "admin" | "magasinier" | "mobile";
+
+    // Crée le user Supabase Auth (email auto-confirmé)
+    const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
+      email: inv.email,
+      password: data.password,
+      email_confirm: true,
+      user_metadata: { nom_complet: inv.nom_complet ?? inv.email },
+    });
+    if (createErr) throw new Error(createErr.message);
+    const userId = created?.user?.id;
     if (!userId) throw new Error("Création du compte impossible");
 
-    // 2. Crée / met à jour le profil avec le bon rôle
+    // Force le profil avec le bon rôle (le trigger handle_new_user crée déjà
+    // une ligne, on l'écrase pour appliquer le rôle de l'invitation).
     const { error: profileErr } = await supabaseAdmin.from("profiles").upsert(
       {
         id: userId,
-        email: data.email,
-        nom_complet: data.nom_complet ?? data.email,
-        role: data.role,
+        email: inv.email,
+        nom_complet: inv.nom_complet ?? inv.email,
+        role,
         actif: true,
       },
       { onConflict: "id" },
     );
     if (profileErr) throw new Error(profileErr.message);
 
-    // 3. Envoie un lien de récupération (passe par le hook email Lovable).
-    //    C'est ce flow qui sert d'invitation : l'utilisateur définit son
-    //    propre mot de passe via la page /reset-password.
-    const { error: recoverErr } = await supabaseAdmin.auth.resetPasswordForEmail(data.email, {
-      redirectTo: finalRedirect,
-    });
-    if (recoverErr) throw new Error(recoverErr.message);
+    // Marque l'invitation comme utilisée
+    await supabaseAdmin
+      .from("invitations")
+      .update({ used_at: new Date().toISOString() })
+      .eq("id", inv.id);
 
-    return { success: true };
+    return { success: true, email: inv.email };
   });
 
-export const resendInvitation = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((input: { email: string; redirectTo?: string }) => {
-    const email = input.email?.trim().toLowerCase();
-    if (!email) throw new Error("Email requis");
-    return { email, redirectTo: input.redirectTo?.trim() || null };
+// ---------------------------------------------------------------------------
+// Reset password (public) : applique un nouveau mot de passe à partir du token
+// ---------------------------------------------------------------------------
+export const resetPasswordWithToken = createServerFn({ method: "POST" })
+  .inputValidator((input: { token: string; password: string }) => {
+    if (!input.token) throw new Error("Token requis");
+    if (!input.password || input.password.length < 8) {
+      throw new Error("Mot de passe : 8 caractères minimum");
+    }
+    return { token: input.token, password: input.password };
   })
-  .handler(async ({ data, context }) => {
-    await assertAdmin((context as AuthedContext).supabase, (context as AuthedContext).userId);
+  .handler(async ({ data }) => {
+    const { data: inv, error } = await supabaseAdmin
+      .from("invitations")
+      .select("id, email, kind, expire_at, used_at")
+      .eq("token", data.token)
+      .maybeSingle();
 
-    const redirectTo = data.redirectTo ?? `${process.env.SITE_URL ?? ""}/reset-password`;
-    const finalRedirect = redirectTo && redirectTo.startsWith("http") ? redirectTo : undefined;
-    // resetPasswordForEmail déclenche l'envoi via le hook email Lovable,
-    // contrairement à generateLink qui se contente de créer un lien sans email.
-    const { error } = await supabaseAdmin.auth.resetPasswordForEmail(data.email, {
-      redirectTo: finalRedirect,
-    });
     if (error) throw new Error(error.message);
-    return { success: true };
+    if (!inv) throw new Error("Lien introuvable");
+    if (inv.used_at) throw new Error("Ce lien a déjà été utilisé");
+    if (new Date(inv.expire_at).getTime() < Date.now()) throw new Error("Lien expiré");
+    if (inv.kind !== "password_reset") throw new Error("Type de jeton invalide pour cette action");
+
+    const { data: list } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+    const existing = list?.users.find((u) => u.email?.toLowerCase() === inv.email.toLowerCase());
+    if (!existing) throw new Error("Compte introuvable");
+
+    const { error: updErr } = await supabaseAdmin.auth.admin.updateUserById(existing.id, {
+      password: data.password,
+    });
+    if (updErr) throw new Error(updErr.message);
+
+    await supabaseAdmin
+      .from("invitations")
+      .update({ used_at: new Date().toISOString() })
+      .eq("id", inv.id);
+
+    return { success: true, email: inv.email };
   });
 
+// ---------------------------------------------------------------------------
+// Désactiver / réactiver un compte
+// ---------------------------------------------------------------------------
 export const setUserActive = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { user_id: string; actif: boolean }) => {
@@ -176,7 +375,6 @@ export const setUserActive = createServerFn({ method: "POST" })
       .eq("id", data.user_id);
     if (error) throw new Error(error.message);
 
-    // Bloque aussi côté auth via ban
     await supabaseAdmin.auth.admin.updateUserById(data.user_id, {
       ban_duration: data.actif ? "none" : "876000h",
     });
@@ -220,7 +418,6 @@ export const deleteUser = createServerFn({ method: "POST" })
 
     const { error } = await supabaseAdmin.auth.admin.deleteUser(data.user_id);
     if (error) throw new Error(error.message);
-    // Supprime aussi le profil (au cas où)
     await supabaseAdmin.from("profiles").delete().eq("id", data.user_id);
     return { success: true };
   });

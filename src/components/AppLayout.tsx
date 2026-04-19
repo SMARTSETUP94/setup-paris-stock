@@ -8,6 +8,7 @@ import {
   Settings,
   LogOut,
   Truck,
+  ClipboardCheck,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ const navItems = [
   { to: "/affaires", label: "Affaires", icon: Briefcase, mobile: true, adminOnly: false },
   { to: "/bdc", label: "Bons de commande", icon: FileText, mobile: true, adminOnly: false },
   { to: "/mouvements", label: "Mouvements", icon: ArrowLeftRight, mobile: false, adminOnly: false },
+  { to: "/inventaire", label: "Inventaire", icon: ClipboardCheck, mobile: false, adminOnly: true },
   { to: "/parametres", label: "Paramètres", icon: Settings, mobile: false, adminOnly: true },
 ] as const;
 

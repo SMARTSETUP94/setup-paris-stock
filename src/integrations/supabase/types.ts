@@ -663,6 +663,25 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      match_fournisseur_par_nom: {
+        Args: { _nom: string; _seuil?: number }
+        Returns: {
+          fournisseur_id: string
+          nom: string
+          similarity: number
+        }[]
+      }
+      match_panneaux_par_description: {
+        Args: { _description: string; _limit?: number; _seuil?: number }
+        Returns: {
+          largeur_mm: number
+          longueur_mm: number
+          matiere_id: string
+          matiere_libelle: string
+          panneau_id: string
+          similarity: number
+        }[]
+      }
       tiers_a_acces_affaire: {
         Args: { _affaire_id: string; _user_id: string }
         Returns: boolean

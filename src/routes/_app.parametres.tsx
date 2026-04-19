@@ -110,7 +110,7 @@ function UsersTab() {
       const res = await listUsers();
       setUsers(res.users as UserRow[]);
     } catch (e) {
-      toast.error("Chargement impossible", { description: e.message });
+      toast.error("Chargement impossible", { description: (e instanceof Error ? e.message : String(e)) });
     } finally {
       setLoading(false);
     }
@@ -135,7 +135,7 @@ function UsersTab() {
       toast.success(u.actif ? "Compte désactivé" : "Compte réactivé");
       void refresh();
     } catch (e) {
-      toast.error("Action impossible", { description: e.message });
+      toast.error("Action impossible", { description: (e instanceof Error ? e.message : String(e)) });
     }
   }
 
@@ -146,7 +146,7 @@ function UsersTab() {
       toast.success("Rôle mis à jour");
       void refresh();
     } catch (e) {
-      toast.error("Action impossible", { description: e.message });
+      toast.error("Action impossible", { description: (e instanceof Error ? e.message : String(e)) });
     }
   }
 
@@ -159,7 +159,7 @@ function UsersTab() {
         description: "Un lien de réinitialisation a été envoyé.",
       });
     } catch (e) {
-      toast.error("Envoi impossible", { description: e.message });
+      toast.error("Envoi impossible", { description: (e instanceof Error ? e.message : String(e)) });
     }
   }
 
@@ -171,7 +171,7 @@ function UsersTab() {
       setConfirmDelete(null);
       void refresh();
     } catch (e) {
-      toast.error("Suppression impossible", { description: e.message });
+      toast.error("Suppression impossible", { description: (e instanceof Error ? e.message : String(e)) });
     }
   }
 
@@ -360,7 +360,7 @@ function InviteDialog({
       });
       onInvited();
     } catch (err) {
-      toast.error("Invitation impossible", { description: err.message });
+      toast.error("Invitation impossible", { description: (err instanceof Error ? err.message : String(err)) });
     } finally {
       setSubmitting(false);
     }

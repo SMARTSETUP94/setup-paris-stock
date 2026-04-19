@@ -116,7 +116,7 @@ function EtiquettesPage() {
       // Laisse le DOM se rafraîchir avant impression
       setTimeout(() => window.print(), 200);
     } catch (e) {
-      toast.error(e.message ?? "Erreur de génération");
+      toast.error((e instanceof Error ? e.message : String(e)) ?? "Erreur de génération");
     } finally {
       setGenerating(false);
     }

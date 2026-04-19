@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Plus, Search, Upload, AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAdminGuard, AdminLoader, useDebounced } from "@/hooks/useAdminGuard";
 import { PageHeader } from "@/components/PageHeader";
@@ -9,11 +10,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { StatutBadge } from "@/components/StatutBadge";
 import { AffaireFormDialog } from "@/components/AffaireFormDialog";
 import { AffairesImportDialog } from "@/components/AffairesImportDialog";
-import { STATUTS, formatDateFr } from "@/lib/affaires";
+import { STATUTS } from "@/lib/affaires";
 import type { Database } from "@/integrations/supabase/types";
+
+type StatutAffaire = Database["public"]["Enums"]["statut_affaire"];
 
 type Affaire = Database["public"]["Tables"]["affaires"]["Row"] & {
   charge?: { nom_complet: string | null; email: string } | null;
@@ -49,6 +51,18 @@ function AffairesIndex() {
   useEffect(() => {
     if (ready) void load();
   }, [ready]);
+
+  async function changeStatut(id: string, value: StatutAffaire) {
+    const prev = rows;
+    setRows((rs) => rs.map((r) => (r.id === id ? { ...r, statut: value } : r)));
+    const { error } = await supabase.from("affaires").update({ statut: value }).eq("id", id);
+    if (error) {
+      setRows(prev);
+      toast.error("Impossible de mettre à jour le statut");
+    } else {
+      toast.success("Statut mis à jour");
+    }
+  }
 
   const chargesOptions = useMemo(() => {
     const map = new Map<string, string>();
@@ -144,18 +158,17 @@ function AffairesIndex() {
                 <TableHead>Nom</TableHead>
                 <TableHead>Client</TableHead>
                 <TableHead>Chargé d'affaires</TableHead>
-                <TableHead>Statut</TableHead>
-                <TableHead>Début</TableHead>
+                <TableHead className="w-[180px]">Statut</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Chargement…</TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Chargement…</TableCell></TableRow>
               ) : filtered.length === 0 ? (
-                <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">Aucune affaire</TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Aucune affaire</TableCell></TableRow>
               ) : (
                 filtered.map((r, idx) => (
-                  <TableRow key={r.id} className={idx % 2 === 1 ? "bg-[#FAFAFA]" : ""}>
+                  <TableRow key={r.id} className={idx % 2 === 1 ? "bg-muted/30" : ""}>
                     <TableCell>
                       <Link
                         to="/affaires/$code"
@@ -187,8 +200,21 @@ function AffairesIndex() {
                         <span className="text-xs">—</span>
                       )}
                     </TableCell>
-                    <TableCell><StatutBadge value={r.statut} /></TableCell>
-                    <TableCell className="text-muted-foreground">{formatDateFr(r.date_debut)}</TableCell>
+                    <TableCell>
+                      <Select
+                        value={r.statut}
+                        onValueChange={(v) => void changeStatut(r.id, v as StatutAffaire)}
+                      >
+                        <SelectTrigger className="h-8 w-[160px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {STATUTS.map((s) => (
+                            <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
                   </TableRow>
                 ))
               )}

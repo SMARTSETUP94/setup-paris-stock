@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { STATUTS, suggestNumero, type StatutAffaire } from "@/lib/affaires";
+import { ClientCombobox } from "@/components/ClientCombobox";
+import { STATUTS, suggestNumero, sanitizeNumeroInput, isValidNumero, type StatutAffaire } from "@/lib/affaires";
 import type { Database } from "@/integrations/supabase/types";
 
 type Affaire = Database["public"]["Tables"]["affaires"]["Row"];
@@ -26,7 +27,7 @@ export function AffaireFormDialog({ open, onOpenChange, initial, onSaved }: Prop
   const [form, setForm] = useState({
     numero: "",
     nom: "",
-    client: "",
+    client_id: "",
     date_debut: "",
     date_fin_prevue: "",
     statut: "devis" as StatutAffaire,
@@ -50,7 +51,7 @@ export function AffaireFormDialog({ open, onOpenChange, initial, onSaved }: Prop
         setForm({
           numero: initial.numero,
           nom: initial.nom,
-          client: initial.client ?? "",
+          client_id: initial.client_id,
           date_debut: initial.date_debut ?? "",
           date_fin_prevue: initial.date_fin_prevue ?? "",
           statut: initial.statut,
@@ -67,15 +68,23 @@ export function AffaireFormDialog({ open, onOpenChange, initial, onSaved }: Prop
   }, [open, initial]);
 
   async function handleSubmit() {
-    if (!form.nom.trim() || !form.numero.trim()) {
-      toast.error("Numéro et nom obligatoires");
+    if (!form.nom.trim()) {
+      toast.error("Le nom est obligatoire");
+      return;
+    }
+    if (!isValidNumero(form.numero)) {
+      toast.error("Le numéro doit faire exactement 4 chiffres (ex. 0042)");
+      return;
+    }
+    if (!form.client_id) {
+      toast.error("Veuillez sélectionner un client");
       return;
     }
     setLoading(true);
     const payload = {
-      numero: form.numero.trim(),
+      numero: form.numero,
       nom: form.nom.trim(),
-      client: form.client.trim() || null,
+      client_id: form.client_id,
       date_debut: form.date_debut || null,
       date_fin_prevue: form.date_fin_prevue || null,
       statut: form.statut,
@@ -106,8 +115,16 @@ export function AffaireFormDialog({ open, onOpenChange, initial, onSaved }: Prop
         </DialogHeader>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <Label>Numéro</Label>
-            <Input value={form.numero} onChange={(e) => setForm({ ...form, numero: e.target.value })} />
+            <Label>Numéro (4 chiffres)</Label>
+            <Input
+              value={form.numero}
+              onChange={(e) => setForm({ ...form, numero: sanitizeNumeroInput(e.target.value) })}
+              inputMode="numeric"
+              pattern="\d{4}"
+              maxLength={4}
+              placeholder="0001"
+              className="font-mono"
+            />
           </div>
           <div>
             <Label>Statut</Label>
@@ -127,8 +144,11 @@ export function AffaireFormDialog({ open, onOpenChange, initial, onSaved }: Prop
             />
           </div>
           <div className="sm:col-span-2">
-            <Label>Client</Label>
-            <Input value={form.client} onChange={(e) => setForm({ ...form, client: e.target.value })} />
+            <Label>Client *</Label>
+            <ClientCombobox
+              value={form.client_id || null}
+              onChange={(id) => setForm({ ...form, client_id: id })}
+            />
           </div>
           <div>
             <Label>Date de début</Label>

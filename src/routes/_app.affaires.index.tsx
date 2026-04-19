@@ -52,6 +52,18 @@ function AffairesIndex() {
     if (ready) void load();
   }, [ready]);
 
+  async function changeStatut(id: string, value: StatutAffaire) {
+    const prev = rows;
+    setRows((rs) => rs.map((r) => (r.id === id ? { ...r, statut: value } : r)));
+    const { error } = await supabase.from("affaires").update({ statut: value }).eq("id", id);
+    if (error) {
+      setRows(prev);
+      toast.error("Impossible de mettre à jour le statut");
+    } else {
+      toast.success("Statut mis à jour");
+    }
+  }
+
   const chargesOptions = useMemo(() => {
     const map = new Map<string, string>();
     for (const r of rows) {

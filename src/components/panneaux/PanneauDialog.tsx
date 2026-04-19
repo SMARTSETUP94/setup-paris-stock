@@ -21,7 +21,6 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
-import { FAMILLES } from "@/lib/familles";
 import { useFamilles } from "@/hooks/useFamilles";
 import type { Typologie } from "@/lib/typologies";
 import type { CatRow, Matiere } from "./types";
@@ -39,6 +38,7 @@ export function PanneauDialog({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const { familles } = useFamilles();
   const initialMat = panneau ? (matieres.find((m) => m.id === panneau.matiere_id) ?? null) : null;
   const [familleFilter, setFamilleFilter] = useState<string>(initialMat?.famille ?? "all");
   const [typoFilter, setTypoFilter] = useState<string>(initialMat?.typologie_id ?? "all");

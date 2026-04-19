@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, Search, Upload, Download, List, FolderTree } from "lucide-react";
 import { toast } from "sonner";
-import { FAMILLES } from "@/lib/familles";
+import { useFamilles } from "@/hooks/useFamilles";
 import { exportXLSX } from "@/lib/import-parsers";
 import { CatalogueSubnav } from "./_app.catalogue.typologies";
 import { PanneauxListView } from "@/components/panneaux/PanneauxListView";

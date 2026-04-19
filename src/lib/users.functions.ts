@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth, type AuthedContext } from "@/integrations/supabase/auth-middleware";
-import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { getSupabaseAdminClient, requireSupabaseAdminClient, supabaseAdmin } from "@/integrations/supabase/client.server";
 import { sendEmailServer, getAppBaseUrl } from "@/lib/email.functions";
 import { inviteAdminTemplate, passwordResetTemplate } from "@/lib/email-templates";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -26,7 +26,6 @@ async function assertAdmin(supabase: SupabaseClient<Database>, userId: string) {
 }
 
 function newToken(): string {
-  // 32 bytes hex = 64 chars, compact et sûr
   const bytes = new Uint8Array(32);
   crypto.getRandomValues(bytes);
   return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
@@ -37,36 +36,38 @@ export const listUsers = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     await assertAdmin((context as AuthedContext).supabase, (context as AuthedContext).userId);
 
-    // 1. Profils via le client utilisateur (RLS admin → SELECT all)
     const { data: profiles, error } = await (context as AuthedContext).supabase
       .from("profiles")
       .select("id, email, nom_complet, role, actif, created_at")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
 
-    // 2. Métadonnées auth (last_sign_in_at) via service role — best effort.
-    // Si la clé service role n'est pas dispo (dev sandbox), on dégrade
-    // gracieusement plutôt que de tout faire planter.
     let authMap = new Map<
       string,
       { last_sign_in_at: string | null; email_confirmed_at: string | null }
     >();
-    try {
-      const { data: authUsers } = await supabaseAdmin.auth.admin.listUsers({
-        page: 1,
-        perPage: 1000,
-      });
-      authMap = new Map(
-        (authUsers?.users ?? []).map((u) => [
-          u.id,
-          {
-            last_sign_in_at: u.last_sign_in_at ?? null,
-            email_confirmed_at: u.email_confirmed_at ?? null,
-          },
-        ]),
-      );
-    } catch (e) {
-      console.warn("[listUsers] auth.admin.listUsers indisponible:", e);
+
+    const admin = getSupabaseAdminClient();
+    if (admin) {
+      try {
+        const { data: authUsers } = await admin.auth.admin.listUsers({
+          page: 1,
+          perPage: 1000,
+        });
+        authMap = new Map(
+          (authUsers?.users ?? []).map((u) => [
+            u.id,
+            {
+              last_sign_in_at: u.last_sign_in_at ?? null,
+              email_confirmed_at: u.email_confirmed_at ?? null,
+            },
+          ]),
+        );
+      } catch (e) {
+        console.warn("[listUsers] auth.admin.listUsers indisponible:", e);
+      }
+    } else {
+      console.warn("[listUsers] service role indisponible dans cette preview");
     }
 
     return {
@@ -78,10 +79,6 @@ export const listUsers = createServerFn({ method: "POST" })
     };
   });
 
-// ---------------------------------------------------------------------------
-// Invitation : on crée juste un token + on envoie l'email Resend.
-// Le user Supabase Auth sera créé à l'acceptation (acceptInvite).
-// ---------------------------------------------------------------------------
 export const inviteUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
@@ -109,17 +106,16 @@ export const inviteUser = createServerFn({ method: "POST" })
       (context as AuthedContext).supabase,
       (context as AuthedContext).userId,
     );
+    const admin = requireSupabaseAdminClient("L'invitation d'utilisateurs");
 
-    // Si un user existe déjà avec cet email → on lui envoie un reset à la place.
-    const { data: list } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+    const { data: list } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
     const existing = list?.users.find((u) => u.email?.toLowerCase() === data.email);
 
     if (existing) {
-      // Cas existant : on envoie un password reset custom (pas une invitation).
       const token = newToken();
-      const expireAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(); // 2h
+      const expireAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
 
-      const { error: insErr } = await supabaseAdmin.from("invitations").insert({
+      const { error: insErr } = await admin.from("invitations").insert({
         email: data.email,
         token,
         kind: "password_reset",
@@ -137,11 +133,10 @@ export const inviteUser = createServerFn({ method: "POST" })
       return { success: true, mode: "reset_existing" as const };
     }
 
-    // Nouvelle invitation
     const token = newToken();
-    const expireAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); // 7j
+    const expireAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
-    const { error: insErr } = await supabaseAdmin.from("invitations").insert({
+    const { error: insErr } = await admin.from("invitations").insert({
       email: data.email,
       token,
       kind: "invite_admin",
@@ -163,9 +158,6 @@ export const inviteUser = createServerFn({ method: "POST" })
     return { success: true, mode: "invited" as const };
   });
 
-// ---------------------------------------------------------------------------
-// Renvoyer un lien (reset password pour un user existant)
-// ---------------------------------------------------------------------------
 export const resendInvitation = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { email: string }) => {
@@ -175,11 +167,12 @@ export const resendInvitation = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     await assertAdmin((context as AuthedContext).supabase, (context as AuthedContext).userId);
+    const admin = requireSupabaseAdminClient("Le renvoi d'invitation");
 
     const token = newToken();
     const expireAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
 
-    const { error: insErr } = await supabaseAdmin.from("invitations").insert({
+    const { error: insErr } = await admin.from("invitations").insert({
       email: data.email,
       token,
       kind: "password_reset",
@@ -195,9 +188,6 @@ export const resendInvitation = createServerFn({ method: "POST" })
     return { success: true };
   });
 
-// ---------------------------------------------------------------------------
-// Demande de reset depuis /login (publique — pas de middleware auth)
-// ---------------------------------------------------------------------------
 export const requestPasswordReset = createServerFn({ method: "POST" })
   .inputValidator((input: { email: string }) => {
     const email = input.email?.trim().toLowerCase();
@@ -207,15 +197,19 @@ export const requestPasswordReset = createServerFn({ method: "POST" })
     return { email };
   })
   .handler(async ({ data }) => {
-    // On ne révèle pas si l'email existe (anti-énumération).
-    // Mais on n'envoie réellement l'email que si le user existe.
-    const { data: list } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+    const admin = getSupabaseAdminClient();
+    if (!admin) {
+      console.warn("[requestPasswordReset] service role indisponible dans cette preview");
+      return { success: true };
+    }
+
+    const { data: list } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
     const existing = list?.users.find((u) => u.email?.toLowerCase() === data.email);
 
     if (existing) {
       const token = newToken();
       const expireAt = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
-      const { error: insErr } = await supabaseAdmin.from("invitations").insert({
+      const { error: insErr } = await admin.from("invitations").insert({
         email: data.email,
         token,
         kind: "password_reset",
@@ -236,16 +230,14 @@ export const requestPasswordReset = createServerFn({ method: "POST" })
     return { success: true };
   });
 
-// ---------------------------------------------------------------------------
-// Inspection d'un token (public) — utilisé par /invite et /reset-password
-// ---------------------------------------------------------------------------
 export const inspectToken = createServerFn({ method: "POST" })
   .inputValidator((input: { token: string }) => {
     if (!input.token || input.token.length < 8) throw new Error("Token invalide");
     return { token: input.token };
   })
   .handler(async ({ data }) => {
-    const { data: inv, error } = await supabaseAdmin
+    const admin = requireSupabaseAdminClient("La vérification du lien");
+    const { data: inv, error } = await admin
       .from("invitations")
       .select("id, email, kind, role, nom_complet, expire_at, used_at")
       .eq("token", data.token)
@@ -265,9 +257,6 @@ export const inspectToken = createServerFn({ method: "POST" })
     };
   });
 
-// ---------------------------------------------------------------------------
-// Acceptation d'invitation (public) : crée le user + définit son mot de passe
-// ---------------------------------------------------------------------------
 export const acceptInvite = createServerFn({ method: "POST" })
   .inputValidator((input: { token: string; password: string }) => {
     if (!input.token) throw new Error("Token requis");
@@ -277,7 +266,8 @@ export const acceptInvite = createServerFn({ method: "POST" })
     return { token: input.token, password: input.password };
   })
   .handler(async ({ data }) => {
-    const { data: inv, error } = await supabaseAdmin
+    const admin = requireSupabaseAdminClient("L'acceptation d'invitation");
+    const { data: inv, error } = await admin
       .from("invitations")
       .select("id, email, kind, role, nom_complet, expire_at, used_at")
       .eq("token", data.token)
@@ -291,8 +281,7 @@ export const acceptInvite = createServerFn({ method: "POST" })
 
     const role = (inv.role ?? "mobile") as "admin" | "magasinier" | "mobile";
 
-    // Crée le user Supabase Auth (email auto-confirmé)
-    const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
+    const { data: created, error: createErr } = await admin.auth.admin.createUser({
       email: inv.email,
       password: data.password,
       email_confirm: true,
@@ -302,9 +291,7 @@ export const acceptInvite = createServerFn({ method: "POST" })
     const userId = created?.user?.id;
     if (!userId) throw new Error("Création du compte impossible");
 
-    // Force le profil avec le bon rôle (le trigger handle_new_user crée déjà
-    // une ligne, on l'écrase pour appliquer le rôle de l'invitation).
-    const { error: profileErr } = await supabaseAdmin.from("profiles").upsert(
+    const { error: profileErr } = await admin.from("profiles").upsert(
       {
         id: userId,
         email: inv.email,
@@ -316,8 +303,7 @@ export const acceptInvite = createServerFn({ method: "POST" })
     );
     if (profileErr) throw new Error(profileErr.message);
 
-    // Marque l'invitation comme utilisée
-    await supabaseAdmin
+    await admin
       .from("invitations")
       .update({ used_at: new Date().toISOString() })
       .eq("id", inv.id);
@@ -325,9 +311,6 @@ export const acceptInvite = createServerFn({ method: "POST" })
     return { success: true, email: inv.email };
   });
 
-// ---------------------------------------------------------------------------
-// Reset password (public) : applique un nouveau mot de passe à partir du token
-// ---------------------------------------------------------------------------
 export const resetPasswordWithToken = createServerFn({ method: "POST" })
   .inputValidator((input: { token: string; password: string }) => {
     if (!input.token) throw new Error("Token requis");
@@ -337,7 +320,8 @@ export const resetPasswordWithToken = createServerFn({ method: "POST" })
     return { token: input.token, password: input.password };
   })
   .handler(async ({ data }) => {
-    const { data: inv, error } = await supabaseAdmin
+    const admin = requireSupabaseAdminClient("La réinitialisation du mot de passe");
+    const { data: inv, error } = await admin
       .from("invitations")
       .select("id, email, kind, expire_at, used_at")
       .eq("token", data.token)
@@ -349,16 +333,16 @@ export const resetPasswordWithToken = createServerFn({ method: "POST" })
     if (new Date(inv.expire_at).getTime() < Date.now()) throw new Error("Lien expiré");
     if (inv.kind !== "password_reset") throw new Error("Type de jeton invalide pour cette action");
 
-    const { data: list } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+    const { data: list } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
     const existing = list?.users.find((u) => u.email?.toLowerCase() === inv.email.toLowerCase());
     if (!existing) throw new Error("Compte introuvable");
 
-    const { error: updErr } = await supabaseAdmin.auth.admin.updateUserById(existing.id, {
+    const { error: updErr } = await admin.auth.admin.updateUserById(existing.id, {
       password: data.password,
     });
     if (updErr) throw new Error(updErr.message);
 
-    await supabaseAdmin
+    await admin
       .from("invitations")
       .update({ used_at: new Date().toISOString() })
       .eq("id", inv.id);
@@ -366,9 +350,6 @@ export const resetPasswordWithToken = createServerFn({ method: "POST" })
     return { success: true, email: inv.email };
   });
 
-// ---------------------------------------------------------------------------
-// Désactiver / réactiver un compte
-// ---------------------------------------------------------------------------
 export const setUserActive = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { user_id: string; actif: boolean }) => {
@@ -381,13 +362,11 @@ export const setUserActive = createServerFn({ method: "POST" })
       throw new Error("Vous ne pouvez pas vous désactiver vous-même");
     }
 
-    const { error } = await supabaseAdmin
-      .from("profiles")
-      .update({ actif: data.actif })
-      .eq("id", data.user_id);
+    const admin = requireSupabaseAdminClient("La gestion des utilisateurs");
+    const { error } = await admin.from("profiles").update({ actif: data.actif }).eq("id", data.user_id);
     if (error) throw new Error(error.message);
 
-    await supabaseAdmin.auth.admin.updateUserById(data.user_id, {
+    await admin.auth.admin.updateUserById(data.user_id, {
       ban_duration: data.actif ? "none" : "876000h",
     });
     return { success: true };
@@ -408,10 +387,8 @@ export const setUserRole = createServerFn({ method: "POST" })
       throw new Error("Vous ne pouvez pas vous retirer le rôle admin vous-même");
     }
 
-    const { error } = await supabaseAdmin
-      .from("profiles")
-      .update({ role: data.role })
-      .eq("id", data.user_id);
+    const admin = requireSupabaseAdminClient("La gestion des rôles");
+    const { error } = await admin.from("profiles").update({ role: data.role }).eq("id", data.user_id);
     if (error) throw new Error(error.message);
     return { success: true };
   });
@@ -428,8 +405,9 @@ export const deleteUser = createServerFn({ method: "POST" })
       throw new Error("Vous ne pouvez pas supprimer votre propre compte");
     }
 
-    const { error } = await supabaseAdmin.auth.admin.deleteUser(data.user_id);
+    const admin = requireSupabaseAdminClient("La suppression d'utilisateurs");
+    const { error } = await admin.auth.admin.deleteUser(data.user_id);
     if (error) throw new Error(error.message);
-    await supabaseAdmin.from("profiles").delete().eq("id", data.user_id);
+    await admin.from("profiles").delete().eq("id", data.user_id);
     return { success: true };
   });

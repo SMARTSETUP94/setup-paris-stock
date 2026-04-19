@@ -171,7 +171,7 @@ function UsersTab() {
     if (!confirmRole) return;
     setUpdatingRole(true);
     try {
-      await setUserRole({ data: { user_id: confirmRole.user.id, role: confirmRole.newRole } });
+      await setUserRoleFn({ data: { user_id: confirmRole.user.id, role: confirmRole.newRole } });
       toast.success("Rôle mis à jour", {
         description: `${confirmRole.user.email} est désormais ${ROLE_LABELS[confirmRole.newRole]}.`,
       });

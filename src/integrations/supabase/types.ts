@@ -560,6 +560,23 @@ export type Database = {
         Args: { _user_id: string }
         Returns: string[]
       }
+      ensure_current_profile: {
+        Args: never
+        Returns: {
+          actif: boolean
+          created_at: string
+          email: string
+          id: string
+          nom_complet: string | null
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

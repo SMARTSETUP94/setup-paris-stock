@@ -188,7 +188,7 @@ export function useBdcDetail(id: string, ready: boolean, userId: string | undefi
       .from("bons_de_commande")
       .update({
         extraction_brute_json: next,
-        statut: bdc.statut === "en_attente_ocr" ? "ocr_termine" : bdc.statut,
+        statut: bdc.statut === "en_attente_ocr" ? "ocr_termine" : (bdc.statut as "ocr_termine"),
       })
       .eq("id", id);
     if (error) {
@@ -277,6 +277,7 @@ export function useBdcDetail(id: string, ready: boolean, userId: string | undefi
     handleSaveLigne,
     deleteLigneInDb,
     handleRelaunchOcr,
+    switchToManual,
     handleValider,
     handleAnnuler,
   };

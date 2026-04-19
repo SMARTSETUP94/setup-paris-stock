@@ -18,9 +18,11 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Loader2, Camera, AlertCircle, Zap, Search, QrCode, Package } from "lucide-react";
+import { Loader2, Camera, AlertCircle, Search, QrCode, Package } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { listPanneauxPublic, type PanneauSearchResult } from "@/lib/scan.functions";
+import { BrandingLogo } from "@/components/BrandingLogo";
+import { useBranding } from "@/hooks/useBranding";
 
 export const Route = createFileRoute("/scan/")({
   head: () => ({
@@ -147,13 +149,10 @@ function ScanPage() {
     <div className="min-h-screen bg-background flex flex-col">
       <header className="px-4 py-3 border-b border-border flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded bg-primary text-primary-foreground flex items-center justify-center">
-            <Zap className="h-4 w-4" />
-          </div>
-          <div className="leading-tight">
-            <p className="text-sm font-bold tracking-tight">SET UP</p>
-            <p className="text-[10px] text-muted-foreground -mt-0.5">Atelier</p>
-          </div>
+          <BrandingLogo size="sm" />
+          <span className="text-[10px] text-muted-foreground uppercase tracking-wider ml-1">
+            Atelier
+          </span>
         </div>
         <span className="text-xs text-muted-foreground">Sortie panneau</span>
       </header>

@@ -51,6 +51,7 @@ import {
   setUserRole,
   deleteUser,
 } from "@/lib/users.functions";
+import { BrandingTab } from "@/components/parametres/BrandingTab";
 
 type UserRow = {
   id: string;
@@ -82,15 +83,13 @@ function ParametresPage() {
       <Tabs defaultValue="utilisateurs" className="w-full">
         <TabsList className="mb-6">
           <TabsTrigger value="utilisateurs">Utilisateurs</TabsTrigger>
-          <TabsTrigger value="autres" disabled>
-            Autres (à venir)
-          </TabsTrigger>
+          <TabsTrigger value="branding">Branding</TabsTrigger>
         </TabsList>
         <TabsContent value="utilisateurs">
           <UsersTab />
         </TabsContent>
-        <TabsContent value="autres">
-          <Card className="p-12 text-center text-muted-foreground">Bientôt disponible.</Card>
+        <TabsContent value="branding">
+          <BrandingTab />
         </TabsContent>
       </Tabs>
     </div>

@@ -563,6 +563,20 @@ function AffaireDetail() {
         affaireId={affaire.id}
         onCreated={() => void loadAcces(affaire.id)}
       />
+      <MouvementDialog
+        open={mvtMode !== null}
+        onOpenChange={(v) => { if (!v) setMvtMode(null); }}
+        mode={mvtMode ?? "sortie"}
+        presetAffaireId={affaire.id}
+        isAdmin={profile?.role === "admin"}
+        userId={user?.id ?? null}
+        onCreated={() => {
+          if (affaire) {
+            void loadStock(affaire.id);
+            void loadMvtRecent(affaire.id);
+          }
+        }}
+      />
     </div>
   );
 }

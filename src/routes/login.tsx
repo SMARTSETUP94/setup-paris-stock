@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { BrandingLogo } from "@/components/BrandingLogo";
 
 export const Route = createFileRoute("/login")({
   head: () => ({

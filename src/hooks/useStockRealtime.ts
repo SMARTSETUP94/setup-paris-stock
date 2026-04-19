@@ -9,11 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
  * - `enabled` : n'active le canal que quand vrai (ex: après auth).
  * - `debounceMs` : regroupe les rafales (imports, validations BDC).
  */
-export function useStockRealtime(
-  onChange: () => void,
-  enabled: boolean,
-  debounceMs = 400,
-) {
+export function useStockRealtime(onChange: () => void, enabled: boolean, debounceMs = 400) {
   const cbRef = useRef(onChange);
   cbRef.current = onChange;
 

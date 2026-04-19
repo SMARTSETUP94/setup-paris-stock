@@ -2,14 +2,28 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Loader2, Upload, FileText, Pencil } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { ChevronsUpDown, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { extractNumeroFromFilename } from "@/lib/bdc";
@@ -49,7 +63,11 @@ export function NewBdcDialog({
     void (async () => {
       const [f, a] = await Promise.all([
         supabase.from("fournisseurs").select("id, nom").order("nom"),
-        supabase.from("affaires").select("id, code_chantier, nom").eq("statut", "en_cours").order("code_chantier"),
+        supabase
+          .from("affaires")
+          .select("id, code_chantier, nom")
+          .eq("statut", "en_cours")
+          .order("code_chantier"),
       ]);
       setFournisseurs((f.data as Fournisseur[]) ?? []);
       setAffaires((a.data as Affaire[]) ?? []);
@@ -154,9 +172,13 @@ export function NewBdcDialog({
     try {
       const result = await ocrFn({ data: { bdcId: bdc.id } });
       if (result.ok) {
-        toast.success(`OCR terminé : ${result.lignes_extraites} ligne(s), ${result.lignes_matchees} matchée(s)`);
+        toast.success(
+          `OCR terminé : ${result.lignes_extraites} ligne(s), ${result.lignes_matchees} matchée(s)`,
+        );
       } else {
-        toast.warning(`OCR échoué : ${result.error}. Vous pouvez basculer en saisie manuelle depuis la page de validation.`);
+        toast.warning(
+          `OCR échoué : ${result.error}. Vous pouvez basculer en saisie manuelle depuis la page de validation.`,
+        );
       }
     } catch (e) {
       toast.error("Erreur OCR : " + (e instanceof Error ? e.message : "inconnue"));
@@ -210,8 +232,20 @@ export function NewBdcDialog({
             onChange={(e) => setNewFournisseurNom(e.target.value)}
             autoFocus
           />
-          <Button type="button" size="sm" onClick={createFournisseurInline}>Créer</Button>
-          <Button type="button" size="sm" variant="ghost" onClick={() => { setCreatingFournisseur(false); setNewFournisseurNom(""); }}>×</Button>
+          <Button type="button" size="sm" onClick={createFournisseurInline}>
+            Créer
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            onClick={() => {
+              setCreatingFournisseur(false);
+              setNewFournisseurNom("");
+            }}
+          >
+            ×
+          </Button>
         </div>
       ) : (
         <Popover open={fournisseurOpen} onOpenChange={setFournisseurOpen}>
@@ -231,7 +265,10 @@ export function NewBdcDialog({
                   <button
                     type="button"
                     className="text-sm text-primary hover:underline"
-                    onClick={() => { setFournisseurOpen(false); setCreatingFournisseur(true); }}
+                    onClick={() => {
+                      setFournisseurOpen(false);
+                      setCreatingFournisseur(true);
+                    }}
                   >
                     + Créer un fournisseur
                   </button>
@@ -241,15 +278,26 @@ export function NewBdcDialog({
                     <CommandItem
                       key={f.id}
                       value={f.nom}
-                      onSelect={() => { setFournisseurId(f.id); setFournisseurOpen(false); }}
+                      onSelect={() => {
+                        setFournisseurId(f.id);
+                        setFournisseurOpen(false);
+                      }}
                     >
-                      <Check className={cn("mr-2 h-4 w-4", fournisseurId === f.id ? "opacity-100" : "opacity-0")} />
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          fournisseurId === f.id ? "opacity-100" : "opacity-0",
+                        )}
+                      />
                       {f.nom}
                     </CommandItem>
                   ))}
                   <CommandItem
                     value="__create__"
-                    onSelect={() => { setFournisseurOpen(false); setCreatingFournisseur(true); }}
+                    onSelect={() => {
+                      setFournisseurOpen(false);
+                      setCreatingFournisseur(true);
+                    }}
                   >
                     <span className="text-primary">+ Créer un fournisseur</span>
                   </CommandItem>
@@ -291,7 +339,9 @@ export function NewBdcDialog({
                   <span className="font-mono text-xs mr-2">{selectedAffaire.code_chantier}</span>
                   {selectedAffaire.nom}
                 </>
-              ) : "— Aucune (stock général)"}
+              ) : (
+                "— Aucune (stock général)"
+              )}
             </span>
             <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
           </Button>
@@ -302,7 +352,13 @@ export function NewBdcDialog({
             <CommandList>
               <CommandEmpty>Aucune affaire active.</CommandEmpty>
               <CommandGroup>
-                <CommandItem value="__none__" onSelect={() => { setAffaireId(""); setAffaireOpen(false); }}>
+                <CommandItem
+                  value="__none__"
+                  onSelect={() => {
+                    setAffaireId("");
+                    setAffaireOpen(false);
+                  }}
+                >
                   <Check className={cn("mr-2 h-4 w-4", !affaireId ? "opacity-100" : "opacity-0")} />
                   <span className="text-muted-foreground">— Aucune</span>
                 </CommandItem>
@@ -310,9 +366,17 @@ export function NewBdcDialog({
                   <CommandItem
                     key={a.id}
                     value={`${a.code_chantier} ${a.nom}`}
-                    onSelect={() => { setAffaireId(a.id); setAffaireOpen(false); }}
+                    onSelect={() => {
+                      setAffaireId(a.id);
+                      setAffaireOpen(false);
+                    }}
                   >
-                    <Check className={cn("mr-2 h-4 w-4", affaireId === a.id ? "opacity-100" : "opacity-0")} />
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        affaireId === a.id ? "opacity-100" : "opacity-0",
+                      )}
+                    />
                     <span className="font-mono text-xs mr-2">{a.code_chantier}</span>
                     <span className="truncate">{a.nom}</span>
                   </CommandItem>
@@ -325,10 +389,7 @@ export function NewBdcDialog({
     </div>
   );
 
-  const canSubmit =
-    !submitting &&
-    !!fournisseurId &&
-    (mode === "ocr" ? !!file : true);
+  const canSubmit = !submitting && !!fournisseurId && (mode === "ocr" ? !!file : true);
 
   return (
     <Dialog open onOpenChange={(o) => !o && !submitting && onClose()}>
@@ -341,12 +402,20 @@ export function NewBdcDialog({
         </DialogHeader>
 
         {loading ? (
-          <div className="py-8 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+          <div className="py-8 flex justify-center">
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          </div>
         ) : (
           <Tabs value={mode} onValueChange={(v) => setMode(v as Mode)} className="space-y-4">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="ocr"><Upload className="h-3.5 w-3.5 mr-1.5" />Avec OCR (PDF)</TabsTrigger>
-              <TabsTrigger value="manuel"><Pencil className="h-3.5 w-3.5 mr-1.5" />Saisie manuelle</TabsTrigger>
+              <TabsTrigger value="ocr">
+                <Upload className="h-3.5 w-3.5 mr-1.5" />
+                Avec OCR (PDF)
+              </TabsTrigger>
+              <TabsTrigger value="manuel">
+                <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                Saisie manuelle
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="ocr" className="space-y-4 mt-0">
@@ -356,7 +425,10 @@ export function NewBdcDialog({
                   file && "border-primary/40 bg-primary/5",
                 )}
                 onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => { e.preventDefault(); handleFile(e.dataTransfer.files?.[0] ?? null); }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  handleFile(e.dataTransfer.files?.[0] ?? null);
+                }}
               >
                 <input
                   type="file"
@@ -376,7 +448,9 @@ export function NewBdcDialog({
                   <>
                     <Upload className="h-8 w-8 text-muted-foreground mb-2" />
                     <span className="text-sm font-medium">Glissez-déposez le PDF</span>
-                    <span className="text-xs text-muted-foreground mt-1">ou cliquez pour sélectionner (max 20 Mo)</span>
+                    <span className="text-xs text-muted-foreground mt-1">
+                      ou cliquez pour sélectionner (max 20 Mo)
+                    </span>
                   </>
                 )}
               </label>
@@ -387,8 +461,8 @@ export function NewBdcDialog({
 
             <TabsContent value="manuel" className="space-y-4 mt-0">
               <div className="rounded-md border border-border bg-muted/30 px-4 py-3 text-xs text-muted-foreground">
-                Mode dégradé : aucun PDF, aucune extraction. Vous saisirez les lignes
-                manuellement à l'étape suivante.
+                Mode dégradé : aucun PDF, aucune extraction. Vous saisirez les lignes manuellement à
+                l'étape suivante.
               </div>
               {fournisseurField}
               {numeroDateFields}
@@ -398,7 +472,9 @@ export function NewBdcDialog({
         )}
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={submitting}>Annuler</Button>
+          <Button variant="outline" onClick={onClose} disabled={submitting}>
+            Annuler
+          </Button>
           <Button onClick={mode === "ocr" ? submitOcr : submitManuel} disabled={!canSubmit}>
             {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             {mode === "ocr" ? "Uploader et lancer l'OCR" : "Créer en saisie manuelle"}

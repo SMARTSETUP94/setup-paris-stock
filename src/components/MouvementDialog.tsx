@@ -2,14 +2,34 @@ import { useEffect, useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ChevronsUpDown, Check } from "lucide-react";
 import { formatEuro, formatNumber, uniteLabel } from "@/lib/familles";
 import { cn } from "@/lib/utils";
@@ -42,7 +62,15 @@ interface Props {
   onCreated?: () => void;
 }
 
-export function MouvementDialog({ open, onOpenChange, mode, presetAffaireId, isAdmin, userId, onCreated }: Props) {
+export function MouvementDialog({
+  open,
+  onOpenChange,
+  mode,
+  presetAffaireId,
+  isAdmin,
+  userId,
+  onCreated,
+}: Props) {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [panneaux, setPanneaux] = useState<CatalogueRow[]>([]);
@@ -73,7 +101,11 @@ export function MouvementDialog({ open, onOpenChange, mode, presetAffaireId, isA
 
     void (async () => {
       const [pRes, aRes] = await Promise.all([
-        supabase.from("catalogue_visible").select("id, matiere_code, matiere_libelle, longueur_mm, largeur_mm, cump_ht, prix_achat_ht, stock_actuel, unite_stock"),
+        supabase
+          .from("catalogue_visible")
+          .select(
+            "id, matiere_code, matiere_libelle, longueur_mm, largeur_mm, cump_ht, prix_achat_ht, stock_actuel, unite_stock",
+          ),
         supabase.from("affaires").select("id, numero, nom").order("numero", { ascending: false }),
       ]);
       setPanneaux((pRes.data as CatalogueRow[]) ?? []);
@@ -82,8 +114,14 @@ export function MouvementDialog({ open, onOpenChange, mode, presetAffaireId, isA
     })();
   }, [open, presetAffaireId]);
 
-  const selectedPanneau = useMemo(() => panneaux.find((p) => p.id === panneauId) ?? null, [panneaux, panneauId]);
-  const selectedAffaire = useMemo(() => affaires.find((a) => a.id === affaireId) ?? null, [affaires, affaireId]);
+  const selectedPanneau = useMemo(
+    () => panneaux.find((p) => p.id === panneauId) ?? null,
+    [panneaux, panneauId],
+  );
+  const selectedAffaire = useMemo(
+    () => affaires.find((a) => a.id === affaireId) ?? null,
+    [affaires, affaireId],
+  );
 
   // Pré-remplit le prix unitaire depuis prix_achat_ht à la sélection d'un panneau (mode entrée)
   useEffect(() => {
@@ -157,7 +195,9 @@ export function MouvementDialog({ open, onOpenChange, mode, presetAffaireId, isA
       return;
     }
     if (mode === "sortie" && overstock && isAdmin && !forceOverstock) {
-      toast.error(`Stock disponible : ${formatNumber(stockActuel, 2)}. Cochez « Forcer » pour valider.`);
+      toast.error(
+        `Stock disponible : ${formatNumber(stockActuel, 2)}. Cochez « Forcer » pour valider.`,
+      );
       return;
     }
     if (mode === "correction" && !commentaire.trim()) {
@@ -228,13 +268,16 @@ export function MouvementDialog({ open, onOpenChange, mode, presetAffaireId, isA
           <DialogTitle>{titles[mode]}</DialogTitle>
           {mode === "correction" && (
             <DialogDescription>
-              Une correction est immuable. Pour annuler une sortie erronée, créez une correction positive.
+              Une correction est immuable. Pour annuler une sortie erronée, créez une correction
+              positive.
             </DialogDescription>
           )}
         </DialogHeader>
 
         {loading ? (
-          <div className="py-8 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+          <div className="py-8 flex justify-center">
+            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          </div>
         ) : (
           <div className="grid gap-4">
             {/* Panneau */}
@@ -242,15 +285,20 @@ export function MouvementDialog({ open, onOpenChange, mode, presetAffaireId, isA
               <Label>Panneau *</Label>
               <Popover open={panneauOpen} onOpenChange={setPanneauOpen}>
                 <PopoverTrigger asChild>
-                  <Button type="button" variant="outline" className="w-full justify-between font-normal">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full justify-between font-normal"
+                  >
                     <span className={cn("truncate", !selectedPanneau && "text-muted-foreground")}>
                       {selectedPanneau ? (
                         <>
                           <span className="font-mono text-xs">{selectedPanneau.matiere_code}</span>
                           {" — "}
-                          {selectedPanneau.matiere_libelle}
-                          {" "}
-                          <span className="text-muted-foreground">({selectedPanneau.longueur_mm}×{selectedPanneau.largeur_mm})</span>
+                          {selectedPanneau.matiere_libelle}{" "}
+                          <span className="text-muted-foreground">
+                            ({selectedPanneau.longueur_mm}×{selectedPanneau.largeur_mm})
+                          </span>
                         </>
                       ) : (
                         "Sélectionner…"
@@ -275,11 +323,17 @@ export function MouvementDialog({ open, onOpenChange, mode, presetAffaireId, isA
                               if (mode === "entree") setPrixUnitaire("");
                             }}
                           >
-                            <Check className={cn("mr-2 h-4 w-4", panneauId === p.id ? "opacity-100" : "opacity-0")} />
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                panneauId === p.id ? "opacity-100" : "opacity-0",
+                              )}
+                            />
                             <span className="font-mono text-xs mr-2">{p.matiere_code}</span>
                             <span className="flex-1 truncate">{p.matiere_libelle}</span>
                             <span className="text-xs text-muted-foreground ml-2">
-                              {p.longueur_mm}×{p.largeur_mm} · stock {formatNumber(Number(p.stock_actuel ?? 0), 2)}
+                              {p.longueur_mm}×{p.largeur_mm} · stock{" "}
+                              {formatNumber(Number(p.stock_actuel ?? 0), 2)}
                             </span>
                           </CommandItem>
                         ))}
@@ -296,7 +350,9 @@ export function MouvementDialog({ open, onOpenChange, mode, presetAffaireId, isA
                 <div>
                   <Label>Sens</Label>
                   <Select value={signe} onValueChange={(v) => setSigne(v as "plus" | "moins")}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="plus">+ (ajouter au stock)</SelectItem>
                       <SelectItem value="moins">− (retirer du stock)</SelectItem>
@@ -306,7 +362,8 @@ export function MouvementDialog({ open, onOpenChange, mode, presetAffaireId, isA
               )}
               <div>
                 <Label>
-                  Quantité * {selectedPanneau && (
+                  Quantité *{" "}
+                  {selectedPanneau && (
                     <span className="text-xs text-muted-foreground ml-1">
                       ({uniteLabel(selectedPanneau.unite_stock)})
                     </span>
@@ -341,14 +398,23 @@ export function MouvementDialog({ open, onOpenChange, mode, presetAffaireId, isA
               <Label>Affaire {mode === "sortie" && "*"}</Label>
               <Popover open={affaireOpen} onOpenChange={setAffaireOpen}>
                 <PopoverTrigger asChild>
-                  <Button type="button" variant="outline" className="w-full justify-between font-normal" disabled={!!presetAffaireId}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full justify-between font-normal"
+                    disabled={!!presetAffaireId}
+                  >
                     <span className={cn("truncate", !selectedAffaire && "text-muted-foreground")}>
                       {selectedAffaire ? (
                         <>
                           <span className="font-mono text-xs mr-2">{selectedAffaire.numero}</span>
                           {selectedAffaire.nom}
                         </>
-                      ) : mode === "sortie" ? "Sélectionner une affaire…" : "— Aucune (stock général)"}
+                      ) : mode === "sortie" ? (
+                        "Sélectionner une affaire…"
+                      ) : (
+                        "— Aucune (stock général)"
+                      )}
                     </span>
                     <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
                   </Button>
@@ -360,8 +426,19 @@ export function MouvementDialog({ open, onOpenChange, mode, presetAffaireId, isA
                       <CommandEmpty>Aucune affaire.</CommandEmpty>
                       <CommandGroup>
                         {mode !== "sortie" && (
-                          <CommandItem value="__none__" onSelect={() => { setAffaireId(""); setAffaireOpen(false); }}>
-                            <Check className={cn("mr-2 h-4 w-4", !affaireId ? "opacity-100" : "opacity-0")} />
+                          <CommandItem
+                            value="__none__"
+                            onSelect={() => {
+                              setAffaireId("");
+                              setAffaireOpen(false);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                !affaireId ? "opacity-100" : "opacity-0",
+                              )}
+                            />
                             <span className="text-muted-foreground">— Aucune (stock général)</span>
                           </CommandItem>
                         )}
@@ -369,9 +446,17 @@ export function MouvementDialog({ open, onOpenChange, mode, presetAffaireId, isA
                           <CommandItem
                             key={a.id}
                             value={`${a.numero} ${a.nom}`}
-                            onSelect={() => { setAffaireId(a.id); setAffaireOpen(false); }}
+                            onSelect={() => {
+                              setAffaireId(a.id);
+                              setAffaireOpen(false);
+                            }}
                           >
-                            <Check className={cn("mr-2 h-4 w-4", affaireId === a.id ? "opacity-100" : "opacity-0")} />
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                affaireId === a.id ? "opacity-100" : "opacity-0",
+                              )}
+                            />
                             <span className="font-mono text-xs mr-2">{a.numero}</span>
                             <span className="flex-1 truncate">{a.nom}</span>
                           </CommandItem>
@@ -420,27 +505,43 @@ export function MouvementDialog({ open, onOpenChange, mode, presetAffaireId, isA
               <div className="rounded-lg bg-muted/40 px-4 py-3 text-sm space-y-1.5">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Stock actuel</span>
-                  <span className="font-medium">{formatNumber(stockActuel, 2)} {uniteLabel(selectedPanneau.unite_stock)}</span>
+                  <span className="font-medium">
+                    {formatNumber(stockActuel, 2)} {uniteLabel(selectedPanneau.unite_stock)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">CUMP actuel</span>
-                  <span className="font-medium">{cumpActuel === null ? "—" : formatEuro(cumpActuel)}</span>
+                  <span className="font-medium">
+                    {cumpActuel === null ? "—" : formatEuro(cumpActuel)}
+                  </span>
                 </div>
                 {apercu && (
                   <>
                     <div className="border-t border-border my-2" />
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Valeur ligne HT</span>
-                      <span className="font-semibold text-foreground">{formatEuro(apercu.valeur)}</span>
+                      <span className="font-semibold text-foreground">
+                        {formatEuro(apercu.valeur)}
+                      </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">{apercu.kind === "entree" ? "Nouveau CUMP" : "CUMP après"}</span>
-                      <span className="font-semibold text-foreground">{formatEuro(apercu.nouveauCump)}</span>
+                      <span className="text-muted-foreground">
+                        {apercu.kind === "entree" ? "Nouveau CUMP" : "CUMP après"}
+                      </span>
+                      <span className="font-semibold text-foreground">
+                        {formatEuro(apercu.nouveauCump)}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Stock après</span>
-                      <span className={cn("font-semibold", apercu.nouveauStock < 0 && "text-destructive")}>
-                        {formatNumber(apercu.nouveauStock, 2)} {uniteLabel(selectedPanneau.unite_stock)}
+                      <span
+                        className={cn(
+                          "font-semibold",
+                          apercu.nouveauStock < 0 && "text-destructive",
+                        )}
+                      >
+                        {formatNumber(apercu.nouveauStock, 2)}{" "}
+                        {uniteLabel(selectedPanneau.unite_stock)}
                       </span>
                     </div>
                   </>
@@ -455,11 +556,17 @@ export function MouvementDialog({ open, onOpenChange, mode, presetAffaireId, isA
                 </p>
                 {isAdmin ? (
                   <label className="mt-2 flex items-center gap-2 cursor-pointer text-warning">
-                    <input type="checkbox" checked={forceOverstock} onChange={(e) => setForceOverstock(e.target.checked)} />
+                    <input
+                      type="checkbox"
+                      checked={forceOverstock}
+                      onChange={(e) => setForceOverstock(e.target.checked)}
+                    />
                     <span>Forcer (admin)</span>
                   </label>
                 ) : (
-                  <p className="mt-1 text-warning">Action interdite. Contactez un administrateur.</p>
+                  <p className="mt-1 text-warning">
+                    Action interdite. Contactez un administrateur.
+                  </p>
                 )}
               </div>
             )}
@@ -467,9 +574,17 @@ export function MouvementDialog({ open, onOpenChange, mode, presetAffaireId, isA
         )}
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Annuler</Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Annuler
+          </Button>
           <Button onClick={submit} disabled={submitting || loading}>
-            {submitting ? "Enregistrement…" : mode === "entree" ? "Enregistrer l'entrée" : mode === "sortie" ? "Enregistrer la sortie" : "Enregistrer la correction"}
+            {submitting
+              ? "Enregistrement…"
+              : mode === "entree"
+                ? "Enregistrer l'entrée"
+                : mode === "sortie"
+                  ? "Enregistrer la sortie"
+                  : "Enregistrer la correction"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -58,12 +58,15 @@ export function PanneauxTreeView({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     {m.typo_nom && <span className="font-medium">{m.typo_nom}</span>}
-                    {m.matiere_variante && <span className="text-muted-foreground">{m.matiere_variante}</span>}
+                    {m.matiere_variante && (
+                      <span className="text-muted-foreground">{m.matiere_variante}</span>
+                    )}
                   </div>
                   <span className="text-xs text-muted-foreground font-mono">{m.matiere_code}</span>
                 </div>
                 <div className="text-xs text-muted-foreground tabular-nums whitespace-nowrap">
-                  {m.formats.length} format{m.formats.length > 1 ? "s" : ""} · {m.totalPanneaux} panneau
+                  {m.formats.length} format{m.formats.length > 1 ? "s" : ""} · {m.totalPanneaux}{" "}
+                  panneau
                   {m.totalPanneaux > 1 ? "x" : ""}
                 </div>
                 <span className="inline-block px-2 py-0.5 rounded border text-xs font-medium tabular-nums bg-muted text-muted-foreground border-border">
@@ -89,9 +92,12 @@ export function PanneauxTreeView({
                         <span className="font-mono text-xs tabular-nums">
                           {f.longueur} × {f.largeur} mm
                         </span>
-                        <span className="text-xs text-muted-foreground">· {formatNumber(f.surface, 3)} m²</span>
+                        <span className="text-xs text-muted-foreground">
+                          · {formatNumber(f.surface, 3)} m²
+                        </span>
                         <div className="ml-auto text-xs text-muted-foreground tabular-nums">
-                          {f.panneaux.length} épaisseur{f.panneaux.length > 1 ? "s" : ""} · stock {formatNumber(fmtStock, 2)}
+                          {f.panneaux.length} épaisseur{f.panneaux.length > 1 ? "s" : ""} · stock{" "}
+                          {formatNumber(fmtStock, 2)}
                         </div>
                       </button>
 
@@ -117,7 +123,9 @@ export function PanneauxTreeView({
                                 <td className="px-3 py-2 font-mono text-xs tabular-nums w-24">
                                   {p.epaisseur_mm} mm
                                 </td>
-                                <td className="px-3 py-2 text-right tabular-nums">{formatEuro(p.prix_achat_ht)}</td>
+                                <td className="px-3 py-2 text-right tabular-nums">
+                                  {formatEuro(p.prix_achat_ht)}
+                                </td>
                                 <td className="px-3 py-2 text-center w-24">
                                   <span
                                     className={`inline-block px-2 py-0.5 rounded border text-xs font-medium tabular-nums ${stockBadgeClass(p)}`}
@@ -126,7 +134,10 @@ export function PanneauxTreeView({
                                   </span>
                                 </td>
                                 <td className="px-3 py-2 text-center w-20">
-                                  <Switch checked={p.actif} onCheckedChange={() => onToggleActif(p)} />
+                                  <Switch
+                                    checked={p.actif}
+                                    onCheckedChange={() => onToggleActif(p)}
+                                  />
                                 </td>
                                 <td className="px-3 py-2 text-right w-16">
                                   <Button variant="ghost" size="sm" onClick={() => onEdit(p)}>

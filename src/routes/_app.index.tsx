@@ -154,7 +154,10 @@ function DashboardPage() {
       valeur_consommee_ht: number | null;
     }[]) {
       if (!c.affaire_id) continue;
-      parAffaire.set(c.affaire_id, (parAffaire.get(c.affaire_id) ?? 0) + Number(c.valeur_consommee_ht ?? 0));
+      parAffaire.set(
+        c.affaire_id,
+        (parAffaire.get(c.affaire_id) ?? 0) + Number(c.valeur_consommee_ht ?? 0),
+      );
     }
     const topIds = Array.from(parAffaire.entries())
       .sort((a, b) => b[1] - a[1])
@@ -334,9 +337,7 @@ function DashboardPage() {
               {topAffaires.map((a, idx) => (
                 <li key={a.id} className="py-2 flex items-center justify-between gap-3 text-sm">
                   <div className="min-w-0 flex items-center gap-3">
-                    <span className="font-mono text-xs text-muted-foreground w-4">
-                      {idx + 1}
-                    </span>
+                    <span className="font-mono text-xs text-muted-foreground w-4">{idx + 1}</span>
                     <Link
                       to="/affaires/$code"
                       params={{ code: a.code_chantier }}
@@ -419,8 +420,8 @@ function DashboardPage() {
               <p className="eyebrow">Modules</p>
               <h2 className="text-2xl md:text-3xl">Pour démarrer</h2>
               <p className="text-sm text-muted-foreground max-w-2xl">
-                Ces 4 modules constituent le cœur de l'application. Commence par le
-                catalogue pour référencer tes matières et tes panneaux.
+                Ces 4 modules constituent le cœur de l'application. Commence par le catalogue pour
+                référencer tes matières et tes panneaux.
               </p>
             </div>
           </div>
@@ -430,9 +431,7 @@ function DashboardPage() {
               <Link key={s.num} to={s.to}>
                 <Card className="p-6 hover:bg-muted/40 transition-colors cursor-pointer h-full">
                   <div className="flex items-start gap-6">
-                    <span className="font-display text-3xl text-muted-foreground/70">
-                      {s.num}
-                    </span>
+                    <span className="font-display text-3xl text-muted-foreground/70">{s.num}</span>
                     <div className="space-y-1">
                       <h3 className="text-lg flex items-center gap-2">
                         {s.title}

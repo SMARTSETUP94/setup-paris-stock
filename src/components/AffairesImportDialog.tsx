@@ -1,7 +1,21 @@
 import { useState, useRef, useMemo } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Loader2, Upload, FileSpreadsheet, X, AlertCircle, CheckCircle2, AlertTriangle } from "lucide-react";
+import {
+  Loader2,
+  Upload,
+  FileSpreadsheet,
+  X,
+  AlertCircle,
+  CheckCircle2,
+  AlertTriangle,
+} from "lucide-react";
 import { parseFile } from "@/lib/import-parsers";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -61,7 +75,8 @@ function normalizeHeader(h: string): string {
  */
 function canonicalKey(rawKey: string): string {
   const k = normalizeHeader(rawKey);
-  if (k === "code affaire" || k === "code chantier" || k === "code_chantier") return "code_chantier";
+  if (k === "code affaire" || k === "code chantier" || k === "code_chantier")
+    return "code_chantier";
   if (k === "libelle" || k === "nom" || k === "intitule") return "nom";
   if (k === "client") return "client";
   if (k.startsWith("charge")) return "charge_affaires"; // "charge e d affaires", "charge d affaires", "charge affaires"
@@ -122,7 +137,9 @@ export function AffairesImportDialog({ open, onClose, onImported }: Props) {
         .select("id, nom_complet, email")
         .eq("role", "admin")
         .eq("actif", true);
-      const profiles = ((profilesData ?? []) as { id: string; nom_complet: string | null; email: string }[]).map((p) => ({
+      const profiles = (
+        (profilesData ?? []) as { id: string; nom_complet: string | null; email: string }[]
+      ).map((p) => ({
         id: p.id,
         label: p.nom_complet ?? p.email,
         norm: normalizeForMatch(p.nom_complet ?? p.email),
@@ -130,7 +147,9 @@ export function AffairesImportDialog({ open, onClose, onImported }: Props) {
 
       // Charger code_chantier existants pour détecter doublons
       const { data: existingData } = await supabase.from("affaires").select("code_chantier");
-      const existingCodes = new Set(((existingData ?? []) as { code_chantier: string }[]).map((r) => r.code_chantier));
+      const existingCodes = new Set(
+        ((existingData ?? []) as { code_chantier: string }[]).map((r) => r.code_chantier),
+      );
 
       // Normaliser les clés (insensible casse)
       const validated: Row[] = [];
@@ -162,7 +181,9 @@ export function AffairesImportDialog({ open, onClose, onImported }: Props) {
           let best: { id: string; label: string; score: number } | null = null;
           for (const p of profiles) {
             const pTokens = p.norm.split(" ").filter((t) => t.length >= 2);
-            const matches = tokens.filter((t) => pTokens.some((pt) => pt.includes(t) || t.includes(pt)));
+            const matches = tokens.filter((t) =>
+              pTokens.some((pt) => pt.includes(t) || t.includes(pt)),
+            );
             const score = matches.length;
             if (score >= Math.min(2, tokens.length) && (!best || score > best.score)) {
               best = { id: p.id, label: p.label, score };
@@ -179,18 +200,21 @@ export function AffairesImportDialog({ open, onClose, onImported }: Props) {
         const numeroRaw = raw["numero"];
         const numeroExtracted = numeroRaw || (code_chantier.match(/^(\d{3,5})/)?.[1] ?? null);
 
-        const data: ParsedRow | null = errors.length === 0 ? {
-          code_chantier,
-          numero: numeroExtracted,
-          nom,
-          client,
-          adresse: raw["adresse"] || null,
-          charge_affaires_id,
-          charge_affaires_libre,
-          charge_match_label,
-          code_interne: raw["code_interne"] || null,
-          statut: parseStatut(raw["statut"]),
-        } : null;
+        const data: ParsedRow | null =
+          errors.length === 0
+            ? {
+                code_chantier,
+                numero: numeroExtracted,
+                nom,
+                client,
+                adresse: raw["adresse"] || null,
+                charge_affaires_id,
+                charge_affaires_libre,
+                charge_match_label,
+                code_interne: raw["code_interne"] || null,
+                statut: parseStatut(raw["statut"]),
+              }
+            : null;
 
         const isDuplicate = data ? existingCodes.has(data.code_chantier) : false;
 
@@ -225,7 +249,10 @@ export function AffairesImportDialog({ open, onClose, onImported }: Props) {
       const toCreate: ParsedRow[] = [];
       const toOverwrite: ParsedRow[] = [];
       for (const r of rows) {
-        if (!r.data || r.action === "skip") { skipped++; continue; }
+        if (!r.data || r.action === "skip") {
+          skipped++;
+          continue;
+        }
         if (r.action === "create") toCreate.push(r.data);
         else if (r.action === "overwrite") toOverwrite.push(r.data);
       }
@@ -242,7 +269,9 @@ export function AffairesImportDialog({ open, onClose, onImported }: Props) {
           code_interne: d.code_interne,
           statut: d.statut,
         }));
-        const { error, count } = await supabase.from("affaires").insert(payload, { count: "exact" });
+        const { error, count } = await supabase
+          .from("affaires")
+          .insert(payload, { count: "exact" });
         if (error) {
           errors += toCreate.length;
           toast.error("Échec insertions", { description: error.message });
@@ -282,29 +311,47 @@ export function AffairesImportDialog({ open, onClose, onImported }: Props) {
     }
   }
 
-  const counts = useMemo(() => ({
-    new: rows.filter((r) => r.status === "new").length,
-    duplicate: rows.filter((r) => r.status === "duplicate").length,
-    error: rows.filter((r) => r.status === "error").length,
-    unmatched: rows.filter((r) => r.data?.charge_affaires_libre).length,
-  }), [rows]);
+  const counts = useMemo(
+    () => ({
+      new: rows.filter((r) => r.status === "new").length,
+      duplicate: rows.filter((r) => r.status === "duplicate").length,
+      error: rows.filter((r) => r.status === "error").length,
+      unmatched: rows.filter((r) => r.data?.charge_affaires_libre).length,
+    }),
+    [rows],
+  );
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) { reset(); onClose(); } }}>
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        if (!o) {
+          reset();
+          onClose();
+        }
+      }}
+    >
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle>Importer des affaires (CSV)</DialogTitle>
           <DialogDescription>
             CSV / XLSX — séparateur virgule ou point-virgule auto-détecté. Colonnes attendues :{" "}
-            <span className="font-mono text-xs">Code affaire, Libelle, Client</span> (obligatoires) ·{" "}
-            <span className="font-mono text-xs">Chargé(e) d'affaires, adresse, code_interne, statut</span> (optionnelles).
-            Les en-têtes sont reconnus en majuscules/minuscules, avec ou sans accents.
+            <span className="font-mono text-xs">Code affaire, Libelle, Client</span> (obligatoires)
+            ·{" "}
+            <span className="font-mono text-xs">
+              Chargé(e) d'affaires, adresse, code_interne, statut
+            </span>{" "}
+            (optionnelles). Les en-têtes sont reconnus en majuscules/minuscules, avec ou sans
+            accents.
           </DialogDescription>
         </DialogHeader>
 
         {!file && (
           <div
-            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragOver(true);
+            }}
             onDragLeave={() => setDragOver(false)}
             onDrop={(e) => {
               e.preventDefault();
@@ -315,7 +362,7 @@ export function AffairesImportDialog({ open, onClose, onImported }: Props) {
             onClick={() => inputRef.current?.click()}
             className={cn(
               "border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-colors",
-              dragOver ? "border-primary bg-primary/5" : "border-border hover:bg-muted/50"
+              dragOver ? "border-primary bg-primary/5" : "border-border hover:bg-muted/50",
             )}
           >
             <Upload className="h-8 w-8 mx-auto mb-3 text-muted-foreground" />
@@ -390,13 +437,19 @@ export function AffairesImportDialog({ open, onClose, onImported }: Props) {
                         "border-t border-border",
                         r.status === "error" && "bg-destructive/5",
                         r.status === "duplicate" && "bg-warning/5",
-                        r.status === "new" && "bg-success/5"
+                        r.status === "new" && "bg-success/5",
                       )}
                     >
                       <td className="px-3 py-2 text-muted-foreground">{r.index + 1}</td>
-                      <td className="px-3 py-2 font-mono text-xs">{r.data?.code_chantier ?? r.raw["code_chantier"]}</td>
-                      <td className="px-3 py-2 truncate max-w-[200px]">{r.data?.nom ?? r.raw["nom"]}</td>
-                      <td className="px-3 py-2 truncate max-w-[150px]">{r.data?.client ?? r.raw["client"]}</td>
+                      <td className="px-3 py-2 font-mono text-xs">
+                        {r.data?.code_chantier ?? r.raw["code_chantier"]}
+                      </td>
+                      <td className="px-3 py-2 truncate max-w-[200px]">
+                        {r.data?.nom ?? r.raw["nom"]}
+                      </td>
+                      <td className="px-3 py-2 truncate max-w-[150px]">
+                        {r.data?.client ?? r.raw["client"]}
+                      </td>
                       <td className="px-3 py-2 truncate max-w-[180px]">
                         {r.data?.charge_match_label ? (
                           <span className="text-success">{r.data.charge_match_label}</span>
@@ -439,10 +492,20 @@ export function AffairesImportDialog({ open, onClose, onImported }: Props) {
             </div>
 
             <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
-              <Button variant="outline" onClick={() => { reset(); onClose(); }} disabled={importing}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  reset();
+                  onClose();
+                }}
+                disabled={importing}
+              >
                 Annuler
               </Button>
-              <Button onClick={handleImport} disabled={importing || rows.every((r) => r.action === "skip")}>
+              <Button
+                onClick={handleImport}
+                disabled={importing || rows.every((r) => r.action === "skip")}
+              >
                 {importing && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                 Valider l'import
               </Button>

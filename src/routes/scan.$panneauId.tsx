@@ -32,10 +32,7 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/scan/$panneauId")({
   head: () => ({
-    meta: [
-      { title: "Sortie panneau — Setup Stock" },
-      { name: "robots", content: "noindex" },
-    ],
+    meta: [{ title: "Sortie panneau — Setup Stock" }, { name: "robots", content: "noindex" }],
   }),
   component: ScanSortiePage,
 });
@@ -66,10 +63,7 @@ function ScanSortiePage() {
     let mounted = true;
     void (async () => {
       try {
-        const [p, a] = await Promise.all([
-          getPanneauFn({ data: { panneauId } }),
-          listAffairesFn(),
-        ]);
+        const [p, a] = await Promise.all([getPanneauFn({ data: { panneauId } }), listAffairesFn()]);
         if (!mounted) return;
         setPanneau(p);
         setAffaires(a);
@@ -81,8 +75,8 @@ function ScanSortiePage() {
         if (lastAffaire && a.some((x) => x.id === lastAffaire)) {
           setAffaireId(lastAffaire);
         }
-      } catch (e: any) {
-        setLoadError(e?.message ?? "Erreur de chargement");
+      } catch (e) {
+        setLoadError((e instanceof Error ? e.message : null) ?? "Erreur de chargement");
       } finally {
         if (mounted) setLoading(false);
       }
@@ -119,8 +113,8 @@ function ScanSortiePage() {
         },
       });
       setSuccess({ affaire: res.affaire });
-    } catch (e: any) {
-      toast.error(e?.message ?? "Erreur");
+    } catch (e) {
+      toast.error((e instanceof Error ? e.message : null) ?? "Erreur");
     } finally {
       setSubmitting(false);
     }
@@ -180,17 +174,18 @@ function ScanSortiePage() {
     );
   }
 
-  const m = panneau.matiere as any;
+  const m = panneau.matiere as {
+    code?: string | null;
+    libelle?: string | null;
+    famille?: string | null;
+    unite_stock?: string | null;
+  } | null;
   const stockBas = (panneau.stock_actuel ?? 0) <= 0;
 
   return (
     <div className="min-h-screen bg-background">
       <header className="px-4 py-3 border-b border-border flex items-center gap-2">
-        <button
-          onClick={() => navigate({ to: "/scan" })}
-          className="p-1 -ml-1"
-          aria-label="Retour"
-        >
+        <button onClick={() => navigate({ to: "/scan" })} className="p-1 -ml-1" aria-label="Retour">
           <ArrowLeft className="h-5 w-5" />
         </button>
         <h1 className="text-base font-semibold">Déclarer une sortie</h1>
@@ -208,9 +203,7 @@ function ScanSortiePage() {
             <span className="text-muted-foreground">Stock actuel :</span>
             <span
               className={
-                stockBas
-                  ? "font-semibold text-destructive"
-                  : "font-semibold text-foreground"
+                stockBas ? "font-semibold text-destructive" : "font-semibold text-foreground"
               }
             >
               {panneau.stock_actuel ?? 0}
@@ -273,9 +266,7 @@ function ScanSortiePage() {
           </div>
 
           <Button type="submit" className="w-full h-12 text-base" disabled={submitting}>
-            {submitting ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : null}
+            {submitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
             Valider la sortie
           </Button>
         </form>

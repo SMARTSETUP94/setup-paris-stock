@@ -3,8 +3,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import type { Database } from "@/integrations/supabase/types";
 
-const MINDEE_ENDPOINT =
-  "https://api.mindee.net/v1/products/mindee/invoices/v4/predict";
+const MINDEE_ENDPOINT = "https://api.mindee.net/v1/products/mindee/invoices/v4/predict";
 
 type MindeeLineItem = {
   description: string | null;
@@ -108,8 +107,7 @@ export const ocrBdc = createServerFn({ method: "POST" })
         mindeeOk = true;
       }
     } catch (e) {
-      mindeeErrorMsg =
-        e instanceof Error ? e.message : "Erreur réseau lors de l'appel Mindee";
+      mindeeErrorMsg = e instanceof Error ? e.message : "Erreur réseau lors de l'appel Mindee";
     }
 
     // 5. Si échec : on persiste l'erreur dans extraction_brute_json pour permettre un retry
@@ -133,29 +131,25 @@ export const ocrBdc = createServerFn({ method: "POST" })
     }
 
     // 6. Parser la réponse
-    const prediction =
-      ((mindeeJson as Record<string, unknown> | null)?.document as Record<
-        string,
-        unknown
-      > | undefined)?.inference;
-    const pred =
-      (prediction as Record<string, unknown> | undefined)?.prediction as
-        | MindeePrediction
-        | undefined;
+    const prediction = (
+      (mindeeJson as Record<string, unknown> | null)?.document as
+        | Record<string, unknown>
+        | undefined
+    )?.inference;
+    const pred = (prediction as Record<string, unknown> | undefined)?.prediction as
+      | MindeePrediction
+      | undefined;
 
     const supplierName = pred?.supplier_name?.value ?? null;
     const invoiceNumber = pred?.invoice_number?.value ?? null;
     const invoiceDate = pred?.date?.value ?? null;
     const totalNet = safeNumber(pred?.total_net?.value);
-    const lineItems: MindeeLineItem[] = Array.isArray(pred?.line_items)
-      ? pred!.line_items!
-      : [];
+    const lineItems: MindeeLineItem[] = Array.isArray(pred?.line_items) ? pred!.line_items! : [];
 
     // 7. Effacer les anciennes lignes (cas d'un re-OCR) puis insérer les nouvelles
     await supabaseAdmin.from("bdc_lignes").delete().eq("bdc_id", bdcId);
 
-    type BdcUpdate =
-      Database["public"]["Tables"]["bons_de_commande"]["Update"];
+    type BdcUpdate = Database["public"]["Tables"]["bons_de_commande"]["Update"];
     const updates: BdcUpdate = {
       statut: "ocr_termine",
       extraction_brute_json: mindeeJson as never,
@@ -167,20 +161,17 @@ export const ocrBdc = createServerFn({ method: "POST" })
 
     // Match fournisseur si possible et BDC sans fournisseur encore défini
     if (supplierName) {
-      const { data: matchF } = await supabaseAdmin.rpc(
-        "match_fournisseur_par_nom",
-        { _nom: supplierName, _seuil: 0.4 },
-      );
+      const { data: matchF } = await supabaseAdmin.rpc("match_fournisseur_par_nom", {
+        _nom: supplierName,
+        _seuil: 0.4,
+      });
       const top = Array.isArray(matchF) && matchF.length > 0 ? matchF[0] : null;
       if (top?.fournisseur_id) {
         updates.fournisseur_id = top.fournisseur_id;
       }
     }
 
-    await supabaseAdmin
-      .from("bons_de_commande")
-      .update(updates)
-      .eq("id", bdcId);
+    await supabaseAdmin.from("bons_de_commande").update(updates).eq("id", bdcId);
 
     // 8. Insérer chaque ligne + tenter auto-match
     let lignesExtraites = 0;
@@ -193,12 +184,12 @@ export const ocrBdc = createServerFn({ method: "POST" })
       let panneauId: string | null = null;
 
       if (description) {
-        const { data: matches } = await supabaseAdmin.rpc(
-          "match_panneaux_par_description",
-          { _description: description, _seuil: 0.3, _limit: 1 },
-        );
-        const best =
-          Array.isArray(matches) && matches.length > 0 ? matches[0] : null;
+        const { data: matches } = await supabaseAdmin.rpc("match_panneaux_par_description", {
+          _description: description,
+          _seuil: 0.3,
+          _limit: 1,
+        });
+        const best = Array.isArray(matches) && matches.length > 0 ? matches[0] : null;
         if (best && (best.similarity ?? 0) >= 0.5) {
           panneauId = best.panneau_id ?? null;
           if (panneauId) lignesMatchees += 1;

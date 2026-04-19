@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AlertTriangle, ArrowRight, Plus, SlidersHorizontal, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -73,7 +73,17 @@ type TopAffaire = {
 
 function DashboardPage() {
   const { profile, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+  const isStaff = profile?.role === "admin" || profile?.role === "magasinier";
   const isAdmin = profile?.role === "admin";
+
+  // Les utilisateurs mobile sont redirigés vers le scanner.
+  useEffect(() => {
+    if (authLoading) return;
+    if (profile?.role === "mobile") {
+      navigate({ to: "/scan", replace: true });
+    }
+  }, [authLoading, profile?.role, navigate]);
 
   const [kpis, setKpis] = useState<{
     affaires_en_cours: number | null;
@@ -191,17 +201,17 @@ function DashboardPage() {
   }
 
   useEffect(() => {
-    if (authLoading || !isAdmin) return;
+    if (authLoading || !isStaff) return;
     void loadDashboard();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, isAdmin]);
+  }, [authLoading, isStaff]);
 
   // Mise à jour temps réel : recharge sur nouveau mouvement
   useStockRealtime(
     () => {
       void loadDashboard();
     },
-    isAdmin && !authLoading,
+    isStaff && !authLoading,
     600,
   );
 

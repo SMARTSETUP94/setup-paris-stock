@@ -70,7 +70,7 @@ export const Route = createFileRoute("/_app/parametres")({
 });
 
 function ParametresPage() {
-  const { ready } = useAdminGuard();
+  const { ready } = useAdminGuard({ adminOnly: true });
   if (!ready) return <AdminLoader />;
 
   return (

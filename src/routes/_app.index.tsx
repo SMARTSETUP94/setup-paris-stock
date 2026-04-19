@@ -280,15 +280,25 @@ function DashboardPage() {
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Alertes seuil bas */}
         <Card className="p-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
             <div className="flex items-center gap-2">
               <span className="section-marker">— 04</span>
               <AlertTriangle className="h-4 w-4 text-warning" />
               <h2 className="font-display text-lg font-semibold tracking-tight">Alertes seuil bas</h2>
             </div>
-            <Link to="/inventaire" className="link-arrow text-xs">
-              Voir tout l'inventaire →
-            </Link>
+            <div className="flex items-center gap-3">
+              {isAdmin && (
+                <Button size="sm" variant="outline" asChild>
+                  <Link to="/catalogue/matieres">
+                    <SlidersHorizontal className="h-3.5 w-3.5 mr-1" />
+                    Ajuster seuil
+                  </Link>
+                </Button>
+              )}
+              <Link to="/inventaire" className="link-arrow text-xs">
+                Voir tout l'inventaire →
+              </Link>
+            </div>
           </div>
           {loadingData ? (
             <p className="text-sm text-muted-foreground">Chargement…</p>

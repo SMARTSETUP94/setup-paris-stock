@@ -211,9 +211,9 @@ export function DangerZoneTab() {
             <AlertDialogDescription asChild>
               <div className="space-y-3 text-sm">
                 <p>
-                  Cette action va supprimer <strong>toutes les affaires</strong>, <strong>tous les
-                  bons de commande</strong> et <strong>tous les mouvements de stock</strong>. Elle
-                  est <strong>définitive</strong>.
+                  Cette action va supprimer <strong>tous les bons de commande</strong> et{" "}
+                  <strong>tous les mouvements de stock</strong>. Les <strong>affaires sont conservées</strong>.
+                  Elle est <strong>définitive</strong>.
                 </p>
                 <p className="text-muted-foreground">
                   Une sauvegarde CSV des mouvements sera téléchargée juste avant la suppression.
